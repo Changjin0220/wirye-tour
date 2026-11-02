@@ -47,6 +47,8 @@ button:disabled{opacity:.45;cursor:default}
 .pin.done .pin-no span{display:none}
 .pin.door{background:var(--safety);color:var(--safety-ink);padding:6px 12px;font-size:14px}
 .pin.door::after{background:var(--safety)}
+.pin.fac{font-size:12px;padding:3px 9px 3px 3px;background:rgba(13,28,42,.78)}
+.pin.fac .pin-no{width:18px;height:18px;font-size:11px;font-style:italic}
 .hs{pointer-events:auto;border:2px solid var(--ink);width:30px;height:30px;border-radius:50%;background:var(--safety);color:var(--safety-ink);font-family:var(--f-mono);font-weight:600;font-size:14px;display:grid;place-items:center;box-shadow:0 0 0 4px rgba(255,194,51,.25)}
 .hs.on{background:var(--ink);color:#10161c;box-shadow:0 0 0 6px rgba(255,194,51,.55)}
 .tag{padding:3px 8px;border-radius:4px;background:rgba(13,28,42,.82);color:var(--ink);font-size:12px;font-weight:500;border-left:3px solid var(--c,var(--muted))}
@@ -170,7 +172,7 @@ body.interior #sheet{top:calc(var(--gap) + env(safe-area-inset-top,0px))}
 .fp-btns{display:grid;gap:10px}
 .fp-btns button{display:flex;align-items:center;gap:16px;padding:14px;border-radius:12px;border:1px solid var(--line);background:rgba(147,169,187,.08);text-align:left}
 .fp-btns button:hover{border-color:var(--safety);background:rgba(255,194,51,.08)}
-.fp-btns b{width:56px;height:56px;border-radius:50%;display:grid;place-items:center;border:2px solid var(--safety);color:var(--safety);font-family:var(--f-mono);font-size:20px;font-weight:600;flex:none}
+.fp-btns b{width:56px;height:56px;font-size:18px!important;border-radius:50%;display:grid;place-items:center;border:2px solid var(--safety);color:var(--safety);font-family:var(--f-mono);font-size:20px;font-weight:600;flex:none}
 .fp-btns span{font-size:18px;font-weight:700}
 .fp-btns small{display:block;font-size:12px;font-weight:400;color:var(--muted);margin-top:2px}
 .fp-cancel{margin-top:12px;width:100%;padding:10px;border-radius:10px;border:1px solid var(--line);background:transparent;font-weight:700}
@@ -274,6 +276,7 @@ body.interior #sheet{top:calc(var(--gap) + env(safe-area-inset-top,0px))}
   <div id="controls" class="hud site-ui" hidden>
     <button class="ctl" id="flowBtn" type="button" aria-pressed="false"><span class="sw" aria-hidden="true"></span>에너지 흐름<kbd>F</kbd></button>
     <button class="ctl" id="viewBtn" type="button" aria-pressed="false">전체 지도<kbd>M</kbd></button>
+    <button class="ctl" id="soundBtn" type="button" aria-pressed="true">소리 켜짐<kbd>B</kbd></button>
     <button class="ctl" id="promoBtn" type="button">홍보영상<kbd>▶</kbd></button>
     <button class="ctl" id="cleanBtn" type="button">화면 정리<kbd>H</kbd></button>
   </div>
@@ -301,12 +304,9 @@ body.interior #sheet{top:calc(var(--gap) + env(safe-area-inset-top,0px))}
 
   <div id="floorPick" hidden role="dialog" aria-modal="true" aria-labelledby="fpTitle">
     <div class="fp-card">
-      <p class="eyebrow">행정동 · 엘리베이터</p>
+      <p class="eyebrow" id="fpEye">행정동 · 엘리베이터</p>
       <h2 id="fpTitle">몇 층으로 갈까요?</h2>
-      <div class="fp-btns">
-        <button type="button" data-f="office"><b>4F</b><span>사무실<small>경영지원실 · 고객지원실 · 사업운영실</small></span></button>
-        <button type="button" data-f="ccr"><b>3F</b><span>중앙제어실<small>발전소 통합 감시·제어</small></span></button>
-      </div>
+      <div class="fp-btns" id="fpBtns"></div>
       <button type="button" class="fp-cancel" id="fpCancel">취소</button>
     </div>
   </div>
@@ -334,7 +334,7 @@ body.interior #sheet{top:calc(var(--gap) + env(safe-area-inset-top,0px))}
         <div><dt>축열조</dt><dd>40,000 ㎥</dd></div>
       </dl>
       <button id="startBtn" type="button">견학 시작 →</button>
-      <div class="keys">PC <kbd>W A S D</kbd>·<kbd>방향키</kbd> 이동 · 드래그 회전 · 휠 확대 · <kbd>E</kbd> 입장 · <kbd>F</kbd> 흐름도 · <kbd>H</kbd> 화면 정리<br>모바일 왼쪽 조이스틱 이동 · 드래그 회전 · 두 손가락 확대</div>
+      <div class="keys">PC <kbd>W A S D</kbd>·<kbd>방향키</kbd> 이동 · 드래그 회전 · 휠 확대 · <kbd>E</kbd> 입장 · <kbd>F</kbd> 흐름도 · <kbd>H</kbd> 화면 정리 · <kbd>B</kbd> 소리<br>모바일 왼쪽 조이스틱 이동 · 드래그 회전 · 두 손가락 확대</div>
     </div>
   </div>
   <div id="toast" class="hide" role="status"></div>
@@ -500,8 +500,8 @@ const siteMesh=mesh(new THREE.ShapeGeometry(siteShape),M(0x79ab60,{rough:1}),sit
 /* roads */
 const ROADS=[
   [[-122,32],[-122,-27.5]],[[-122,-27.5],[-88,-27.5]],[[-88,-27.5],[-88,-105]],[[-88,-105],[-15,-105]],
-  [[-15,-105],[-15,50]],[[-88,50],[30,50]],[[-88,-27.5],[-88,50]],[[30,-110],[30,50]],
-  [[30,-110],[80,-110]],[[80,-110],[80,-55]],[[-27.5,50],[-27.5,72]],[[-122,32],[-88,32]],
+  [[-15,-105],[-15,50]],[[-34,50],[30,50]],[[30,-110],[30,50]],
+  [[30,-110],[80,-110]],[[80,-110],[80,-55]],[[-27.5,50],[-27.5,72]],
   [[-122,32],[-122,115]],[[-122,115],[-158,115]]
 ];
 const RW=7;
@@ -547,13 +547,17 @@ const gPower=bld(-55,2,57.5,70,24,0xdad6cd,0xc3bdaf);
  cylZ(P,3.8,3,8,0x7f8f9c,X,Y+.4,17,{metal:.4});box(P,10,8,9,0x76858f,X,Y+.6,26);box(P,10,6,10,0x5d6b76,X,3,26);
  box(P,7,6,6,0x5a6670,-76,3,20);}
 
-/* GT 흡기 보조동 */
-{const g=bld(-74,-69,18,56,13,0xd0cbc1,0xbab3a4);for(let y=3;y<11;y+=1.4)box(g,.3,.5,40,0x8a959e,-9.1,y,0);}
+/* 연료가스가열기동 (HRSG 서측) */
+const gFGH=bld(-74,-50,12,14,8,0xd0cbc1,0xbab3a4);
+{signBox(gFGH,'연료가스가열기동','FUEL GAS HEATER',0,5.2,7.1,9,1.9,'#14324d','#ffffff');for(let y=2;y<7;y+=1.2)box(gFGH,.3,.4,9,0x8a959e,-6.1,y,0);
+ const I=mkInt();gFGH.userData.internal=I;cylZ(I,1.6,1.6,9,0xc07a3a,-74,3.2,-50);for(const z of[-54.5,-45.5])cylZ(I,1.9,1.9,.4,0x8a5a30,-74,3.2,z);
+ pipe(site,[[-63.5,6,-56],[-68,6,-56]],.35,0xff9f1c);pipe(site,[[-63.5,4.4,-53],[-68,4.4,-53]],.35,0x6b8cff);}
 /* HRSG + stack + exhaust duct */
 const gHRSG=bld(-50,-69.5,27,57,26,0xc9cdd1,0xb3b9bf);
 {const g=gHRSG;for(let z=-26;z<=26;z+=6.5)box(g,27.4,.6,.4,0xb0b7be,0,20,z);
  box(g,10,52,10,0xa98666,-5,26,-6.5);box(g,7,.3,7,0x1e1a17,-5,52.2,-6.5);box(g,10.6,1,10.6,0x8e6e52,-5,49,-6.5);
  box(g,14,15,10,0x9aa3ab,-5,8.5,32.5);colBox(-55,-37,14,10);
+ box(g,20.5,22,39,0xc9cdd1,-23.75,11,-9);box(g,21,.6,39.6,0xb3b9bf,-23.75,22.3,-9);for(let z=-26;z<=8;z+=6.5)box(g,21,.5,.4,0xb0b7be,-23.75,17,z);colBox(-73.75,-78.5,20.5,39);
  box(g,.3,4.4,3.6,0x56626d,13.6,2.2,-.5);box(g,.4,.5,5,0x1f3b57,13.9,4.6,-.5);}
 box(site,20.6,.1,4,0xb9bdb9,-25.7,.11,-70).castShadow=false;
 {const H=mkInt();gHRSG.userData.internal=H;
@@ -581,7 +585,10 @@ const gTower=bld(13,-52,22,108,11,0x9eb2be,0x8da1ad);
  for(let i=0;i<4;i++)box(site,3.4,2.6,3,0x56626d,44+i*6,2.1,-22);
  for(let i=0;i<3;i++)box(site,3,2.4,2.4,0x2f6f9f,47+i*5,2,-78);
  box(site,8,5,6,0x9aa6b0,62,3.3,-40);box(site,6,4,8,0x8a96a0,49,2.8,-62);
- bld(48,8,26,46,8,0xd6d2c7,0xbcb5a7);}
+ const gWT=bld(48,8,26,46,8,0xd6d2c7,0xbcb5a7);
+ for(let i=0;i<4;i++){cyl(gWT,1.6,1.6,4,0xdfe5ea,-8+i*5,10.6,-14,{},16);}box(gWT,6,1.4,6,0xa29b8e,6,9.3,10);
+ signBox(gWT,'수처리설비동','WATER TREATMENT',0,5.6,23.1,10,2.3,'#14324d','#ffffff');
+ {const I=mkInt();gWT.userData.internal=I;for(let i=0;i<3;i++){cyl(I,2,2,6,0x2f6f9f,40+i*6,3.4,0,{},18);}for(let i=0;i<2;i++)cyl(I,2.4,2.4,6,0x9be7f5,42+i*8,3.4,16,{},18);}}
 /* 축열조 2기 + 순수(데미워터) 탱크 2기 */
 function tank(x,z,r,h,demi){const g=new THREE.Group();g.position.set(x,0,z);site.add(g);
   cyl(g,r,r,h,0xe8ebee,0,h/2,0,{rough:.55},40);mesh(new THREE.ConeGeometry(r*1.01,r*.16,40),M(0xd6dbdf),g,0,h+r*.08,0);cyl(g,r*1.01,r*1.01,.6,0xa9b2b9,0,h-1.4,0,{},40);
@@ -602,8 +609,27 @@ const gGov=bld(-25.5,93,61,38,9,0xd6d1c5,0xbfb8a9);
 {const G=mkInt();gGov.userData.internal=G;for(const z of[82,88]){pipe(G,[[4,2.5,z],[-55,2.5,z]],.55,0xf2b705);cylX(G,1.4,1.4,4,0x9aa6b0,-3,3.6,z);cylX(G,1.3,1.3,5,0xc07a3a,-12,2.5,z);box(G,1.6,1.6,1.6,0x4d5a66,-20,2.5,z);cyl(G,.6,.6,2,0xd62828,-20,4.3,z);for(const x of[-28,-35]){sph(G,1.2,0x4d5a66,x,2.5,z);cyl(G,1.1,1.1,.5,0x2f6f9f,x,4,z);}box(G,2.2,1.8,1.8,0x3e4b57,-44,2.5,z);}
  pipe(G,[[4,2.5,82],[4,2.5,88]],.55,0xf2b705);pipe(G,[[-55,2.5,82],[-55,2.5,88]],.55,0xf2b705);}
 /* misc buildings */
-bld(9,27,27,36,12,0xd9d5cb,0xc2bbad);const gGas3=bld(-70,85,19,30,8,0xd8d3c8);{const G3=mkInt();gGas3.userData.internal=G3;pipe(G3,[[-60.5,2.5,84],[-70,2.5,84],[-70,2.5,76],[-72,2.5,74],[-72,2.5,70]],.55,0xf2b705);cylX(G3,1.3,1.3,5,0xc07a3a,-65,2.5,84);box(G3,2.4,2,2,0x3e4b57,-70,2.5,80);}
-const gGas1=bld(17.5,72,7,14,6,0xd8d3c8);{const G1=mkInt();gGas1.userData.internal=G1;pipe(G1,[[17.5,2.5,65],[17.5,2.5,76],[14,2.5,76]],.55,0xf2b705);pipe(G1,[[17.5,2.5,72],[17.5,8,72]],.3,0x9aa6b0);box(G1,2,1.6,1.6,0xd62828,17.5,2.5,70);}bld(-111,-12,14,17,7,0xd8d3c8);
+const gCWP=bld(9,27,27,36,12,0xd9d5cb,0xc2bbad);
+{for(let y=3;y<10;y+=1.3)box(gCWP,.3,.45,24,0x8a959e,-13.65,y,0);signBox(gCWP,'냉각수 펌프동','CIRCULATING WATER PUMP',0,7,18.1,11,2.4,'#14324d','#ffffff');
+ for(const x of[2,14])pipe(site,[[x,1.5,9],[x,1.5,3]],1,0x4f7f8f);
+ const I=mkInt();gCWP.userData.internal=I;for(const x of[1,9,17]){cyl(I,1.8,1.8,3,0x2f6f9f,x,1.6,24,{},18);cyl(I,1.3,1.3,5,0x23506f,x,5.6,24,{},16);}}
+const gGas3=bld(-70,85,19,30,8,0xd8d3c8);
+{signBox(gGas3,'NG압축기동','GAS COMPRESSOR',0,5.2,15.1,9,1.9,'#14324d','#ffffff');for(const z of[-8,0,8])box(gGas3,3,1.6,3,0xa29b8e,0,8.9,z);
+ const G3=mkInt();gGas3.userData.internal=G3;pipe(G3,[[-60.5,2.5,84],[-70,2.5,84],[-70,2.5,76],[-72,2.5,74],[-72,2.5,70]],.55,0xf2b705);
+ for(const z of[80,90]){box(G3,6,3.4,4,0x2f6f9f,-66,2.2,z);cylX(G3,1.4,1.4,4,0x23506f,-71.5,2.2,z);}}
+/* PLB정압관리동 · 첨두부하보일러동 (DH 설비동 북측) */
+const gPGS=bld(38,-97,8,9,5,0xd6d1c5,0xbfb8a9);
+{signBox(gPGS,'PLB 정압관리동','GS',0,3.2,4.6,7,1.5,'#14324d','#ffffff');const I=mkInt();gPGS.userData.internal=I;sph(I,1,0x4d5a66,38,2,-97);cyl(I,1,1,.5,0x2f6f9f,38,3.4,-97,{},16);}
+const gPLB=bld(57,-97,22,10,10,0xd9d5cb,0xc2bbad);
+{cyl(gPLB,1.3,1.5,26,0xa98666,9,13,0,{},16);box(gPLB,3.2,.4,3.2,0x1e1a17,9,26.2,0);signBox(gPLB,'첨두부하보일러동','PLB',-2,6,5.1,11,2.3,'#14324d','#ffffff');
+ const I=mkInt();gPLB.userData.internal=I;cylX(I,3,3,13,0xc07a3a,55,4,-97);box(I,3,4,4,0xd62828,47.5,4,-97);pipe(I,[[61.5,6,-97],[66,6,-97],[66,24,-97]],.5,0x9aa6b0);}
+const gGas1=bld(17.5,72,7,14,6,0xd8d3c8);{const G1=mkInt();gGas1.userData.internal=G1;pipe(G1,[[17.5,2.5,65],[17.5,2.5,76],[14,2.5,76]],.55,0xf2b705);pipe(G1,[[17.5,2.5,72],[17.5,8,72]],.3,0x9aa6b0);box(G1,2,1.6,1.6,0xd62828,17.5,2.5,70);}const gTR=bld(-111,-12,14,17,7,0xd8d3c8);{signBox(gTR,'변압기실','ELECTRICAL',0,4.6,8.6,7,1.6,'#14324d','#ffffff');for(let y=1.5;y<5;y+=1)box(gTR,.3,.4,10,0x8a959e,7.1,y,0);
+ const I=mkInt();gTR.userData.internal=I;for(const z of[-17,-8])box(I,5,4,5,0x5a6670,-111,2,z);for(let k=0;k<4;k++)box(I,1.6,4.4,1.2,0x2f3d4a,-116.4+k*1.8,2.2,-4.4);}
+const gEG=bld(-102,-95,14,8,6,0xd6d1c5,0xbfb8a9);{cyl(gEG,.5,.6,6,0x6b7782,5,9,0,{},12);for(let y=1.4;y<5;y+=.9)box(gEG,.3,.4,6,0x8a959e,-7.1,y,0);signBox(gEG,'비상발전기동','EMERGENCY GENERATOR',0,4,4.1,8.5,1.7,'#14324d','#ffffff');
+ const I=mkInt();gEG.userData.internal=I;box(I,8,3,3,0xd6a019,-103,1.8,-95);box(I,3,3.2,3.2,0x2f6f9f,-97.5,1.8,-95);}
+const gSCR=bld(-27,-88,14,16,10,0xd6d1c5,0xbfb8a9);{for(const z of[-4,4])cyl(gSCR,2,2,5,0xdfe5ea,4,12.6,z,{},18);signBox(gSCR,'SCR / YPES','탈질 · 황연저감',-7.1,6,0,8,2,'#14324d','#ffffff',-PI/2);
+ const I=mkInt();gSCR.userData.internal=I;for(const z of[-93,-86])cyl(I,2.4,2.4,6,0x7ee081,-24,3.2,z,{},18);box(I,4,3,4,0x2f6f9f,-31,1.6,-82);
+ pipe(site,[[-34,8,-84],[-37.5,8,-84]],.3,0x7ee081);}
 /* transformer yard + transmission */
 {for(const x of[-110,-103,-96]){box(site,5,5,5.5,0x5a6670,x,2.5,12,{metal:.3});for(let k=-2;k<=2;k++)box(site,.25,4,6,0x46515a,x+2.6,2.4,12+k*.01);for(const dx of[-1.4,0,1.4])cyl(site,.25,.35,2.8,0xb7743e,x+dx,6.4,12,{},8);}
  const fence=M(0x8796a2,{opacity:.6});box(site,23,2,.2,fence,-103.5,1,3);box(site,23,2,.2,fence,-103.5,1,27);box(site,.2,2,24,fence,-115,1,15);box(site,.2,2,24,fence,-92,1,15);colBox(-103.5,15,23,24);
@@ -621,6 +647,20 @@ const gGas1=bld(17.5,72,7,14,6,0xd8d3c8);{const G1=mkInt();gGas1.userData.intern
  for(let i=0;i<SITE.length;i++){const a=SITE[i],b=SITE[(i+1)%SITE.length];
    const segs=(a[1]===36&&b[1]===36)?[[a,[-115.6,36]],[[-128.4,36],b]]:[[a,b]];
    for(const [p,q] of segs){const dx=q[0]-p[0],dz=q[1]-p[1],len=Math.hypot(dx,dz);if(len<.5)continue;const m=box(site,len,2.2,.25,fm,(p[0]+q[0])/2,1.1,(p[1]+q[1])/2);m.rotation.y=-Math.atan2(dz,dx);m.castShadow=false;}}}
+/* 소음측정 전광판 (정문) */
+const noiseCv=document.createElement('canvas');noiseCv.width=512;noiseCv.height=288;const noiseTex=new THREE.CanvasTexture(noiseCv);let noiseDb=51.0;
+function drawNoise(){const g=noiseCv.getContext('2d'),W=noiseCv.width,H=noiseCv.height;g.fillStyle='#05080b';g.fillRect(0,0,W,H);
+  g.fillStyle='#14324d';g.fillRect(0,0,W,58);g.fillStyle='#fff';g.font='700 32px "IBM Plex Sans KR","Malgun Gothic",sans-serif';g.textAlign='center';g.textBaseline='middle';g.fillText('소음 측정',W/2,30);
+  g.font='700 132px "IBM Plex Mono",ui-monospace,monospace';g.fillStyle='#ff3b30';g.shadowColor='#ff3b30';g.shadowBlur=18;g.textAlign='right';g.fillText(noiseDb.toFixed(1),W-118,168);g.shadowBlur=0;
+  g.font='700 54px "IBM Plex Mono",monospace';g.fillStyle='#ff6b60';g.textAlign='left';g.fillText('dB',W-108,184);
+  g.font='500 24px "IBM Plex Sans KR","Malgun Gothic",sans-serif';g.fillStyle='#7fd18b';g.textAlign='center';g.fillText('배출허용기준 이내 · 실시간',W/2,258);noiseTex.needsUpdate=true;}
+drawNoise();
+{const g=new THREE.Group();g.position.set(-134,0,40);g.rotation.y=-.35;site.add(g);
+ cyl(g,.25,.3,7,0x9aa6b0,-2.4,3.5,0,{metal:.4},10);cyl(g,.25,.3,7,0x9aa6b0,2.4,3.5,0,{metal:.4},10);
+ box(g,6,3.6,.5,0x1d2329,0,6.6,0);const sc=new THREE.Mesh(new THREE.PlaneGeometry(5.6,3.15),new THREE.MeshBasicMaterial({map:noiseTex}));sc.position.set(0,6.6,.26);g.add(sc);
+ cyl(g,.06,.06,1.6,0x9aa6b0,2.2,9.2,0,{},6);sph(g,.35,0x2b2f33,2.2,10.1,0);colBox(-134,40,6,1.5);}
+let noiseAcc=0;
+
 /* pipe rack: power block → DH (extraction heat) */
 {const pts=[[-26,7,6],[33,7,6],[33,7,-18],[36,7,-18]];pipe(site,pts,.55,0xb8c2ca);pipe(site,pts.map(p=>[p[0],p[1]+1.3,p[2]]),.45,0xb8c2ca);
  const post=(x,z)=>{if(distToRoad(x,z)<4.2)return;box(site,.6,7,.6,0x7d8a95,x,3.5,z);};for(let x=-22;x<=30;x+=8)post(x,6);for(let z=0;z>=-16;z-=8)post(35,z);}
@@ -646,7 +686,7 @@ const gGas1=bld(17.5,72,7,14,6,0xd8d3c8);{const G1=mkInt();gGas1.userData.intern
 function inPoly(x,z,poly){let c=false;for(let i=0,j=poly.length-1;i<poly.length;j=i++){const xi=poly[i][0],zi=poly[i][1],xj=poly[j][0],zj=poly[j][1];if(((zi>z)!==(zj>z))&&(x<(xj-xi)*(z-zi)/(zj-zi)+xi))c=!c;}return c;}
 /* trees */
 {let seed=7;const rnd=()=>(seed=(seed*16807)%2147483647)/2147483647;const trees=[];
- const ok=(x,z)=>{if(distToRoad(x,z)<6.5)return false;if(x>-14&&x<3&&z>-105&&z<3)return false;if(x>-38&&x<-14&&z>-75&&z<-65)return false;if(x>-108&&x<22&&z>58&&z<66)return false;if(x>-76&&x<-68&&z>36&&z<72)return false;for(const b of COL)if(x>b.x0-4&&x<b.x1+4&&z>b.z0-4&&z<b.z1+4)return false;for(const c of CIRC)if(Math.hypot(x-c.x,z-c.z)<c.r+4)return false;return true;};
+ const ok=(x,z)=>{if(distToRoad(x,z)<6.5)return false;if(x>-86&&x<-62&&z>-100&&z<-56)return false;if(x>-82&&x<-64&&z>-60&&z<-40)return false;if(x>-14&&x<3&&z>-105&&z<3)return false;if(x>-38&&x<-14&&z>-75&&z<-65)return false;if(x>-108&&x<22&&z>58&&z<66)return false;if(x>-76&&x<-68&&z>36&&z<72)return false;for(const b of COL)if(x>b.x0-4&&x<b.x1+4&&z>b.z0-4&&z<b.z1+4)return false;for(const c of CIRC)if(Math.hypot(x-c.x,z-c.z)<c.r+4)return false;return true;};
  for(let i=0;i<900&&trees.length<120;i++){const x=-140+rnd()*290,z=-125+rnd()*260;const inside=inPoly(x,z,SITE);if((inside&&ok(x,z))||(!inside&&rnd()<.25&&ok(x,z)&&!(x>-205&&x<-112&&z>90&&z<155)))trees.push([x,z,.8+rnd()*.6]);}
  const tm=new THREE.InstancedMesh(new THREE.ConeGeometry(2.4,6,7),M(0x3f7f4a,{rough:1}),trees.length);const tr=new THREE.InstancedMesh(new THREE.CylinderGeometry(.35,.45,2.2,6),M(0x6b4f3a),trees.length);
  const d=new THREE.Object3D();trees.forEach(([x,z,s],i)=>{d.position.set(x,1.1*s,z);d.scale.setScalar(s);d.updateMatrix();tr.setMatrixAt(i,d.matrix);d.position.set(x,(2.2+3)*s,z);d.updateMatrix();tm.setMatrixAt(i,d.matrix);});
@@ -673,7 +713,7 @@ function updateOccluders(dt){
   for(const o of OCC){
     let tgt=0;
     if(state.flow)tgt=1;
-    else if(state.mode==='site'||state.mode==='pick'){
+    else if((state.mode==='site'||state.mode==='pick')&&!state.fac){
       _ray.origin.copy(cp);_ray.direction.copy(_head).sub(cp).normalize();
       if(_ray.intersectBox(o.box,_hit)&&cp.distanceTo(_hit)<dH-1.5)tgt=1;
       else{_ray.direction.copy(_foot).sub(cp).normalize();if(_ray.intersectBox(o.box,_hit)&&cp.distanceTo(_hit)<dF-1.5)tgt=1;}
@@ -697,13 +737,17 @@ function offsetPath(pts,d){ // shift a polyline to the right of travel by d
     return[p[0]+nx*d*m,p[1],p[2]+nz*d*m];});}
 const DH_ROUTE=[[36,1.6,-23.5],[30,1.6,-23.5],[30,1.6,50],[-88,1.6,50],[-88,1.6,32],[-122,1.6,32],[-122,1.6,115],[-158,1.6,115],[-158,1.6,110]];
 const STREAMS={
-  gas:{name:'천연가스',color:0xf2b705,lines:[[[-104,3,62],[-31,3,62],[-31,7,62],[-24,7,62],[-24,3,62],[17.5,3,62],[17.5,3,72],[14,3,76],[9,3,76],[9,3,82],[5,3,82],[-56,3,84],[-60.5,3,84],[-70,3,84],[-72,3,72],[-72,3,44],[-72,9,36],[-72,9,-20],[-58,12,-20]]]},
+  gas:{name:'천연가스',color:0xf2b705,lines:[[[-104,3,62],[-31,3,62],[-31,7,62],[-24,7,62],[-24,3,62],[17.5,3,62],[17.5,3,72],[14,3,76],[9,3,76],[9,3,82],[5,3,82],[-56,3,84],[-60.5,3,84],[-70,3,84],[-72,3,72],[-72,3,44],[-72,9,36],[-72,9,-50],[-64,9,-50],[-64,12,-34],[-58,12,-20]]]},
   power:{name:'전기',color:0x3fa9f5,lines:[[[-55,10,5],[-55,10,22],[-76,7,20],[-103,8,14],[-150,30,14]]]},
+  scr:{name:'환원제 (SCR/YPES)',color:0x7ee081,lines:[[[-27,6,-88],[-36,9,-88],[-46,14,-80],[-52,14,-66]]]},
   exhaust:{name:'배기가스 (연기)',color:0xdedede,style:'smoke',lines:[[[-55,12,-27],[-55,10,-45],[-52,14,-60],[-55,22,-74],[-55,54,-76],[-50,68,-76],[-38,86,-72]]]},
   steam:{name:'증기',color:0xe5383b,lines:[[[-44,22,-60],[-44,22,-36],[-44,16,17],[-51,13,17]]]},
-  cool:{name:'냉각수',color:0x2ec4b6,lines:[[[-50,3,24],[-8,3,24],[-8,3,-14],[13,3,-14],[13,9,-30],[13,9,-96]],[[18,3,-96],[18,3,-8],[-4,3,-8],[-4,3,28],[-50,3,28]]]},
+  cool:{name:'냉각수',color:0x2ec4b6,lines:[[[-50,3,24],[-8,3,24],[-8,3,-14],[13,3,-14],[13,9,-30],[13,9,-96]],[[18,3,-96],[18,3,4],[14,3,16],[2,3,28],[-50,3,28]]]},
   heat:{name:'추출 증기 → 열',color:0xff4d8d,lines:[[[-52,14,22],[-30,9,22],[-30,9,6],[33,9,6],[33,9,-18],[45,9,-30]]]},
   store:{name:'축열·방열',color:0xa66bff,lines:[[[70,6,-62],[88,6,-80],[100,10,-92]],[[100,4,-86],[86,3,-72],[70,3,-56]]]},
+  demi:{name:'순수 (보충수)',color:0x9be7f5,lines:[[[61,3,4],[80,3,4],[86,3,-27]],[[35,3,-8],[30,3,-12],[-50,3,-40]]]},
+  plbgas:{name:'천연가스 (PLB용)',color:0xffd23f,lines:[[[17.5,3,64],[25,3,64],[25,3,-103],[36,3,-103],[38,3,-97],[46,3,-97]]]},
+  plbheat:{name:'PLB 온수 → DH',color:0xff6a3d,lines:[[[56,6,-92],[56,6,-84],[56,6,-70]]]},
   dhs:{name:'지역난방 공급 (땅속 · 뜨거운 물)',color:0xff3b3b,style:'buried',band:true,lines:[offsetPath(DH_ROUTE,1.3)]},
   dhr:{name:'회수 (땅속 · 식은 물)',color:0x3b82ff,style:'buried',lines:[offsetPath(DH_ROUTE,-1.3).reverse()]},
 };
@@ -737,12 +781,13 @@ for(const s of Object.values(STREAMS)){
 }
 const flowTags=[];
 const FLOW_STEPS=[
-  {t:'연료 공급',s:['gas'],f:[-38,0,66],d:'서쪽 한국가스공사(KOGAS) 배관으로 들어온 천연가스가 ① 방산탑 → ② 정압기 → ③ 가스 설비를 거쳐 발전동 가스터빈으로 갑니다. 방산탑은 비상시나 정비할 때 배관 속 가스를 안전하게 대기로 내보내는 설비이고, 정압기는 압력을 낮추고 계량해요.'},
+  {t:'연료 공급',s:['gas'],f:[-38,0,66],d:'서쪽 한국가스공사(KOGAS) 배관으로 들어온 천연가스가 ① 방산탑 → ② 정압기 → ③ NG압축기동을 거치고, HRSG 옆 연료가스가열기동에서 데워진 뒤 발전동 가스터빈으로 갑니다. 방산탑은 비상시나 정비할 때 배관 속 가스를 안전하게 대기로 내보내고, 정압기는 압력을 맞추고 계량하며, NG압축기는 가스터빈이 필요로 하는 압력까지 가스를 높여요.'},
   {t:'1차 발전 · 가스터빈',s:['gas','power'],f:[-58,0,0],d:'천연가스를 태운 고온·고압 가스가 가스터빈을 돌리고, 한 축으로 연결된 발전기가 전기를 만듭니다. 전기는 주변압기를 거쳐 전력계통으로 나갑니다.'},
-  {t:'배열 회수 · 2차 발전',s:['exhaust','steam','power'],f:[-52,0,-40],d:'HRSG가 약 630℃ 배기가스의 열로 증기를 만들고, 이 증기가 증기터빈을 돌려 연료를 더 쓰지 않고 한 번 더 발전합니다. 열을 내준 배기가스는 연돌로 나가요(흰 연기).'},
-  {t:'열 방출 · 냉각탑',s:['cool'],f:[-8,0,-36],d:'증기터빈을 돌린 증기는 복수기에서 물로 돌아갑니다. 이때 나온 열은 냉각수가 받아 8개 셀 냉각탑에서 공기로 식힙니다.'},
+  {t:'배열 회수 · 2차 발전',s:['exhaust','steam','power','scr'],f:[-52,0,-56],d:'HRSG가 약 630℃ 배기가스의 열로 증기를 만들고, 이 증기가 증기터빈을 돌려 연료를 더 쓰지 않고 한 번 더 발전합니다. HRSG 안 SCR 촉매에서 SCR/YPES동이 보낸 환원제(연두색)로 질소산화물을 줄인 뒤, 열을 내준 배기가스는 연돌로 나가요(흰 연기).'},
+  {t:'열 방출 · 냉각탑',s:['cool'],f:[-2,0,-20],d:'증기터빈을 돌린 증기는 복수기에서 물로 돌아갑니다. 이때 나온 열은 냉각수가 받아 8개 셀 냉각탑에서 공기로 식혀요. 냉각탑 남쪽 냉각수 펌프동의 대형 펌프가 냉각탑과 복수기 사이로 냉각수를 돌립니다.'},
   {t:'열 회수 · DH 설비동',s:['heat'],f:[20,0,-20],d:'증기터빈에서 추출한 증기의 열을 DH 설비동 열교환기로 보내 지역난방용 온수를 만듭니다.'},
-  {t:'열 저장 · 축열조',s:['store'],f:[86,0,-68],d:'열이 남을 때는 큰 탱크 2기(축열조)에 뜨거운 물로 저장했다가(보라 흐름), 아침·저녁 난방 피크에 꺼내 씁니다. 탱크 안 빨강은 고온수, 파랑은 저온수예요. 옆의 작은 탱크 2기는 보충수로 쓰는 순수(데미워터) 탱크예요.'},
+  {t:'열 저장 · 축열조',s:['store','demi'],f:[86,0,-68],d:'열이 남을 때는 큰 탱크 2기(축열조)에 뜨거운 물로 저장했다가(보라 흐름), 아침·저녁 난방 피크에 꺼내 씁니다. 탱크 안 빨강은 고온수, 파랑은 저온수예요. 옆의 작은 탱크 2기는 보충수로 쓰는 순수(데미워터) 탱크예요. 수처리설비동에서 만든 순수(하늘색)는 순수탱크에 담아 두었다가 보충수로 써요.'},
+  {t:'첨두부하 보일러 (PLB)',s:['plbgas','plbheat'],f:[46,0,-90],d:'한겨울처럼 열 수요가 발전소 회수열과 축열조로 감당하기 어려울 때, PLB정압관리동에서 압력을 맞춘 천연가스로 첨두부하보일러를 돌려 온수를 직접 만들어 DH 설비동으로 보내요. 발전설비가 멈췄을 때 예비 열원 역할도 해요.'},
   {t:'지역난방 공급',s:['dhs','dhr'],f:[-100,0,70],d:'뜨거운 물(빨강)은 땅속 이중보온관을 따라 정문을 지나 수요처 아파트 지하 기계실로 가고, 열을 내준 식은 물(파랑)은 회수관으로 돌아옵니다. 수요처로 가는 방향 기준 오른쪽이 공급관이에요.'},
 ];
 
@@ -757,10 +802,10 @@ const STATIONS=[
   {id:'dh',name:'DH 설비동',sub:'지역난방 열 생산',cat:'heat',node:'ND',door:[32.5,-50],lp:[55,11,-50]},
   {id:'storage',name:'축열조',sub:'축열조 2기 · 순수탱크 2기',cat:'heat',node:'T3',door:[82.5,-90],lp:[110,36,-99]},
   {id:'trench',name:'이중보온관 공사',sub:'열수송관 매설 현장',cat:'net',node:'O1',door:[-119.5,82],lp:[-112,6,82]},
-  {id:'demand',name:'수요처 아파트',sub:'지하 기계실 (예시)',cat:'net',node:'O3',door:[-158,111.8],lp:[-158,40,103]},
+  {id:'demand',name:'수요처 아파트',sub:'지하 기계실 · 난방/냉방',cat:'net',node:'O3',door:[-158,111.8],lp:[-158,40,103]},
 ];
-const NODES={G:[-122,32],N1:[-122,-27.5],NA:[-109,-27.5],N2:[-88,-27.5],N3:[-88,-105],NH:[-50,-105],N4:[-15,-105],N15:[-15,-55],N14:[-15,2],N6:[-15,50],N12:[-27.5,50],N13:[-27.5,70],N8:[-88,50],N11:[-88,32],N7:[30,50],ND:[30,-50],T1:[30,-110],T2:[80,-110],T3:[80,-90],SP:[-122,70],O1:[-122,82],O2:[-122,115],O3:[-158,115],N16:[-15,-70]};
-const EDGES=[['G','N1'],['N1','NA'],['NA','N2'],['N2','N3'],['N3','NH'],['NH','N4'],['N4','N16'],['N16','N15'],['N15','N14'],['N14','N6'],['N6','N12'],['N12','N8'],['N12','N13'],['N6','N7'],['N2','N11'],['N11','N8'],['G','N11'],['N7','ND'],['ND','T1'],['T1','T2'],['T2','T3'],['G','SP'],['SP','O1'],['O1','O2'],['O2','O3']];
+const NODES={G:[-122,32],N1:[-122,-27.5],NA:[-109,-27.5],N2:[-88,-27.5],N3:[-88,-105],NH:[-50,-105],N4:[-15,-105],N15:[-15,-55],N14:[-15,2],N6:[-15,50],N12:[-27.5,50],N13:[-27.5,70],N7:[30,50],ND:[30,-50],T1:[30,-110],T2:[80,-110],T3:[80,-90],SP:[-122,70],O1:[-122,82],O2:[-122,115],O3:[-158,115],N16:[-15,-70]};
+const EDGES=[['G','N1'],['N1','NA'],['NA','N2'],['N2','N3'],['N3','NH'],['NH','N4'],['N4','N16'],['N16','N15'],['N15','N14'],['N14','N6'],['N6','N12'],['N12','N13'],['N6','N7'],['N7','ND'],['ND','T1'],['T1','T2'],['T2','T3'],['G','SP'],['SP','O1'],['O1','O2'],['O2','O3']];
 const ADJ={};for(const [a,b] of EDGES){(ADJ[a]=ADJ[a]||[]).push(b);(ADJ[b]=ADJ[b]||[]).push(a);}
 const nd=(a,b)=>Math.hypot(NODES[a][0]-NODES[b][0],NODES[a][1]-NODES[b][1]);
 function dijkstra(src){const D={},P={},Q=new Set(Object.keys(NODES));for(const k of Q)D[k]=Infinity;D[src]=0;
@@ -813,6 +858,7 @@ addEventListener('keydown',e=>{
     if((e.code==='KeyE'||e.code==='Enter')&&state.near){e.preventDefault();enterStation(state.near);}
     else if(e.code==='KeyF')toggleFlow();
     else if(e.code==='KeyM')toggleOverview();
+    else if(e.code==='Escape'&&state.fac)closeFac();
     else if(e.code==='Escape'&&state.flow)toggleFlow(false);
   }else if(state.mode==='pick'){
     if(e.code==='Escape')closePick();
@@ -839,20 +885,62 @@ canvas.addEventListener('pointerdown',e=>{canvas.setPointerCapture(e.pointerId);
 canvas.addEventListener('pointermove',e=>{const p=ptrs.get(e.pointerId);if(!p)return;const dx=e.clientX-p.x,dy=e.clientY-p.y;p.x=e.clientX;p.y=e.clientY;
   const o=curOrbit();
   if(ptrs.size===1){o.yaw-=dx*.003;o.pitch=clamp(o.pitch+dy*.00225,o.pmin||.12,o.pmax||1.42);if(o.ymin!=null)o.yaw=clamp(o.yaw,o.ymin,o.ymax);}
-  else if(ptrs.size===2){const [a,b]=[...ptrs.values()];const d=Math.hypot(a.x-b.x,a.y-b.y);if(pinch0>0){o.dist=clamp(o.dist*pinch0/d,o.dmin||16,o.dmax||440);}pinch0=d;}});
+  else if(ptrs.size===2){const [a,b]=[...ptrs.values()];const d=Math.hypot(a.x-b.x,a.y-b.y);if(pinch0>0){o.dist=clamp(o.dist*pinch0/d,o.dmin||16,o.dmax||440);}pinch0=d;}rememberCam();});
 const ptrEnd=e=>{ptrs.delete(e.pointerId);pinch0=0;};
-const PICK={admin:[-126,0,-85.5,-92,18,-31.5],gov:[-56,0,74,5,10,112],power:[-83.75,0,-33,-26.25,26,37],hrsg:[-63.5,0,-98,-36.5,54,-41],tower:[2,0,-106,24,16,2],dh:[36,0,-86,74,9,-14],storage:[80,0,-120,130,32,-28],trench:[-118,0,73,-108,4,91],demand:[-165,0,97.5,-151,37,108.5]};
-const PICKB=Object.fromEntries(Object.entries(PICK).map(([k,v])=>[k,new THREE.Box3(new THREE.Vector3(v[0],v[1],v[2]),new THREE.Vector3(v[3],v[4],v[5]))]));
+const PICK={admin:[-126,0,-85.5,-92,18,-31.5],gov:[-56,0,74,5,10,112],power:[-83.75,0,-33,-26.25,26,37],hrsg:[[-84,0,-98,-36.5,54,-59],[-63.5,0,-59,-36.5,54,-41]],tower:[2,0,-106,24,16,2],dh:[36,0,-86,74,9,-14],storage:[80,0,-120,130,32,-28],trench:[-118,0,73,-108,4,91],demand:[-165,0,97.5,-151,37,108.5]};
+const PICKB=[];for(const [k,v] of Object.entries(PICK))for(const a of(Array.isArray(v[0])?v:[v]))PICKB.push([k,new THREE.Box3(new THREE.Vector3(a[0],a[1],a[2]),new THREE.Vector3(a[3],a[4],a[5]))]);
+const FAC={
+  scr:{name:'SCR / YPES동',en:'SCR · Yellow Plume Elimination',b:[-34,0,-96,-20,13,-80],lp:[-27,13,-88],specs:[['SCR','탈질 (NOx 저감)'],['YPES','황연 저감']],
+    d:'가스터빈 배기가스 속 질소산화물(NOx)을 줄이는 환경설비의 약품 저장·주입 설비가 있는 건물이에요. SCR은 선택적 촉매 환원(Selective Catalytic Reduction), YPES는 황연 저감 설비(Yellow Plume Elimination System)의 약자예요.',
+    roles:['SCR: HRSG 안 촉매층 앞에 환원제(요소수나 암모니아수)를 뿌려, 촉매에서 NOx를 물과 질소로 바꿔요','YPES: 가스터빈을 막 켤 때는 배기 온도가 낮아 NO2가 많아져 굴뚝으로 노란 연기(황연)가 보여요. 이때 환원제를 주입해 노란 연기를 없애요','건물 안에는 환원제 저장 탱크와 주입 펌프·기화 설비가 있고, 배관으로 HRSG에 약품을 보내요','배출가스는 굴뚝 자동측정기(TMS)로 실시간 감시해요'],uncertain:true},
+  trr:{name:'변압기실',en:'Electrical / Transformer Room',b:[-118,0,-20.5,-104,8,-3.5],lp:[-111,9,-12],specs:[['역할','소내 전력 공급'],['연계','주변압기 · 송전']],
+    d:'발전소 안의 펌프·팬·조명·제어설비에 쓸 전기를 나눠 주는 변압기와 배전반이 있는 곳이에요.',
+    roles:['발전기나 외부 계통에서 받은 전기를 소내변압기로 설비에 맞는 전압으로 낮춰요','고압·저압 배전반(스위치기어)으로 각 설비에 전기를 나눠 보내요','바로 옆 옥외 변압기 구역의 주변압기가 발전한 전기를 높은 전압으로 올려 송전탑으로 보내요'],uncertain:true},
+  egen:{name:'비상발전기동',en:'Emergency Generator',b:[-109,0,-99,-95,12,-91],lp:[-102,8,-95],specs:[['연료','경유 (디젤)'],['역할','정전 대비']],
+    d:'외부 전력이 끊기는 정전 때 자동으로 켜져서 꼭 필요한 설비에 전기를 공급하는 디젤 발전기가 있는 건물이에요.',
+    roles:['정전되면 수 초 안에 자동 기동해요','터빈 윤활유 펌프·제어설비·비상조명처럼 안전 정지에 필요한 설비에 전기를 줘요','회전하던 터빈과 설비가 손상 없이 안전하게 멈출 수 있게 지켜줘요','평소에는 정기적으로 시험 운전을 해요']},
+  fgh:{name:'연료가스가열기동',en:'Fuel Gas Heater',b:[-80,0,-57,-68,10,-43],lp:[-74,12,-50],specs:[['위치','HRSG 서측'],['열원','HRSG 급수(온수)']],
+    d:'가스터빈에 들어가기 직전의 천연가스를 데우는 설비예요. 가스를 미리 데워 들여보내면 같은 연료로 더 많은 전기를 만들 수 있어요.',
+    roles:['HRSG에서 데워진 급수(온수)로 천연가스를 가열해 가스터빈 효율을 높여요','가스 온도를 이슬점보다 충분히 높게 유지해 배관 속 응축과 결빙을 막아요','NG압축기동을 지난 가스가 여기를 거쳐 발전동 연소기로 가요'],uncertain:true},
+  ngc:{name:'NG압축기동',en:'Gas Compressor',b:[-79.5,0,70,-60.5,10,100],lp:[-70,11,85],specs:[['순서','정압기 → 압축기'],['대상','가스터빈 연료']],
+    d:'정압기를 거친 천연가스의 압력을 가스터빈이 요구하는 압력까지 높이는 설비예요.',
+    roles:['외부 배관망 압력이 낮을 때 압축기로 가스 압력을 올려요','압축기 출구 가스는 연료가스가열기동을 거쳐 발전동으로 가요','과압·누설 감지와 긴급차단 설비가 함께 있어요'],uncertain:true},
+  cwp:{name:'냉각수 펌프동',en:'Circulating Water Pump House',b:[-4.5,0,9,22.5,14,45],lp:[9,15,27],specs:[['순환 수량','약 25,500 ㎥/h'],['연결','냉각탑 ↔ 복수기']],
+    d:'냉각탑에서 식힌 물을 발전동 복수기로 보내고, 복수기에서 데워진 물을 다시 냉각탑으로 돌려보내는 대형 펌프가 있는 건물이에요.',
+    roles:['냉각탑 집수조의 물을 대형 순환수 펌프로 복수기에 보내요','증발로 줄어든 냉각수를 보충하고 수질 약품을 넣어요','복수기 진공을 유지해 증기터빈 효율을 지켜요']},
+  wtp:{name:'수처리설비동',en:'Water Treatment Plant',b:[35,0,-15,61,10,31],lp:[48,11,8],specs:[['생산','순수(데미워터)'],['공급','HRSG · 지역난방']],
+    d:'수돗물이나 공업용수에서 불순물과 이온을 걸러 순수(데미워터)를 만드는 설비예요.',
+    roles:['여과 → 역삼투(RO) → 이온교환 순서로 물을 깨끗하게 만들어요','순수는 순수탱크에 담아 HRSG 보일러 급수와 지역난방 배관망 보충수로 써요','부식과 스케일을 막는 약품 주입 설비도 있어요']},
+  plbgs:{name:'PLB 정압관리동 (GS)',en:'PLB Gas Station',b:[34,0,-101.5,42,6,-92.5],lp:[38,7,-97],specs:[['대상','첨두부하보일러'],['기능','감압 · 계량 · 차단']],
+    d:'첨두부하보일러(PLB) 버너에 맞도록 천연가스 압력을 낮추고 계량하는 정압 설비예요.',
+    roles:['가스 주배관에서 나뉜 천연가스를 PLB용 압력으로 낮춰요','PLB가 쓴 가스량을 계량해요','이상 시 긴급차단밸브로 가스를 끊어요']},
+  plb:{name:'첨두부하보일러동 (PLB)',en:'Peak Load Boiler',b:[46,0,-102,68,28,-92],lp:[55,13,-97],specs:[['연료','천연가스'],['역할','피크 · 예비 열원']],
+    d:'열 수요가 가장 많을 때(첨두부하) 부족한 열을 채우는 가스 온수보일러예요.',
+    roles:['한겨울처럼 발전소 회수열과 축열조만으로 부족할 때 가동해요','만든 온수는 DH 설비동을 거쳐 지역난방으로 보내요','발전설비 정비·정지 때 예비 열원으로 지역난방을 이어가요','연소가스는 옆 연돌로 배출해요']},
+};
+const FACB=Object.fromEntries(Object.entries(FAC).map(([k,f])=>[k,new THREE.Box3(new THREE.Vector3(f.b[0],f.b[1],f.b[2]),new THREE.Vector3(f.b[3],f.b[4],f.b[5]))]));
+Object.entries(FAC).forEach(([k,f])=>{f.pin=makeLabel(siteLabels,`<span class="pin-no">i</span><span>${f.name}</span>`,f.lp,'pin fac',()=>openFac(k),'--c:#b8c4cf');});
+function openFac(id){if(state.mode!=='site')return;if(state.flow)toggleFlow(false);if(state.overview)toggleOverview(false);state.auto=null;beacon.visible=false;state.fac=id;const f=FAC[id];
+  camSGoal.t.set((f.b[0]+f.b[3])/2,0,(f.b[2]+f.b[5])/2);camSGoal.dist=Math.max(70,Math.min(camMem.dist,120));camSGoal.pitch=.8;renderFacSheet();setSheetMin(false);setSheet(true);}
+function closeFac(){if(!state.fac)return;state.fac=null;setSheet(false);followCam();}
+function renderFacSheet(){const f=FAC[state.fac];
+  $('#shEye').textContent='Facility · '+f.en;$('#shTitle').textContent=f.name;
+  $('#shSpecs').innerHTML=f.specs.map(([k,v])=>`<div class="spec"><small>${k}</small><b>${v}</b></div>`).join('');
+  $('#shExtra').innerHTML=f.uncertain?'<p class="note">일반적인 복합화력 설비 기준으로 쓴 설명이에요. 위례 발전소 실제 운영과 다르면 알려주세요.</p>':'';
+  $('#shCard').innerHTML=`<h4>무슨 일을 하나요?</h4><p>${f.d}</p>`;
+  $('#shList').innerHTML=f.roles.map((r,i)=>`<li><button type="button" data-r><span class="n">${i+1}</span><span>${r}</span></button></li>`).join('');
+  $('#shPrev').disabled=true;$('#shNext').textContent='닫기';$('#shClose').hidden=false;}
 const _rc=new THREE.Raycaster(),_ndc=new THREE.Vector2(),_hp=new THREE.Vector3();let downXY=null;
 canvas.addEventListener('pointerdown',e=>{downXY=ptrs.size===1?{x:e.clientX,y:e.clientY}:null;});
 canvas.addEventListener('pointerup',e=>{if(!downXY||ptrs.size!==1||Math.hypot(e.clientX-downXY.x,e.clientY-downXY.y)>6||state.mode!=='site'||state.flow)return;
   const r=canvas.getBoundingClientRect();_ndc.set((e.clientX-r.left)/r.width*2-1,-(e.clientY-r.top)/r.height*2+1);_rc.setFromCamera(_ndc,camS);
-  let best=null,bd=1e9;for(const [id,b] of Object.entries(PICKB)){if(_rc.ray.intersectBox(b,_hp)){const d=_hp.distanceTo(_rc.ray.origin);if(d<bd){bd=d;best=id;}}}
-  if(best)walkTo(STATIONS.find(s=>s.id===best),true);});
+  let best=null,bd=1e9,kind=null;for(const [id,b] of PICKB){if(_rc.ray.intersectBox(b,_hp)){const d=_hp.distanceTo(_rc.ray.origin);if(d<bd){bd=d;best=id;kind='st';}}}
+  for(const [id,b] of Object.entries(FACB)){if(_rc.ray.intersectBox(b,_hp)){const d=_hp.distanceTo(_rc.ray.origin);if(d<bd){bd=d;best=id;kind='fac';}}}
+  if(best){if(kind==='st'){state.fac=null;walkTo(STATIONS.find(s=>s.id===best),true);}else openFac(best);}});
 canvas.addEventListener('pointermove',e=>{if(state.mode!=='site'||ptrs.size)return;const r=canvas.getBoundingClientRect();_ndc.set((e.clientX-r.left)/r.width*2-1,-(e.clientY-r.top)/r.height*2+1);_rc.setFromCamera(_ndc,camS);
-  let hit=false;if(!state.flow)for(const b of Object.values(PICKB))if(_rc.ray.intersectBox(b,_hp)){hit=true;break;}canvas.style.cursor=hit?'pointer':'';});
+  let hit=false;if(!state.flow)for(const b of[...PICKB.map(e=>e[1]),...Object.values(FACB)])if(_rc.ray.intersectBox(b,_hp)){hit=true;break;}canvas.style.cursor=hit?'pointer':'';});
 canvas.addEventListener('pointerup',ptrEnd);canvas.addEventListener('pointercancel',ptrEnd);
-canvas.addEventListener('wheel',e=>{e.preventDefault();const o=curOrbit();o.dist=clamp(o.dist*(1+e.deltaY*.0011),o.dmin||16,o.dmax||440);},{passive:false});
+canvas.addEventListener('wheel',e=>{e.preventDefault();const o=curOrbit();o.dist=clamp(o.dist*(1+e.deltaY*.0011),o.dmin||16,o.dmax||440);rememberCam();},{passive:false});
 
 /* ================= site UI ================= */
 const courseList=$('#courseList'),courseEl=$('#course');
@@ -875,9 +963,12 @@ $('#cleanBtn').addEventListener('click',()=>toggleClean(true));$('#showUi').addE
 
 let toastT=0;function toast(msg,sec){const t=$('#toast');t.textContent=msg;t.classList.remove('hide');toastT=sec||2.6;}
 
+function placeAtDoor(st){const dx=st.door[0]-st.lp[0],dz=st.door[1]-st.lp[2],L=Math.hypot(dx,dz)||1;
+  player.position.set(st.door[0]+dx/L*2,0,st.door[1]+dz/L*2);player.rotation.y=Math.atan2(dx,dz);
+  camSGoal.t.set(player.position.x,2,player.position.z);camSCur.t.copy(camSGoal.t);}
 function walkTo(st,enter){
   if(state.mode!=='site')return;
-  if(enter&&Math.hypot(player.position.x-st.door[0],player.position.z-st.door[1])<7){enterStation(st);return;}
+  if(enter){if(state.flow)toggleFlow(false);if(state.overview)toggleOverview(false);state.auto=null;beacon.visible=false;placeAtDoor(st);enterStation(st);return;}
   if(state.flow)toggleFlow(false);if(state.overview)toggleOverview(false);
   const path=planPath(player.position.x,player.position.z,st.node);path.push(st.door);
   state.auto={path,i:0,st,enter:!!enter};beacon.visible=true;beacon.position.set(st.door[0],8,st.door[1]);
@@ -892,12 +983,14 @@ $('#shMin').addEventListener('click',()=>setSheetMin(!sheet.classList.contains('
 function toggleFlow(on){
   on=on!=null?on:!state.flow;if(on===state.flow)return;state.flow=on;$('#flowBtn').setAttribute('aria-pressed',on);flowGroup.visible=on;
   flowTags.forEach(l=>l.el.style.visibility=on?'':'hidden');
-  if(on){state.auto=null;beacon.visible=false;state.focusStep=-1;state.courseWas=courseEl.classList.contains('collapsed');collapseCourse(true);setOverviewCam();setSheetMin(false);renderFlowSheet();setSheet(true);highlightStreams(null);}
+  if(on){state.fac=null;state.auto=null;beacon.visible=false;state.focusStep=-1;state.courseWas=courseEl.classList.contains('collapsed');collapseCourse(true);setOverviewCam();setSheetMin(false);renderFlowSheet();setSheet(true);highlightStreams(null);}
   else{stopPlay();if(state.courseWas!=null)collapseCourse(state.courseWas);setSheet(false);if(!state.overview)followCam();}
 }
 function toggleOverview(on){on=on!=null?on:!state.overview;state.overview=on;$('#viewBtn').setAttribute('aria-pressed',on);if(on)setOverviewCam();else if(!state.flow)followCam();}
 function setOverviewCam(){camSGoal.t.set(-25,0,8);camSGoal.dist=innerWidth<760?440:320;camSGoal.pitch=1.0;}
-function followCam(){camSGoal.dist=58;camSGoal.pitch=.66;}
+const camMem={dist:58,pitch:.66};
+function followCam(){camSGoal.dist=camMem.dist;camSGoal.pitch=camMem.pitch;}
+function rememberCam(){if(state.mode==='site'&&!state.flow&&!state.overview&&!state.fac){camMem.dist=camSGoal.dist;camMem.pitch=camSGoal.pitch;}}
 function highlightStreams(ids){for(const [id,s] of Object.entries(STREAMS)){const on=!ids||ids.includes(id);s.fade.forEach(([m,b])=>{m.opacity=on?b:b*.12;});}}
 const hex=c=>'#'+c.toString(16).padStart(6,'0');
 function renderFlowSheet(){
@@ -1030,11 +1123,12 @@ INT.ccr={title:'3층 중앙제어실',short:'3층 제어실',eyebrow:'행정동 
 
 /* ---------- 행정동 4F · 사무실 ---------- */
 const ORG={
+  room_ceo:{name:'대표이사실',color:'#c9a45c',ceo:true,intro:'회사 경영을 총괄하는 대표이사의 집무 공간이에요. (예시 문구)',teams:[]},
   room_mgmt:{name:'경영지원실',color:'#8fb3cf',intro:'회사 운영을 뒷받침하는 부서예요. (예시 문구)',teams:[['인사·총무','채용, 교육, 복리후생, 사옥 관리 (예시)'],['재무·회계','예산 편성, 결산, 자금 관리 (예시)'],['구매·계약','자재·용역 구매와 계약 관리 (예시)']]},
   room_cs:{name:'고객지원실',color:'#2ec4b6',intro:'열을 쓰는 고객과 가장 가까이 만나는 부서예요. (예시 문구)',teams:[['고객 상담','열 사용 문의와 민원 응대 (예시)'],['요금·검침','열량 검침과 요금 청구 (예시)'],['사용자 설비','수요처 기계실 점검 지원 (예시)']]},
   room_ops:{name:'사업운영실',color:'#ffc233',intro:'발전과 열 공급 사업을 계획하고 운영하는 부서예요. (예시 문구)',teams:[['사업 기획','사업 계획과 수요 분석 (예시)'],['운영 관리','발전·열공급 운영 지원 (예시)'],['안전·환경','안전보건과 환경 관리 (예시)']]},
 };
-const ROOM_X={room_mgmt:-27,room_cs:0,room_ops:27};
+const ROOM_X={room_ceo:-54,room_mgmt:-27,room_cs:0,room_ops:27};
 function deskIsland(S,x,z,cols,people,seed){const scr=[0x2b7bbf,0x2e9e8f,0x3a6fb0],suits=[0x34495e,0x6c7a89,0x9db4c8,0x4d5d6c];let k=seed||0;
   box(S,cols*3.3,1.1,.1,0x9fb3c3,x,3,z);
   for(let i=0;i<cols;i++)for(const s of[-1,1]){const dx=x+(i-(cols-1)/2)*3.3,dz=z+s*1.05;
@@ -1042,29 +1136,40 @@ function deskIsland(S,x,z,cols,people,seed){const scr=[0x2b7bbf,0x2e9e8f,0x3a6fb
     box(S,1.5,.95,.08,0x111a22,dx,3.1,dz-s*.6);const sc=mesh(new THREE.PlaneGeometry(1.36,.8),new THREE.MeshBasicMaterial({color:scr[k%3]}),S,dx,3.1,dz-s*.55,false);if(s<0)sc.rotation.y=PI;
     box(S,1.3,.9,1.3,0x2b3a47,dx,1.1,dz+s*1.7);box(S,1.3,1.6,.25,0x2b3a47,dx,2.1,dz+s*2.35);
     if(people&&(i+k)%3!==2){const w=makeWorker({office:true,suit:suits[k%4]});w.scale.setScalar(.85);w.position.set(dx,0,dz+s*1.45);w.rotation.y=s>0?PI:0;S.add(w);}k++;}}
+function ceoSet(S,x,z,person){const wood=0x6b4a2f,dark=0x3d2a1c;
+  box(S,10,.35,4.2,wood,x,2.5,z);box(S,.4,2.3,3.8,dark,x-4.6,1.15,z);box(S,.4,2.3,3.8,dark,x+4.6,1.15,z);box(S,9.2,1.6,.2,dark,x,1.6,z-1.9);
+  box(S,1.6,1,.08,0x111a22,x-2,3.2,z-1.2);box(S,1.4,.08,.9,0xe9e6df,x+1.5,2.72,z);
+  box(S,2,1.1,2,0x1d1d1f,x,1.1,z-3.2);box(S,2,3,.4,0x1d1d1f,x,2.6,z-4.3);
+  if(person){const w=makeWorker({office:true,suit:0x1f2a36});w.position.set(x,0,z-3);S.add(w);}
+  for(const dx of[-3,3])box(S,1.3,.9,1.3,0x2b3a47,x+dx,1.1,z+3.2);
+  box(S,12,8,1.4,dark,x,4,z-9.5);for(let y=1.2;y<8;y+=1.7)box(S,11.6,.15,1.2,wood,x,y,z-9.3);
+  for(const [bx,by] of[[-4,2],[-1,2],[2.5,3.7],[-3,5.4],[1,5.4],[4,7.1]])box(S,1.6,1.3,.9,[0x9b2c2c,0x2c4f9b,0x3c7a4a][Math.abs(bx|0)%3],x+bx,by,z-9);
+  box(S,7,1.2,2.6,0x5a3b2a,x-6,.9,z+9);box(S,7,1.8,.6,0x5a3b2a,x-6,1.8,z+10.1);box(S,2.6,1.2,6,0x5a3b2a,x+1.5,.9,z+7.6);box(S,3.6,.2,2.6,0x8a6a4a,x-5,1.2,z+5.4);
+  plant(S,x+8,z+9);plant(S,x-10,z-6);}
 function plant(S,x,z){cyl(S,.7,.55,1.2,0x8a7a66,x,.6,z,{},12);sph(S,1.1,0x3f7f4a,x,1.9,z);sph(S,.8,0x4f9a5a,x+.4,2.6,z+.2);}
-INT.office={title:'4층 사무실',short:'4층 복도',eyebrow:'행정동 4F · 사무 공간',lift:'office',specs:[['층','4F'],['부서','3개 실']],
-  cam:{t:[0,3,-4],yaw:.22,pitch:.7,dist:86,ymin:-.5,ymax:1.5,dmax:140},
+INT.office={title:'4층 사무실',short:'4층 복도',eyebrow:'행정동 4F · 사무 공간',lift:'office',specs:[['층','4F'],['구성','대표이사실 · 3개 실']],
+  cam:{t:[-8,3,-4],yaw:.12,pitch:.72,dist:124,ymin:-.5,ymax:1.5,dmax:180},
   doors:Object.keys(ORG).map(k=>({to:k,p:[ROOM_X[k],11.6,4.4]})),
   spots:[
-    {t:'엘리베이터 홀',d:'3층 제어실과 4층 사무실을 오가는 엘리베이터입니다. 설명창의 층 버튼으로도 이동할 수 있어요.',p:[-44,4,13],dist:40},
+    {t:'엘리베이터 홀',d:'3층 제어실과 4층 사무실을 오가는 엘리베이터입니다. 설명창의 층 버튼으로도 이동할 수 있어요.',p:[56,4,13],dist:40},
     ...Object.keys(ORG).map(k=>({t:ORG[k].name,d:ORG[k].intro+' 문 위 노란 버튼을 누르면 들어갑니다.',p:[ROOM_X[k],4,-10],dist:44})),
   ],
-  build(c){const S=c.S;room(c,104,52,13);
-    box(S,104,.05,14,0x6d7a86,0,.03,13);
-    for(let x=-46;x<=46;x+=6.6){box(S,5.6,6,.2,0x9fd3ef,x,7,-25.9,{emissive:0x9fd3ef,ei:.25});}
-    for(const x of[-40,-13.5,13.5,40])box(S,.4,13,30,0xe6e8ea,x,6.5,-11);
+  build(c){const S=c.S;room(c,136,52,13);box(S,.6,13,52,0xb6c0c8,68.3,6.5,0);
+    box(S,136,.05,14,0x6d7a86,0,.03,13);
+    for(let x=-62;x<=62;x+=6.6){box(S,5.6,6,.2,0x9fd3ef,x,7,-25.9,{emissive:0x9fd3ef,ei:.25});}
+    for(const x of[-40.5,-13.5,13.5,40.5])box(S,.4,13,30,0xe6e8ea,x,6.5,-11);
     for(const k of Object.keys(ORG)){const cx=ROOM_X[k];
       for(const s of[-1,1]){box(S,10.5,13,.15,0x9fd3ef,cx+s*7.75,6.5,4,{opacity:.22,rough:.1});box(S,10.5,.8,.18,0xf4f6f7,cx+s*7.75,4.6,4);}
       for(const dx of[-2.5,2.5,-13,13])box(S,.3,13,.3,0x8a96a0,cx+dx,6.5,4);
       box(S,5,.4,.3,0x8a96a0,cx,9.4,4);
       signBox(S,ORG[k].name,'NARAE ENERGY SERVICE',cx,10.8,4.2,6,1.5,'#14324d','#ffffff');
       box(S,.2,1.5,.2,ORG[k].color,cx-3.1,10.8,4.2);
+      if(ORG[k].ceo){ceoSet(S,cx,-12,true);continue;}
       deskIsland(S,cx-5,-9,3,true,k.length);deskIsland(S,cx+6,-18,2,true,k.length+2);plant(S,cx+10,-23);}
-    for(const z of[8,17]){box(S,.25,8,4.2,0xb8c2ca,-51.7,4,z,{metal:.6,rough:.3});box(S,.2,1,1.2,0x111a22,-51.6,8.8,z);}
-    signBox(S,'4F','',-51.6,10.6,12.5,2,1,'#14324d','#ffc233',PI/2);
-    for(const x of[-30,0,30]){box(S,5,1,1.6,0x6b7a86,x,.9,17.5);plant(S,x+4,18);}
-    const w=makeWorker({office:true,suit:0x4d5d6c});w.position.set(-38,0,12);w.rotation.y=-1.2;S.add(w);
+    for(const z of[8,17]){box(S,.25,8,4.2,0xb8c2ca,67.7,4,z,{metal:.6,rough:.3});box(S,.2,1,1.2,0x111a22,67.6,8.8,z);}
+    signBox(S,'4F','',67.6,10.6,12.5,2,1,'#14324d','#ffc233',-PI/2);
+    for(const x of[-40,-13,14,40]){box(S,5,1,1.6,0x6b7a86,x,.9,17.5);plant(S,x+4,18);}
+    const w=makeWorker({office:true,suit:0x4d5d6c});w.position.set(52,0,12);w.rotation.y=1.2;S.add(w);
   }};
 function officeRoom(key){const o=ORG[key];const n=o.teams.length;const xs=o.teams.map((_,i)=>(i-(n-1)/2)*17);
   return{title:o.name,short:o.name,eyebrow:'행정동 4F · '+o.name,parent:'office',note:'팀 역할 문구는 예시예요. 실제 내용을 주시면 바꿔 넣을게요.',specs:[['위치','행정동 4층'],['팀','예시 '+n+'개']],
@@ -1080,7 +1185,17 @@ function officeRoom(key){const o=ORG[key];const n=o.teams.length;const xs=o.team
       box(S,6,2.4,3,0xcfc6b8,-18,1.2,14);box(S,1.5,.95,.08,0x111a22,-18,3,13.2);
       plant(S,26,-17);plant(S,-26,-17);plant(S,26,17);
     }};}
-for(const k of Object.keys(ORG))INT[k]=officeRoom(k);
+for(const k of Object.keys(ORG))if(!ORG[k].ceo)INT[k]=officeRoom(k);
+INT.room_ceo={title:'대표이사실',short:'대표이사실',eyebrow:'행정동 4F · 대표이사실',parent:'office',note:'소개 문구는 예시예요. 실제 내용을 주시면 바꿔 넣을게요.',specs:[['위치','행정동 4층 서쪽 끝'],['구성','집무 · 접견']],
+  cam:{t:[0,3,0],yaw:.3,pitch:.6,dist:58,ymin:-.5,ymax:1.55,dmax:100},
+  spots:[{t:'대표이사실',d:'회사 경영을 총괄하는 대표이사의 집무 공간이에요. (예시 문구)',p:[0,8.5,-17.5],dist:44},{t:'집무 공간',d:'결재와 업무를 보는 책상이에요. 뒤쪽 서가에는 회사 연혁 자료와 도서가 있어요. (예시 문구)',p:[-4,3,-4],dist:28},{t:'접견 공간',d:'손님을 맞이하고 회의하는 소파와 테이블이에요. (예시 문구)',p:[-8,2,10],dist:28}],
+  build(c){const S=c.S;room(c,48,40,12);
+    for(let z=-14;z<=14;z+=7)box(S,.2,6,5.2,0x9fd3ef,-23.6,6.5,z,{emissive:0x9fd3ef,ei:.25});
+    box(S,48,.04,40,0x5c4635,0,.04,0,{rough:.9});box(S,26,.06,16,0x8a2f2f,-4,.08,4,{rough:1});
+    box(S,22,5.2,.3,0x14324d,0,8.5,-19.6);signBox(S,'대표이사실','NARAE ENERGY SERVICE',0,8.5,-19.4,16,4,'#14324d','#ffffff');box(S,22,.4,.32,0xc9a45c,0,5.6,-19.6);
+    ceoSet(S,-4,-2,true);
+    for(const z of[-10,6])box(S,.2,4,6,0x2b3a47,23.7,5,z);mesh(new THREE.PlaneGeometry(5.6,3.6),new THREE.MeshBasicMaterial({color:0x6c8fb0}),S,23.55,5,-10,false).rotation.y=-PI/2;
+  }};
 
 /* ---------- 정압기 ---------- */
 INT.gov={title:'정압기',eyebrow:'Governor Station · 연료 공급',outdoor:true,real:true,specs:[['공급 압력','35 bar(g)'],['기능','정압·계량·여과'],['안전장치','SSV·방출밸브']],
@@ -1406,7 +1521,7 @@ INT.trench={title:'이중보온관 공사',eyebrow:'열수송관 매설 · 초�
   }};
 
 /* ---------- 수요처 아파트 · 지하 기계실 (초안) ---------- */
-INT.demand={title:'지하 기계실',eyebrow:'수요처 아파트 · 지하 1층',outdoor:true,
+INT.demand={title:'지역난방 기계실',eyebrow:'수요처 아파트 · 지하 1층 · 지역난방',outdoor:true,lift:'demand',liftSet:'demand',
   note:'나래에너지서비스 기계실 P&ID를 바탕으로 보기 쉽게 단순화했어요. 표시 온도는 대표값이고 고객별로 다르게 운영될 수 있어요. 배관 색은 물 온도(빨강 뜨거움 → 노랑 → 파랑 차가움)를 나타내요.',
   specs:[['1차 공급','115℃'],['1차 환수','35~55℃'],['난방','60 / 45℃'],['급탕','55℃']],
   cam:{t:[-2,-8,0],yaw:.42,pitch:.42,dist:92,ymin:-1.1,ymax:1.4,pmin:.02,dmax:170},
@@ -1487,6 +1602,102 @@ INT.demand={title:'지하 기계실',eyebrow:'수요처 아파트 · 지하 1층
     tag(c,'지상 · 아파트',[20,3,6],'#93a9bb');tag(c,'계단',[26,-6,15],'#93a9bb');
   }};
 
+
+/* ---------- 수요처 · 지역냉방 (흡수식 냉동기) ---------- */
+INT.cooling={title:'지역냉방 기계실',eyebrow:'수요처 아파트 · 지하 1층 · 지역냉방',lift:'cooling',liftSet:'demand',
+  note:'나래에너지서비스 지역냉방 자료(흡수식 냉동기 원리 · 2단 흡수식 냉동기 외형)를 바탕으로 보기 쉽게 단순화했어요. 온도·압력은 대표값이에요.',
+  specs:[['구동 열원','지역난방수 95℃↑'],['냉수','13 → 8℃'],['냉매','물'],['흡수제','리튬브로마이드']],
+  extra:'<div class="legend">'+[['#ff4d4d','지역난방 온수 (95℃ → 55℃)'],['#3aa0ff','냉각수 (31℃ → 36.5℃)'],['#3ddc84','냉수 (13℃ → 8℃)'],['#eaf6ff','수증기 (냉매)'],['#7fe0ff','물 (냉매)'],['#ffd23f','묽은 흡수액'],['#ff8a3d','진한 흡수액']].map(([c,t])=>`<span style="--c:${c}"><i></i>${t}</span>`).join('')+'</div>',
+  cam:{t:[2,10,0],yaw:.3,pitch:.36,dist:118,ymin:-.6,ymax:1.4,dmax:170},
+  spots:[
+    {t:'지역냉방이란?',dist:118,d:'발전소에서 보내준 95℃ 이상의 지역난방 온수로 시원한 냉수를 만들어 건물에 공급하는 중앙 냉방이에요. 전기로 압축기를 돌리는 에어컨 대신 열로 냉방하고, 냉매도 프레온 대신 물을 써요. 여름에 남는 지역난방 열을 쓰니 전력 피크도 줄여요.',p:[2,12,0],dist:118},
+    {t:'흡수식 냉동기 원리 모형',d:'왼쪽은 원리를 보여주는 단면 모형이에요. 통 4개(증발기 · 흡수기 · 재생기 · 응축기)가 진공으로 이어져 있고, 물(냉매)과 리튬브로마이드 용액(흡수제)이 그 사이를 돌아요. ① → ② → ③ → ④ 순서로 따라가 보세요.',p:[-21,12,0],dist:62},
+    {t:'① 증발기 · 냉수 만들기',d:'통 안이 거의 진공(약 6.8mmHg)이라 물이 4~5℃에서 끓어요. 위에서 뿌린 물(냉매)이 초록 관 위에서 증발하면서 관 속 물의 열을 빼앗아, 건물에서 돌아온 13℃ 물이 8℃ 냉수가 돼요. 물이 증발할 때 시원해지는 원리예요.',p:[-30,6,0],dist:30},
+    {t:'② 흡수기 · 수증기 빨아들이기',d:'증발기에서 생긴 수증기를 진한 리튬브로마이드 용액이 스펀지처럼 빨아들여요. 그래서 증발기가 계속 진공으로 유지되고 물이 계속 끓을 수 있어요. 흡수할 때 생기는 열은 파란 냉각수 관이 가져가요.',p:[-12,6,0],dist:30},
+    {t:'③ 재생기 · 지역난방 열로 되살리기',d:'수증기를 먹어 묽어진 용액을 펌프로 재생기로 올려, 95℃ 지역난방 온수로 끓여요. 물만 수증기로 빠져나가고 용액은 다시 진해져 흡수기로 돌아가요. 열을 준 지역난방수는 55℃로 발전소에 돌아가요. 지역냉방의 연료가 바로 이 열이에요.',p:[-12,17,0],dist:30},
+    {t:'④ 응축기 · 다시 물로',d:'재생기에서 나온 수증기를 냉각수로 식혀 다시 물로 만들어요. 이 물이 증발기로 내려가 다시 냉매로 쓰여요. 이렇게 물과 용액이 계속 돌면서 냉수를 만들어요.',p:[-30,17,0],dist:30},
+    {t:'열교환기 · 용액 펌프',d:'재생기에서 나온 뜨거운 진한 용액(약 80℃)과 흡수기에서 올라가는 차가운 묽은 용액(약 34℃)이 열을 주고받아요. 미리 데우고 미리 식혀서 지역난방 열을 아껴 써요.',p:[2,9,0],dist:30},
+    {t:'냉각탑 · 냉각수',d:'흡수기와 응축기에서 모은 열은 냉각수(31℃ → 36.5℃)에 실려 옥상 냉각탑으로 가서 공기 중으로 버려져요.',p:[-36,6,-15],dist:40},
+    {t:'실내 냉방',d:'8℃ 냉수가 각 세대 팬코일로 가서 바람을 시원하게 만들고, 12~13℃로 데워져 냉동기로 돌아와요. 건물 안 냉방 배관은 이렇게 닫힌 순환이에요.',p:[-36,6,13],dist:36},
+    {t:'2단 흡수식 냉동기 · 실제 외형',d:'오른쪽이 수요처에 실제로 설치되는 중온수 2단 흡수식 냉동기예요. 원리 모형의 통들이 한 덩어리로 합쳐져 있어요. 가운데 흡수기·증발기, 위쪽 응축기, 분홍색이 재생기예요.',p:[36,10,0],dist:74},
+    {t:'제1 · 제2재생기와 보조사이클',d:'2단 흡수식은 지역난방 온수의 열을 두 번 나눠 써요. 95℃ 온수가 먼저 제1재생기(고온)를 데우고, 조금 식은 온수가 보조재생기를 한 번 더 데워 55℃까지 열을 뽑아내요. 보조재생기 · 보조흡수기 · 제2재생기로 이어지는 보조사이클 덕분에 낮은 온도의 열까지 쓸 수 있어요.',p:[24,12,0],dist:36},
+    {t:'펌프 · 추기장치',d:'아래쪽에는 냉매펌프 · 희석액펌프 · 중간액펌프가 물과 용액을 돌리고, 추기펌프는 통 안에 섞여 든 공기를 빼서 진공을 지켜요. 앞쪽 동그란 창은 흡수기 점검창이에요.',p:[34,2,5],dist:32},
+  ],
+  build(c){const S=c.S;room(c,112,56,26);
+    const fl=(pts,col,o)=>flowO(c,pts,col,Object.assign({gap:1.4,speed:5,r:.32},o||{}));
+    const glass=new THREE.MeshStandardMaterial({color:0xd8e6ee,transparent:true,opacity:.16,roughness:.1,metalness:.1,side:THREE.DoubleSide,depthWrite:false});
+    const R=4.5,LEN=12;
+    const vessel=(x,y,liq,frac)=>{mesh(new THREE.CylinderGeometry(R,R,LEN,40,1,true),glass,S,x,y,0,false).rotation.x=PI/2;
+      for(const z of[-LEN/2,LEN/2]){const t=mesh(new THREE.TorusGeometry(R,.28,8,40),M(0x8a96a0,{metal:.5}),S,x,y,z);}
+      const a=Math.acos(1-2*frac);const sh=new THREE.Shape();sh.absarc(0,0,R*.95,-PI/2-a,-PI/2+a,false);sh.closePath();
+      const g=new THREE.ExtrudeGeometry(sh,{depth:LEN*.96,bevelEnabled:false,curveSegments:24});g.translate(0,0,-LEN*.48);
+      mesh(g,new THREE.MeshStandardMaterial({color:liq,transparent:true,opacity:.75,roughness:.2}),S,x,y,0,false);
+      for(const z of[-4,4])box(S,1,y-R,1.2,0x6b7782,x,(y-R)/2,z);};
+    const coil=(x,y,col,o)=>{const pts=[];for(let k=0;k<=6;k++)pts.push([x+(k%2?2:-2),y,-5+k*10/6]);clad(S,pts,.32,null).traverse(m=>{if(m.isMesh)m.material=M(col,{metal:.4,rough:.35});});return pts;};
+    const C=[-30,17],G=[-12,17],E=[-30,6],A=[-12,6];
+    vessel(C[0],C[1],0x7fe0ff,.18);vessel(G[0],G[1],0xe5383b,.4);vessel(E[0],E[1],0x7fe0ff,.15);vessel(A[0],A[1],0xffd23f,.3);
+    box(S,9,2.6,6,glass,-21,19.6,0);box(S,9,2.6,6,glass,-21,8.6,0);
+    /* vapor: generator → condenser, evaporator → absorber */
+    for(const z of[-2,0,2]){fl([[-12,19,z],[-30,19,z]],0xffffff,{gap:1.6,r:.45,opacity:.6,overlay:false,speed:4});fl([[-30,8.4,z],[-12,8.4,z]],0xffffff,{gap:1.6,r:.45,opacity:.6,overlay:false,speed:4});}
+    /* coils */
+    const gc=coil(G[0],15,0xff4d4d),cc=coil(C[0],17.4,0x3aa0ff),ec=coil(E[0],5.8,0x3ddc84),ac=coil(A[0],5.6,0x3aa0ff);
+    /* 지역난방 온수 → 재생기 */
+    const hin=[[9,15,-9],[-14,15,-9],[-14,15,-5]],hout=[[-10,15,5],[-10,15,9],[9,15,9]];
+    clad(S,hin,.5,0xff4d4d);clad(S,hout,.5,0xff9a5a);fl([...hin,...gc,...hout],0xff8080,{r:.36});
+    /* 냉수 ↔ 세대 */
+    const ein=[[-38,5.8,-3],[-34,5.8,-5],[-32,5.8,-5]],eout=[[-28,5.8,5],[-28,5.8,8],[-38,5.8,8],[-38,5.8,13]];
+    clad(S,[[-38,5.8,13],[-38,3,13],[-38,3,-3],[-38,5.8,-3]],.45,0x6fd6a0);clad(S,ein,.45,0x6fd6a0);clad(S,eout,.45,0x3ddc84);
+    fl([[-38,5.8,13],[-38,3,13],[-38,3,-3],...ein,...ec,...eout],0x8af0b5,{r:.34});
+    box(S,6,3.4,2.4,0xeef1f3,-38,7.4,15.5);for(let k=0;k<5;k++)box(S,5.4,.12,.1,0x9aa6b0,-38,6.2+k*.5,16.75);box(S,6,.6,.2,0x2b3a47,-38,9.3,16.8);
+    for(let k=0;k<3;k++)flowO(c,[[-38+(k-1)*1.6,6,17],[-38+(k-1)*1.6,4,21]],0xcff6ff,{gap:.8,speed:3,r:.18,opacity:.8});
+    /* 냉각수: 냉각탑 → 흡수기 → 응축기 → 냉각탑 */
+    const tw=new THREE.Group();tw.position.set(-36,0,-18);S.add(tw);box(tw,8,7,6,0x9fb3bf,0,3.5,0,{opacity:.6});cyl(tw,2.6,2.6,1.6,0x7f939f,0,7.8,0,{},24);
+    const fan=new THREE.Group();fan.position.set(0,8.2,0);tw.add(fan);for(let k=0;k<3;k++){const b=box(fan,4.6,.1,.7,0x3b454e,0,0,0);b.rotation.y=k*PI/3;}c.spin.push({o:fan,axis:'y',v:5});
+    const cwin=[[-32,1.2,-16],[-14,1.2,-16],[-14,5.6,-16],[-14,5.6,-5]],cwmid=[[-10,5.6,5],[-10,5.6,10],[-21,5.6,10],[-21,17.4,10],[-28,17.4,10],[-28,17.4,5]],cwout=[[-32,17.4,-5],[-32,17.4,-11],[-36,17.4,-11],[-36,9,-16]];
+    const cwc=[...cc].reverse();
+    clad(S,cwin,.45,0x3aa0ff);clad(S,cwmid,.45,0x3a7bd5);clad(S,cwout,.45,0x2f63b0);
+    fl([...cwin,...ac,...cwmid,...cwc,...cwout],0x8fc8ff,{r:.34});
+    /* 냉매(물): 응축기 → 증발기 스프레이 */
+    pipe(S,[[-30,12.6,0],[-30,9.4,0]],.22,0x7fe0ff);pipe(S,[[-30,9.2,-5],[-30,9.2,5]],.18,0x9aa6b0);
+    fl([[-30,12.6,0],[-30,9.4,0]],0x7fe0ff,{gap:.8,r:.22,speed:3});
+    /* 흡수액 순환 */
+    const dil=[[-12,1.6,3],[-12,1.2,3],[-4,1.2,3],[2,1.2,3],[2,7.6,3],[2,12,3],[2,22.4,3],[-12,22.4,3],[-12,21,3]];
+    const str=[[-12,12.6,-3],[-12,12.2,-3],[3,12.2,-3],[3,7.6,-3],[-5,7.6,-3],[-5,11.6,-3],[-12,11.6,-3],[-12,9.4,-3]];
+    pipe(S,dil,.3,0xe6c22a);pipe(S,str,.3,0xd9762e);fl(dil,0xffe066,{r:.3});fl(str,0xffa060,{r:.3});
+    pipe(S,[[-12,9.2,-5],[-12,9.2,5]],.18,0x9aa6b0);
+    box(S,3.4,4.6,8.6,0x8a96a0,2.5,9.8,0,{metal:.4,rough:.4});for(let k=0;k<6;k++)box(S,3.5,.1,8.7,0x6b7782,2.5,7.8+k*.8,0);
+    pumpH(S,-6,3,0,.45);
+    /* droplets in evaporator (water) & absorber (solution) */
+    const N=160,mk=(col)=>{const m=new THREE.InstancedMesh(new THREE.SphereGeometry(.09,6,4),new THREE.MeshBasicMaterial({color:col}),N);m.frustumCulled=false;S.add(m);return m;};
+    const dE=mk(0x9fe8ff),dA=mk(0xffd23f),seed=[];for(let i=0;i<N;i++)seed.push([(Math.random()-.5)*7,(Math.random()-.5)*10,Math.random()]);const ob=new THREE.Object3D();
+    c.updates.push((dt,t)=>{for(const [m,x,y0,y1] of[[dE,-30,8.9,3.2],[dA,-12,8.9,4.4]]){for(let i=0;i<N;i++){const q=seed[i];ob.position.set(x+q[0]*.55,y0-((t*.8+q[2])%1)*(y0-y1),q[1]);ob.updateMatrix();m.setMatrixAt(i,ob.matrix);}m.instanceMatrix.needsUpdate=true;}});
+    tag(c,'① 증발기',[E[0]-2.6,E[1]+.6,6.6],'#3ddc84');tag(c,'② 흡수기',[A[0]-2.6,A[1]+.6,6.6],'#ffd23f');tag(c,'③ 재생기',[G[0]-2.6,G[1]+.6,6.6],'#ff4d4d');tag(c,'④ 응축기',[C[0]-2.6,C[1]+.6,6.6],'#3aa0ff');
+    tag(c,'수증기 →',[-21,21.6,0],'#eaf6ff');tag(c,'← 수증기',[-21,10.6,0],'#eaf6ff');tag(c,'약 6.8mmHg 진공',[-30,1.2,-7],'#93a9bb');
+    tag(c,'지역난방 95℃ →',[8,17,-9],'#ff4d4d');tag(c,'← 55℃ 발전소로',[8,17,9],'#ff9a5a');tag(c,'열교환기',[2.5,13,-4.6],'#93a9bb');tag(c,'용액 펌프',[-6,4.4,3],'#93a9bb');
+    tag(c,'진한 용액 80℃',[3,13.8,-3],'#ff8a3d');tag(c,'묽은 용액 34℃',[2,23.6,3],'#ffd23f');
+    tag(c,'냉각탑 (옥상)',[-36,11,-18],'#3aa0ff');tag(c,'냉각수 31℃',[-24,3,-16],'#3aa0ff');tag(c,'36.5℃',[-36,19,-11],'#2f63b0');
+    tag(c,'세대 팬코일 (실내 냉방)',[-38,10.6,15.5],'#3ddc84');tag(c,'냉수 8℃ →',[-34,7.6,8],'#3ddc84');tag(c,'← 13℃',[-38,4.6,0],'#6fd6a0');
+    /* ---- 실제 외형: 중온수 2단 흡수식 냉동기 ---- */
+    const X=34,body=0xdfe3e6,pink=0xe8a0a6,grey=0xc3c9ce,yel=0xf1d68a;
+    box(S,30,.8,12,0x56626d,X,.4,0);for(const [dx,dz] of[[-12,-4],[12,-4],[-12,4],[12,4]])box(S,1.4,2.6,1.4,0x6b7782,X+dx,2.1,dz);
+    box(S,16,9,9,body,X+3,8,0);mesh(new THREE.CylinderGeometry(4.5,4.5,16,32,1,false,PI/2,PI),M(body),S,X+3,3.5,0).rotation.z=PI/2;
+    box(S,5,17,8,body,X-9.5,11.5,0);
+    box(S,17,2.6,9.6,pink,X+3,13.6,0);box(S,10,3.4,9,grey,X+5,16.6,0);box(S,5,4,8.4,pink,X-9.5,22,0);
+    const panel=(w,h,col,x,y,z)=>{box(S,w,h,.2,col,x,y,z);for(const sx of[-1,1])for(const sy of[-1,1])sph(S,.14,0x6b7782,x+sx*(w/2-.4),y+sy*(h/2-.4),z+.12);};
+    panel(5,6.4,grey,X,8,4.6);panel(5,6.4,yel,X+6.2,8,4.6);panel(4.4,4.4,grey,X-9.5,14.4,4.1);panel(4.4,5,pink,X-9.5,7.4,4.1);panel(15.4,2,pink,X+3,13.6,4.9);
+    const flange=(x,y,z,r)=>{const d=mesh(new THREE.CylinderGeometry(r,r,.4,28),M(0xb8c0c6,{metal:.5}),S,x,y,z);d.rotation.x=PI/2;const t=mesh(new THREE.TorusGeometry(r*.8,.08,6,28),M(0x6b7782),S,x,y,z+.25);};
+    flange(X,9.2,4.8,1.3);flange(X,6.6,4.8,1.3);flange(X+6.2,9.2,4.8,1.1);flange(X+6.2,6.6,4.8,1.1);flange(X-9.5,14.4,4.3,1.3);flange(X+6,16.6,4.6,1.2);
+    {const a=V([X-9.5,14.4,4.5]),b=V([X+6,16.8,4.8]);const L=a.distanceTo(b);const m=mesh(new THREE.CylinderGeometry(.95,.95,L,20),M(0xb8c0c6,{metal:.5}),S,0,0,0);m.position.copy(a).add(b).multiplyScalar(.5);m.quaternion.setFromUnitVectors(UP,b.clone().sub(a).normalize());}
+    sph(S,.6,0xd62828,X+3,3.2,4.7);cyl(S,.5,.5,10,0x3a86ff,X+11,6,4.8,{},12);box(S,1.6,1.6,1.2,0x56626d,X+11,1.6,4.8);
+    for(const [dx,s] of[[-9.5,.5],[0,.45],[8,.45]])pumpH(S,X+dx,7,0,s);
+    clad(S,[[X+11.5,14,-2],[X+16,14,-2]],.55,0xff4d4d);clad(S,[[X+11.5,12,2],[X+16,12,2]],.55,0xff9a5a);clad(S,[[X+11.5,8,-2],[X+16,8,-2]],.5,0x3ddc84);clad(S,[[X+11.5,6,2],[X+16,6,2]],.5,0x6fd6a0);clad(S,[[X+5,18.3,0],[X+5,22,0],[X+16,22,0]],.5,0x3aa0ff);
+    tag(c,'응축기',[X+5,19,4.6],'#c3c9ce');tag(c,'제1재생기 (고온)',[X+3,15.4,5],'#e8a0a6');tag(c,'보조재생기',[X-9.5,24.6,4.2],'#e8a0a6');tag(c,'보조흡수기',[X-9.5,17,4.2],'#c3c9ce');tag(c,'제2재생기 (저온)',[X-9.5,10.4,4.2],'#e8a0a6');
+    tag(c,'흡수기',[X,11.8,4.8],'#c3c9ce');tag(c,'증발기',[X+6.2,11.8,4.8],'#f1d68a');tag(c,'흡수기 점검창',[X+3,4.4,4.8],'#93a9bb');tag(c,'트랩',[X+11,11.6,4.8],'#3a86ff');
+    tag(c,'구동온수 95℃ 입구',[X+16,15.4,-2],'#ff4d4d');tag(c,'55℃ 출구',[X+16,13.4,2],'#ff9a5a');tag(c,'냉수 8℃ 출구',[X+16,9.4,-2],'#3ddc84');tag(c,'13℃ 입구',[X+16,7.4,2],'#6fd6a0');tag(c,'냉각수',[X+16,23.4,0],'#3aa0ff');
+    signBox(S,'원리 단면 모형','흡수식 냉동기의 4개 통',-21,25,-27.6,14,3.5,'#14324d','#ffffff');signBox(S,'중온수 2단 흡수식 냉동기','실제 외형',X,25,-27.6,16,3.5,'#14324d','#ffffff');
+    const w=makeWorker();w.position.set(8,0,14);w.rotation.y=-.6;S.add(w);
+  }};
+
 /* ---------- build-on-demand + enter/exit ---------- */
 const builtInt={};
 function getInterior(id){
@@ -1499,11 +1710,17 @@ function getInterior(id){
 }
 function hideSiteUI(){$('#promoAsk').hidden=true;siteLabels.forEach(l=>l.el.hidden=true);flowTags.forEach(l=>l.el.style.visibility='hidden');document.querySelectorAll('.site-ui').forEach(e=>e.hidden=true);$('#prompt').hidden=true;$('#joy').hidden=true;state.near=null;}
 function showSiteUI(){siteLabels.forEach(l=>l.el.hidden=false);document.querySelectorAll('.site-ui').forEach(e=>e.hidden=false);$('#joy').hidden=!isTouch;}
+const PICKS={
+  admin:{eye:'행정동 · 엘리베이터',title:'몇 층으로 갈까요?',opts:[['office','4F','사무실','대표이사실 · 경영지원실 · 고객지원실 · 사업운영실'],['ccr','3F','중앙제어실','발전소 통합 감시·제어']]},
+  demand:{eye:'수요처 아파트 · 지하 기계실',title:'무엇을 볼까요?',opts:[['demand','난방','지역난방','115℃ 온수로 난방과 온수(급탕)를 만들어요'],['cooling','냉방','지역냉방','온수의 열로 냉수를 만드는 흡수식 냉동기']]}};
+const LIFTS={admin:{label:'엘리베이터',items:[['office','4F','사무실'],['ccr','3F','제어실']]},demand:{label:'보기',items:[['demand','난방','지역난방'],['cooling','냉방','지역냉방']]}};
 function enterStation(st){
+  state.fac=null;
   if(state.mode!=='site')return;
   if(state.flow)toggleFlow(false);
   state.auto=null;beacon.visible=false;
-  if(st.id==='admin'){state.mode='pick';state.pickSt=st;$('#prompt').hidden=true;state.near=null;$('#floorPick').hidden=false;$('#floorPick [data-f]').focus();return;}
+  if(PICKS[st.id]){const P=PICKS[st.id];state.mode='pick';state.pickSt=st;$('#prompt').hidden=true;state.near=null;$('#fpEye').textContent=P.eye;$('#fpTitle').textContent=P.title;
+    $('#fpBtns').innerHTML=P.opts.map(([k,b,n,sm])=>`<button type="button" data-f="${k}"><b>${b}</b><span>${n}<small>${sm}</small></span></button>`).join('');$('#floorPick').hidden=false;$('#floorPick [data-f]').focus();return;}
   openInterior(st.id,st);
 }
 function closePick(){$('#floorPick').hidden=true;if(state.mode==='pick')state.mode='site';}
@@ -1514,7 +1731,7 @@ function openInterior(id,st){
   const mob=innerWidth<=760?1.4:1;
   I.goal.t.copy(V(I.def.cam.t));I.goal.yaw=I.def.cam.yaw;I.goal.pitch=I.def.cam.pitch;I.goal.dist=I.def.cam.dist*mob;
   I.cur.t.copy(I.goal.t);I.cur.yaw=I.goal.yaw+.6;I.cur.pitch=Math.min(1.3,I.goal.pitch+.3);I.cur.dist=I.goal.dist*1.6;
-  activeScene=I.S;activeCam=I.cam;
+  activeScene=I.S;activeCam=I.cam;Snd.scene(id);
   document.body.classList.add('interior');
   $('#ibar').hidden=false;$('#ibTitle').textContent=`${st.idx+1}. ${st.name}${I.def.title!==st.name?' · '+I.def.title:''}`;$('#ibSub').textContent=I.def.eyebrow;
   $('#exitBtn').textContent=I.def.parent?`← ${INT[I.def.parent].short||INT[I.def.parent].title}로`:'← 부지로 나가기';
@@ -1529,13 +1746,13 @@ function exitInterior(){
   if(state.mode!=='interior')return;
   const I=state.interior;
   if(I.def.parent){openInterior(I.def.parent,I.st);return;}
-  state.mode='site';state.interior=null;clearLabels(intLabels);
+  state.mode='site';state.interior=null;clearLabels(intLabels);Snd.scene('site');placeAtDoor(I.st);
   activeScene=site;activeCam=camS;
   document.body.classList.remove('interior');
   showSiteUI();$('#ibar').hidden=true;
   setSheet(false);followCam();
   const nxt=STATIONS.find(s=>!visited.has(s.id));
-  toast(nxt?`다음 견학지: ${nxt.name} — 코스에서 누르면 걸어가요`:'모든 견학지를 둘러봤어요. 에너지 흐름(F)으로 전체를 다시 보세요',3.2);
+  toast(nxt?`다음 견학지: ${nxt.name} — 건물을 누르면 바로 들어가요`:'모든 견학지를 둘러봤어요. 에너지 흐름(F)으로 전체를 다시 보세요',3.2);
 }
 function renderIntSheet(){
   const I=state.interior,d=I.def;
@@ -1543,7 +1760,7 @@ function renderIntSheet(){
   $('#shTitle').textContent=d.title;
   $('#shSpecs').innerHTML=d.specs.map(([k,v])=>`<div class="spec"><small>${k}</small><b>${v}</b></div>`).join('');
   let ex='';
-  if(d.lift)ex+=`<div class="lift" role="group" aria-label="엘리베이터"><span>엘리베이터</span>${[['office','4F','사무실'],['ccr','3F','제어실']].map(([k,f,n])=>`<button type="button" data-lift="${k}" ${k===d.lift?'aria-current="true"':''}><b>${f}</b> ${n}</button>`).join('')}</div>`;
+  if(d.lift){const LS=LIFTS[d.liftSet||'admin'];ex+=`<div class="lift" role="group" aria-label="${LS.label}"><span>${LS.label}</span>${LS.items.map(([k,f,n])=>`<button type="button" data-lift="${k}" ${k===d.lift?'aria-current="true"':''}><b>${f}</b> ${n}</button>`).join('')}</div>`;}
   if(d.doors)ex+=`<div class="rooms">${d.doors.map(o=>`<button type="button" data-room="${o.to}" style="--c:${ORG[o.to].color}"><i></i>${ORG[o.to].name} 들어가기 →</button>`).join('')}</div>`;
   if(d.extra)ex+=d.extra;
   if(d.draft)ex+=`<p class="note">${d.draft}</p>`;
@@ -1570,29 +1787,85 @@ function setSpot(i,silent,noCam){
   intLabels.forEach(l=>{if(l.i!=null)l.el.classList.toggle('on',l.i===i);});
 }
 $('#shList').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;if(b.dataset.s!=null)setSpot(+b.dataset.s);else if(b.dataset.k!=null)focusStep(+b.dataset.k);});
-$('#shPrev').addEventListener('click',()=>{if(state.mode==='interior')setSpot(state.spot-1);else focusStep(Math.max(0,state.focusStep-1));});
-$('#shNext').addEventListener('click',()=>{if(state.mode==='interior')setSpot(state.spot+1);else focusStep(state.focusStep>=FLOW_STEPS.length-1?-1:state.focusStep+1);});
-$('#shClose').addEventListener('click',()=>toggleFlow(false));
+$('#shPrev').addEventListener('click',()=>{if(state.fac)return;if(state.mode==='interior')setSpot(state.spot-1);else focusStep(Math.max(0,state.focusStep-1));});
+$('#shNext').addEventListener('click',()=>{if(state.fac){closeFac();return;}if(state.mode==='interior')setSpot(state.spot+1);else focusStep(state.focusStep>=FLOW_STEPS.length-1?-1:state.focusStep+1);});
+$('#shClose').addEventListener('click',()=>{if(state.fac)closeFac();else toggleFlow(false);});
 $('#exitBtn').addEventListener('click',exitInterior);
 $('#enterBtn').addEventListener('click',()=>{if(state.near)enterStation(state.near);});
 $('#flowBtn').addEventListener('click',()=>toggleFlow());
 $('#viewBtn').addEventListener('click',()=>toggleOverview());
 
 /* flow tags on site */
-[['천연가스 · KOGAS →',[-100,6,62],'#f2b705'],['전력계통으로',[-140,24,14],'#3fa9f5'],['땅속 이중보온관 · 공급(오른쪽) / 회수',[-122,5,100],'#ff3b3b'],['배기가스 연기',[-46,74,-76],'#e8e8e8'],['냉각수',[13,14,-62],'#2ec4b6'],['추출 증기 → DH',[4,13,6],'#ff4d8d'],
- ['가스터빈',[-55,20,-20],'#ff7a2f'],['발전기',[-55,20,5],'#3fa9f5'],['증기터빈',[-55,22,20],'#e5383b'],['과열기 · 증발기 · 절탄기',[-50,30,-58],'#e08a2e'],['① 방산탑',[17.5,9,72],'#f2b705'],['② 정압기',[-8,7,82],'#f2b705'],['③ 가스 설비',[-70,11,85],'#f2b705'],['순수(데미워터) 탱크',[89,18,-42],'#9be7f5'],['축열조 (빨강 고온 · 파랑 저온)',[110,36,-99],'#a66bff']]
+[['소음측정 전광판',[-134,11,40],'#ff3b30'],['천연가스 · KOGAS →',[-100,6,62],'#f2b705'],['전력계통으로',[-140,24,14],'#3fa9f5'],['땅속 이중보온관 · 공급(오른쪽) / 회수',[-122,5,100],'#ff3b3b'],['배기가스 연기',[-46,74,-76],'#e8e8e8'],['냉각수',[13,14,-62],'#2ec4b6'],['추출 증기 → DH',[4,13,6],'#ff4d8d'],
+ ['가스터빈',[-55,20,-20],'#ff7a2f'],['발전기',[-55,20,5],'#3fa9f5'],['증기터빈',[-55,22,20],'#e5383b'],['과열기 · 증발기 · 절탄기',[-50,30,-58],'#e08a2e'],['① 방산탑',[17.5,9,72],'#f2b705'],['② 정압기',[-8,7,82],'#f2b705'],['③ NG압축기동',[-70,11,85],'#f2b705'],['연료가스가열기',[-74,11,-50],'#f2b705'],['SCR/YPES 환원제',[-30,14,-88],'#7ee081'],['PLB 정압관리',[38,8,-97],'#ffd23f'],['첨두부하보일러',[57,29,-97],'#ff6a3d'],['수처리 → 순수',[61,7,4],'#9be7f5'],['순수(데미워터) 탱크',[89,18,-42],'#9be7f5'],['축열조 (빨강 고온 · 파랑 저온)',[110,36,-99],'#a66bff']]
   .forEach(([h,p,c])=>{const L=makeLabel(flowTags,h,p,'tag stream-tag',null,`--c:${c}`);L.el.style.visibility='hidden';});
 
+/* ================= sound ================= */
+const SFX_FILES={bg_site:'sfx/bg_site.mp3',power:'sfx/power.mp3',hrsg:'sfx/hrsg.mp3',tower:'sfx/tower.mp3',pumps:'sfx/pumps.mp3',gas:'sfx/gas.mp3',control:'sfx/control.mp3',construction:'sfx/construction.mp3'};
+const SCENE_SFX={site:[null,0],gov:['gas',.55],power:['power',.7],hrsg:['hrsg',.7],tower:['tower',.65],dh:['pumps',.6],storage:['pumps',.3],trench:['construction',.6],demand:['pumps',.55],cooling:['pumps',.5],ccr:['control',.5],office:['control',.3],room_mgmt:['control',.3],room_cs:['control',.3],room_ops:['control',.3],room_ceo:['control',.18]};
+const Snd={ctx:null,master:null,on:true,cur:null,tracks:{},duck:1,mus:null,
+  init(){if(this.ctx)return;try{const AC=window.AudioContext||window.webkitAudioContext;this.ctx=new AC();}catch(e){return;}
+    this.master=this.ctx.createGain();this.master.gain.value=this.on?.9:0;this.master.connect(this.ctx.destination);
+    const n=this.ctx.sampleRate*3;this.white=this.ctx.createBuffer(1,n,this.ctx.sampleRate);this.brown=this.ctx.createBuffer(1,n,this.ctx.sampleRate);
+    const w=this.white.getChannelData(0),b=this.brown.getChannelData(0);let last=0;for(let i=0;i<n;i++){w[i]=Math.random()*2-1;last=(last+.02*w[i])/1.02;b[i]=last*3.5;}},
+  noise(kind,type,freq,q,gain,out){const c=this.ctx,src=c.createBufferSource();src.buffer=kind==='w'?this.white:this.brown;src.loop=true;src.playbackRate.value=.9+Math.random()*.2;
+    const f=c.createBiquadFilter();f.type=type;f.frequency.value=freq;f.Q.value=q||.7;const g=c.createGain();g.gain.value=gain;src.connect(f);f.connect(g);g.connect(out);src.start();return g;},
+  tone(type,freq,gain,out){const c=this.ctx,o=c.createOscillator();o.type=type;o.frequency.value=freq;const g=c.createGain();g.gain.value=gain;o.connect(g);g.connect(out);o.start();return {o,g};},
+  lfo(param,rate,depth){const c=this.ctx,o=c.createOscillator();o.frequency.value=rate;const g=c.createGain();g.gain.value=depth;o.connect(g);g.connect(param);o.start();},
+  synth(id,out){ // procedural fallback until ElevenLabs files are present
+    switch(id){
+      case 'bg_site':{const w=this.noise('b','lowpass',380,.5,.5,out);this.lfo(w.gain,.08,.25);this.tone('sine',58,.03,out);this.noise('w','bandpass',3200,4,.015,out);break;}
+      case 'power':{this.noise('b','lowpass',260,.6,.9,out);this.tone('sine',52,.12,out);this.tone('sine',2380,.012,out);this.tone('sine',4760,.005,out);this.noise('w','bandpass',1300,3,.12,out);break;}
+      case 'hrsg':{this.noise('b','lowpass',650,.6,1.1,out);this.noise('w','bandpass',220,1.2,.25,out);this.tone('sine',41,.1,out);break;}
+      case 'tower':{const r=this.noise('w','highpass',1400,.5,.22,out);this.lfo(r.gain,.13,.04);const wh=this.noise('b','lowpass',300,.8,.7,out);this.lfo(wh.gain,.6,.25);break;}
+      case 'pumps':{for(const [f,g] of[[50,.09],[100,.06],[150,.03],[300,.012]])this.tone('sine',f,g,out);this.noise('w','bandpass',800,1.5,.08,out);this.noise('b','lowpass',200,.7,.3,out);break;}
+      case 'gas':{this.noise('w','highpass',3800,.6,.12,out);this.noise('w','bandpass',6500,2,.06,out);this.tone('sine',100,.03,out);break;}
+      case 'control':{this.noise('b','lowpass',900,.5,.18,out);this.tone('sine',120,.008,out);this.tone('sine',60,.01,out);break;}
+      case 'construction':{const e=this.tone('sawtooth',33,.0,out);const f=this.ctx.createBiquadFilter();f.type='lowpass';f.frequency.value=180;e.g.disconnect();e.g.connect(f);f.connect(out);e.g.gain.value=.18;this.lfo(e.g.gain,7,.1);this.noise('b','lowpass',500,.6,.4,out);break;}
+    }},
+  track(id){if(this.tracks[id])return this.tracks[id];const c=this.ctx,g=c.createGain();g.gain.value=0;g.connect(this.master);const t={g,ready:false};this.tracks[id]=t;
+    const startSynth=()=>{if(t.ready)return;t.ready=true;this.synth(id,g);};
+    fetch(SFX_FILES[id]).then(r=>{if(!r.ok)throw 0;return r.arrayBuffer();}).then(ab=>c.decodeAudioData(ab)).then(buf=>{if(t.ready)return;t.ready=true;const s=c.createBufferSource();s.buffer=buf;s.loop=true;s.connect(g);s.start();}).catch(startSynth);
+    return t;},
+  scene(key){if(!this.ctx)return;const sel=SCENE_SFX[key]||SCENE_SFX.site;const now=this.ctx.currentTime;
+    for(const [id,t] of Object.entries(this.tracks)){if(id!==sel[0]){t.g.gain.cancelScheduledValues(now);t.g.gain.setTargetAtTime(0,now,.35);}}
+    this.cur=key;if(!sel[0])return;const t=this.track(sel[0]);t.g.gain.cancelScheduledValues(now);t.g.gain.setTargetAtTime(sel[1]*this.duck,now,.5);},
+  setDuck(d){this.duck=d;if(this.cur)this.scene(this.cur);},
+  music(want){if(!this.ctx)return;const c=this.ctx;
+    if(!this.mus){const g=c.createGain();g.gain.value=0;g.connect(this.master);const m=this.mus={g,file:false,step:0,next:0,timer:0};
+      fetch('sfx/bgm.mp3').then(r=>{if(!r.ok)throw 0;return r.arrayBuffer();}).then(ab=>c.decodeAudioData(ab)).then(buf=>{m.file=true;clearInterval(m.timer);const s=c.createBufferSource();s.buffer=buf;s.loop=true;s.connect(g);s.start();}).catch(()=>{});
+      const rev=c.createDelay();rev.delayTime.value=.27;const fb=c.createGain();fb.gain.value=.28;const wet=c.createGain();wet.gain.value=.22;rev.connect(fb);fb.connect(rev);rev.connect(wet);wet.connect(g);m.fx=rev;}
+    const m=this.mus,now=c.currentTime;m.g.gain.cancelScheduledValues(now);m.g.gain.setTargetAtTime(want?.16*this.duck:0,now,want?1.2:.4);
+    if(want&&!m.file&&!m.timer){m.next=now+.1;m.timer=setInterval(()=>this.seq(),50);}
+    if(!want&&m.timer){clearTimeout(m.stop);m.stop=setTimeout(()=>{if(this.cur!=='site'||this.duck===0){clearInterval(m.timer);m.timer=0;}},2500);}},
+  note(t,f,dur,type,gain,dest,att){const c=this.ctx,o=c.createOscillator(),g=c.createGain();o.type=type;o.frequency.value=f;g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(gain,t+(att||.01));g.gain.exponentialRampToValueAtTime(.0001,t+dur);o.connect(g);g.connect(dest);o.start(t);o.stop(t+dur+.05);return g;},
+  seq(){const c=this.ctx,m=this.mus,spb=60/104/2; // 8th notes at 104 bpm
+    const hz=n=>440*Math.pow(2,(n-69)/12);
+    const PROG=[[60,64,67,72],[55,59,62,67],[57,60,64,69],[53,57,60,65]],BASS=[36,43,45,41];
+    const MEL=[76,null,74,72,null,74,76,null, 79,null,76,74,null,72,74,null, 72,null,76,null,74,72,69,null, 72,null,74,null,72,null,null,null];
+    while(m.next<c.currentTime+.25){const t=m.next,i=m.step%32,bar=(i/8)|0,pos=i%8,ch=PROG[bar];
+      if(pos===0){for(const n of ch.slice(0,3))this.note(t,hz(n),spb*8,'sine',.035,m.g,.5);this.note(t,hz(BASS[bar]),spb*3.5,'triangle',.11,m.g,.02);}
+      if(pos===4)this.note(t,hz(BASS[bar]+12),spb*2,'triangle',.07,m.g,.02);
+      const ar=ch[[0,1,2,3,2,1,2,3][pos]]+12;const ag=this.note(t,hz(ar),spb*1.6,'triangle',.028,m.g,.005);ag.connect(m.fx);
+      const mn=MEL[i];if(mn&&(m.step>>5)%2===1){const mg=this.note(t,hz(mn),spb*2.4,'sine',.05,m.g,.01);mg.connect(m.fx);}
+      if(pos%2===1){const s=c.createBufferSource();s.buffer=this.white;const f=c.createBiquadFilter();f.type='highpass';f.frequency.value=7000;const g=c.createGain();g.gain.setValueAtTime(.025,t);g.gain.exponentialRampToValueAtTime(.0001,t+.06);s.connect(f);f.connect(g);g.connect(m.g);s.start(t,Math.random()*2,.08);}
+      if(pos===0||pos===4){const k=c.createOscillator(),g=c.createGain();k.frequency.setValueAtTime(110,t);k.frequency.exponentialRampToValueAtTime(45,t+.12);g.gain.setValueAtTime(.12,t);g.gain.exponentialRampToValueAtTime(.0001,t+.18);k.connect(g);g.connect(m.g);k.start(t);k.stop(t+.2);}
+      m.next+=spb;m.step++;}},
+  toggle(on){this.on=on!=null?on:!this.on;if(this.ctx){this.master.gain.setTargetAtTime(this.on?.9:0,this.ctx.currentTime,.15);if(this.on&&this.ctx.state==='suspended')this.ctx.resume();}
+    const b=$('#soundBtn');b.setAttribute('aria-pressed',this.on);b.firstChild.nodeValue=this.on?'소리 켜짐':'소리 꺼짐';}};
+$('#soundBtn').addEventListener('click',()=>{Snd.init();Snd.toggle();if(!Snd.cur)Snd.scene(state.interior?state.interior.id:'site');});
+addEventListener('keydown',e=>{if(e.code==='KeyB'&&state.mode!=='boot'){Snd.init();Snd.toggle();if(!Snd.cur)Snd.scene(state.interior?state.interior.id:'site');}});
+
 /* ================= promo video ================= */
-const PROMO_SRC=''; // 홍보영상 파일을 받으면 여기에 연결
+const PROMO_SRC='promo.mp4';
 let promoAsked=false,promoT=0,promoTimer=0;
 function showPromoAsk(){promoAsked=true;$('#promoAsk').hidden=false;promoT=15;}
 function hidePromoAsk(){$('#promoAsk').hidden=true;promoT=0;}
-function openPromo(){if(state.mode!=='site')return;hidePromoAsk();state.mode='promo';$('#promo').hidden=false;const v=$('#promoVideo'),ph=$('#promoPh');
-  if(PROMO_SRC){ph.hidden=true;v.hidden=false;v.src=PROMO_SRC;v.currentTime=0;v.play().catch(()=>{});}
+function openPromo(){if(state.mode!=='site')return;hidePromoAsk();state.mode='promo';Snd.setDuck(0);$('#promo').hidden=false;const v=$('#promoVideo'),ph=$('#promoPh');
+  if(PROMO_SRC){ph.hidden=true;v.hidden=false;if(!v.getAttribute('src'))v.src=PROMO_SRC;try{v.currentTime=0;}catch(e){}v.play().catch(()=>{});}
   else{v.hidden=true;ph.hidden=false;const bar=ph.querySelector('.pv-bar');bar.style.animation='none';void bar.offsetWidth;bar.style.animation='';clearTimeout(promoTimer);promoTimer=setTimeout(closePromo,8000);}
   $('#promoClose').focus();}
-function closePromo(){clearTimeout(promoTimer);try{$('#promoVideo').pause();}catch(e){}$('#promo').hidden=true;if(state.mode==='promo')state.mode='site';}
+function closePromo(){clearTimeout(promoTimer);Snd.setDuck(1);try{$('#promoVideo').pause();}catch(e){}$('#promo').hidden=true;if(state.mode==='promo')state.mode='site';}
 $('#promoPlay').addEventListener('click',openPromo);$('#promoSkip').addEventListener('click',hidePromoAsk);$('#promoClose').addEventListener('click',closePromo);$('#promoVideo').addEventListener('ended',closePromo);$('#promoBtn').addEventListener('click',openPromo);
 
 /* ================= minimap ================= */
@@ -1637,7 +1910,7 @@ function updateSite(dt,T){
   let speed=0;const SPD=24;
   if(mag>.08){
     if(state.auto){state.auto=null;beacon.visible=false;}
-    if(state.overview)toggleOverview(false);if(state.flow)toggleFlow(false);
+    if(state.overview)toggleOverview(false);if(state.flow)toggleFlow(false);if(state.fac)closeFac();
     const y=camSCur.yaw;const fx=-Math.sin(y),fz=-Math.cos(y),rx=Math.cos(y),rz=-Math.sin(y);
     const mvx=(fx*iz+rx*ix)*SPD*dt,mvz=(fz*iz+rz*ix)*SPD*dt;
     const p=player.position;const nx=p.x+mvx,nz=p.z+mvz;
@@ -1654,9 +1927,10 @@ function updateSite(dt,T){
   let near=null,nd2=1e9;if(state.mode==='site'&&!state.auto&&!state.flow)for(const st of STATIONS){const d=Math.hypot(player.position.x-st.door[0],player.position.z-st.door[1]);if(d<7&&d<nd2){nd2=d;near=st;}}
   if(near!==state.near){state.near=near;const pr=$('#prompt');pr.hidden=!near;if(near){$('#enterName').textContent=near.name;$('#enterSub').textContent=near.sub;}}
   if(state.mode==='boot'){camSGoal.yaw+=dt*.06;}
-  else if(!state.flow&&!state.overview){camSGoal.t.set(player.position.x,2,player.position.z);}
+  else if(!state.flow&&!state.overview&&!state.fac){camSGoal.t.set(player.position.x,2,player.position.z);}
   camLerp(camSCur,camSGoal,reduceMotion?1:1-Math.exp(-dt*4.5));camApply(camS,camSCur);
   updateOccluders(dt);
+  noiseAcc+=dt;if(noiseAcc>1.2){noiseAcc=0;noiseDb=clamp(noiseDb+(Math.random()-.5)*.8+(51-noiseDb)*.2,48.5,54);drawNoise();}
   siteFans.forEach((f,i)=>f.rotation.y+=dt*(4+i*.07));
   siteSpin.forEach(g=>g.rotation.z+=dt*5);
   puffs.forEach(p=>{const f=(T*.18+p.userData.ph)%1;p.position.y=14+f*16;p.scale.setScalar(.6+f*1.6);p.material.opacity=.3*(1-f);});
@@ -1684,22 +1958,22 @@ function frame(now){
   const dt=Math.min(.05,(now-last)/1000);last=now;T+=dt;
   if(toastT>0){toastT-=dt;if(toastT<=0)$('#toast').classList.add('hide');}
   if(state.mode==='interior'){updateInterior(dt,T);renderer.render(activeScene,activeCam);updateLabels(intLabels,activeCam);}
-  else{updateSite(dt,T);renderer.render(site,camS);updateLabels(siteLabels,camS);if(state.flow)updateLabels(flowTags,camS);if(state.mode==='site')drawMinimap();}
+  else{updateSite(dt,T);if(state.mode==='interior'){renderer.render(activeScene,activeCam);updateLabels(intLabels,activeCam);}else{renderer.render(site,camS);updateLabels(siteLabels,camS);if(state.flow)updateLabels(flowTags,camS);if(state.mode==='site')drawMinimap();}}
   requestAnimationFrame(frame);
 }
 
 /* ================= boot ================= */
 function startTour(){
-  $('#start').remove();state.mode='site';
+  $('#start').remove();state.mode='site';Snd.init();Snd.scene('site');
   document.querySelectorAll('.site-ui').forEach(e=>e.hidden=false);$('#joy').hidden=!isTouch;
   resize();renderCourse();
   camSGoal.t.set(player.position.x,2,player.position.z);camSGoal.yaw=0;followCam();
   toast('정문 앞이에요. 코스 순서대로 걸어가거나 지도를 눌러 보세요',3.4);
 }
 $('#startBtn').addEventListener('click',startTour);
-window.__wirye={go(id){const ad={ccr:1,office:1,room_mgmt:1,room_cs:1,room_ops:1};const st=STATIONS.find(s=>s.id===(ad[id]?'admin':id));if(state.mode!=='interior'){player.position.set(st.door[0],0,st.door[1]);if(state.flow)toggleFlow(false);}openInterior(id==='admin'?'ccr':id,st);},
+window.__wirye={go(id){const ad={ccr:1,office:1,room_mgmt:1,room_cs:1,room_ops:1,room_ceo:1};const st=STATIONS.find(s=>s.id===(ad[id]?'admin':id==='cooling'?'demand':id));if(state.mode!=='interior'){player.position.set(st.door[0],0,st.door[1]);if(state.flow)toggleFlow(false);}openInterior(id==='admin'?'ccr':id,st);},
   spot:i=>setSpot(i),exit:()=>exitInterior(),flow:()=>toggleFlow(),pick:()=>{const st=STATIONS[0];player.position.set(st.door[0],0,st.door[1]);enterStation(st);},
-  play:()=>startPlay(),playSkip:()=>{if(state.play)state.play.t=99;},pickAt:(x,y)=>{const r=canvas.getBoundingClientRect();_ndc.set((x-r.left)/r.width*2-1,-(y-r.top)/r.height*2+1);_rc.setFromCamera(_ndc,camS);let best=null,bd=1e9;for(const [id,b] of Object.entries(PICKB)){if(_rc.ray.intersectBox(b,_hp)){const d=_hp.distanceTo(_rc.ray.origin);if(d<bd){bd=d;best=id;}}}return best;},
+  play:()=>startPlay(),playSkip:()=>{if(state.play)state.play.t=99;},pickAt:(x,y)=>{const r=canvas.getBoundingClientRect();_ndc.set((x-r.left)/r.width*2-1,-(y-r.top)/r.height*2+1);_rc.setFromCamera(_ndc,camS);let best=null,bd=1e9;for(const [id,b] of PICKB){if(_rc.ray.intersectBox(b,_hp)){const d=_hp.distanceTo(_rc.ray.origin);if(d<bd){bd=d;best=id;}}}return best;},
   place(x,z,yaw){player.position.set(x,0,z);camSGoal.t.set(x,2,z);camSCur.t.set(x,2,z);if(yaw!=null){camSGoal.yaw=yaw;camSCur.yaw=yaw;}}};
 resize();renderCourse();requestAnimationFrame(frame);
 })();
