@@ -1829,14 +1829,13 @@ const Snd={ctx:null,master:null,on:true,cur:null,tracks:{},duck:1,mus:null,
     return t;},
   scene(key){if(!this.ctx)return;const sel=SCENE_SFX[key]||SCENE_SFX.site;const now=this.ctx.currentTime;
     for(const [id,t] of Object.entries(this.tracks)){if(id!==sel[0]){t.g.gain.cancelScheduledValues(now);t.g.gain.setTargetAtTime(0,now,.35);}}
-    this.cur=key;if(!sel[0])return;const t=this.track(sel[0]);t.g.gain.cancelScheduledValues(now);t.g.gain.setTargetAtTime(sel[1]*this.duck,now,.5);},
+    this.cur=key;this.music(key==='site'&&this.duck>0);if(!sel[0])return;const t=this.track(sel[0]);t.g.gain.cancelScheduledValues(now);t.g.gain.setTargetAtTime(sel[1]*this.duck,now,.5);},
   setDuck(d){this.duck=d;if(this.cur)this.scene(this.cur);},
   music(want){if(!this.ctx)return;const c=this.ctx;
     if(!this.mus){const g=c.createGain();g.gain.value=0;g.connect(this.master);const m=this.mus={g,file:false,step:0,next:0,timer:0};
-      fetch('sfx/bgm.mp3').then(r=>{if(!r.ok)throw 0;return r.arrayBuffer();}).then(ab=>c.decodeAudioData(ab)).then(buf=>{m.file=true;clearInterval(m.timer);const s=c.createBufferSource();s.buffer=buf;s.loop=true;s.connect(g);s.start();}).catch(()=>{});
+      fetch('bgm.mp3').then(r=>{if(!r.ok)throw 0;return r.arrayBuffer();}).then(ab=>c.decodeAudioData(ab)).then(buf=>{m.file=true;clearInterval(m.timer);const s=c.createBufferSource();s.buffer=buf;s.loop=true;s.connect(g);s.start();}).catch(()=>{});
       const rev=c.createDelay();rev.delayTime.value=.27;const fb=c.createGain();fb.gain.value=.28;const wet=c.createGain();wet.gain.value=.22;rev.connect(fb);fb.connect(rev);rev.connect(wet);wet.connect(g);m.fx=rev;}
-    const m=this.mus,now=c.currentTime;m.g.gain.cancelScheduledValues(now);m.g.gain.setTargetAtTime(want?.16*this.duck:0,now,want?1.2:.4);
-    if(want&&!m.file&&!m.timer){m.next=now+.1;m.timer=setInterval(()=>this.seq(),50);}
+    const m=this.mus,now=c.currentTime;m.g.gain.cancelScheduledValues(now);m.g.gain.setTargetAtTime(want?.42*this.duck:0,now,want?1.5:.5);
     if(!want&&m.timer){clearTimeout(m.stop);m.stop=setTimeout(()=>{if(this.cur!=='site'||this.duck===0){clearInterval(m.timer);m.timer=0;}},2500);}},
   note(t,f,dur,type,gain,dest,att){const c=this.ctx,o=c.createOscillator(),g=c.createGain();o.type=type;o.frequency.value=f;g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(gain,t+(att||.01));g.gain.exponentialRampToValueAtTime(.0001,t+dur);o.connect(g);g.connect(dest);o.start(t);o.stop(t+dur+.05);return g;},
   seq(){const c=this.ctx,m=this.mus,spb=60/104/2; // 8th notes at 104 bpm
