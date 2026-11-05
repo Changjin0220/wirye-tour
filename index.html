@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>위례 발전소 견학</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -197,6 +197,18 @@ body.interior #sheet{top:calc(var(--gap) + env(safe-area-inset-top,0px))}
 #toast{position:absolute;left:50%;top:calc(var(--gap) + 70px + env(safe-area-inset-top,0px));transform:translateX(-50%);z-index:40;padding:10px 16px;border-radius:10px;background:var(--panel-solid);border:1px solid var(--safety);font-size:14px;font-weight:500;max-width:calc(100% - 32px);text-align:center;transition:opacity .3s}
 #toast.hide{opacity:0;pointer-events:none}
 #courseToggle{display:none}
+#simBar,#rideBar{left:50%;bottom:calc(var(--gap) + 8px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);width:min(600px,calc(100% - 32px));z-index:30}
+.pa-card.sim{border-color:#ff5a4f;box-shadow:0 0 0 3px rgba(255,90,79,.18),0 10px 30px rgba(0,0,0,.35)}
+.pa-card.sim .eyebrow{color:#ff8a80}
+.pa-card.ride{border-color:#ff7a59}
+.pa-btns .danger{background:#e63946;color:#fff;border-color:#e63946}
+.fp-btns button[data-f="emergency"]{border-color:rgba(255,90,79,.55);background:rgba(230,57,70,.12)}
+.fp-btns button[data-f="emergency"] b{color:#ff6b60}
+.lbl.bubble{padding:4px 9px;border-radius:12px;background:#fff;color:#c0392b;font-weight:800;font-size:13px;box-shadow:0 3px 10px rgba(0,0,0,.3)}
+.lbl.bubble.ok{color:#1b8a3c}
+.pin.ap{background:rgba(20,110,60,.9);color:#fff}
+.pin.ap .pin-no{background:#7dffa8;font-style:normal}
+@media (max-width:560px){#simBar .pa-card,#rideBar .pa-card{flex-direction:column;align-items:stretch}.pa-btns{justify-content:flex-end}}
 #promoAsk{left:50%;bottom:calc(var(--gap) + 84px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);width:min(460px,calc(100% - 32px))}
 .pa-card{display:flex;align-items:center;gap:14px;padding:12px 12px 12px 16px;border-radius:14px;background:var(--panel-solid);border:1px solid var(--safety);box-shadow:0 10px 30px rgba(0,0,0,.35);animation:pop .3s ease-out}
 .pa-card>div:first-child{flex:1;min-width:0}
@@ -283,7 +295,7 @@ body.interior #sheet{top:calc(var(--gap) + env(safe-area-inset-top,0px))}
   </div>
   <button class="ctl hud" id="showUi" type="button">UI 보이기 <kbd>H</kbd></button>
 
-  <div id="prompt" class="hud" hidden><button id="enterBtn" type="button"><kbd>E</kbd><span><span id="enterName">발전동</span> 들어가기<small id="enterSub"></small></span></button></div>
+  <div id="prompt" class="hud" hidden><button id="enterBtn" type="button"><kbd>E</kbd><span><span id="enterName">발전동</span> <span id="enterVerb">들어가기</span><small id="enterSub"></small></span></button></div>
 
   <div id="joy" class="hud" hidden><div id="joyKnob"></div></div>
 
@@ -312,6 +324,12 @@ body.interior #sheet{top:calc(var(--gap) + env(safe-area-inset-top,0px))}
     </div>
   </div>
 
+  <div id="simBar" class="hud" hidden role="status" aria-live="polite">
+    <div class="pa-card sim"><div><p class="eyebrow" id="simEye">비상상황 시뮬레이션</p><b id="simMsg"></b></div><div class="pa-btns" id="simBtns"></div></div>
+  </div>
+  <div id="rideBar" class="hud" hidden>
+    <div class="pa-card ride"><div><p class="eyebrow">🎢 롤러코스터 탑승 중</p><b>공급권역 투어 익스프레스</b></div><div class="pa-btns"><button type="button" class="go" id="tourBtn">▶ 공급권역 투어하기</button><button type="button" id="rideExit">내리기</button></div></div>
+  </div>
   <div id="promoAsk" class="hud" hidden>
     <div class="pa-card"><div><p class="eyebrow">Welcome · 정문</p><b>나래에너지서비스 홍보영상</b></div><div class="pa-btns"><button type="button" class="go" id="promoPlay">▶ 영상 보기</button><button type="button" id="promoSkip">건너뛰기</button></div></div>
   </div>
@@ -531,7 +549,9 @@ const gAdmin=bld(-109,-58.5,34,54,16,0xdcd6c8,0xbdb5a5);
  box(g,12,.5,5,0x1f3b57,0,4.4,29.4);for(const x of[-5.6,5.6])box(g,.4,4.2,.4,0x1f3b57,x,2.1,31.6);
  box(g,6,3.6,.3,0x183247,0,1.8,27.2,gl);signBox(g,'행정동','ADMINISTRATION',0,5.3,27.35,5.2,1.3,'#14324d','#ffffff');
  box(g,6,2,8,0xa7a196,-6,17.6,-12);box(g,4,1.6,4,0xa7a196,8,17.4,14);}
-{const A=mkInt();gAdmin.userData.internal=A;for(const y of[4,8,12])box(A,33,.35,53,0xb8c2ca,-109,y,-58.5);box(A,30,.2,50,0x3a6fb0,-109,8.3,-58.5);
+{const A=mkInt();gAdmin.userData.internal=A;for(const y of[4,8,12]){box(A,27.5,.35,53,0xb8c2ca,-111.75,y,-58.5);box(A,5.5,.35,38.5,0xb8c2ca,-95.25,y,-65.25);box(A,5.5,.35,2,0xb8c2ca,-95.25,y,-33);}box(A,26,.2,50,0x3a6fb0,-111,8.3,-58.5);
+ {const sm=M(0x8d99a5),a=Math.atan2(2,7.5);for(let f=0;f<3;f++){const y0=f*4;box(A,1.8,.25,7.8,sm,-96,y0+1,-40.25).rotation.x=-a;box(A,1.8,.25,7.8,sm,-94,y0+3,-40.25).rotation.x=a;box(A,4,.25,2,sm,-95,y0+1.88,-35.5);box(A,4,.25,2,sm,-95,y0+3.88,-45);}
+  for(const x of[-97.1,-92.9])box(A,.12,1,12,0xd94a3a,x,13,-40);}
  for(let i=0;i<5;i++)box(A,5,1.2,2,0x2f3d4a,-121+i*6,9,-50);box(A,24,4,.3,0x0a1622,-109,10.5,-80,{emissive:0x1f6fb2,ei:.4});}
 
 /* 발전동 */
@@ -663,6 +683,82 @@ drawNoise();
  cyl(g,.06,.06,1.6,0x9aa6b0,2.2,9.2,0,{},6);sph(g,.35,0x2b2f33,2.2,10.1,0);colBox(-134,40,6,1.5);}
 let noiseAcc=0;
 
+/* 비상집결장소 */
+const LATE_LBL=[];
+const AP1={x0:-101.5,x1:-86.5,z0:-23,z1:-4.5},AP2={x0:-117,x1:-99,z0:46.5,z1:62.5};
+function apTex(no){return canvasTex(512,512,(g,w,h)=>{g.fillStyle='#1f9a52';g.fillRect(0,0,w,h);g.strokeStyle='#fff';g.lineWidth=18;g.strokeRect(24,24,w-48,h-48);
+  g.fillStyle='#fff';g.textAlign='center';g.textBaseline='middle';
+  const cx=w/2,cy=170;for(const [dx,dy] of[[-1,-1],[1,-1],[-1,1],[1,1]]){g.save();g.translate(cx+dx*62,cy+dy*62);g.rotate(Math.atan2(-dy,-dx));g.beginPath();g.moveTo(26,0);g.lineTo(-18,-20);g.lineTo(-18,20);g.closePath();g.fill();g.restore();}
+  g.beginPath();g.arc(cx,cy-18,13,0,PI*2);g.fill();g.fillRect(cx-11,cy-2,22,34);
+  g.font='800 92px "IBM Plex Sans KR","Malgun Gothic",sans-serif';g.fillText(no+'차',cx,318);
+  g.font='700 54px "IBM Plex Sans KR","Malgun Gothic",sans-serif';g.fillText('비상집결장소',cx,394);
+  g.font='600 30px "IBM Plex Sans KR",sans-serif';g.globalAlpha=.85;g.fillText('EMERGENCY ASSEMBLY POINT',cx,446);});}
+function apZone(A,no,signZ,signRy){const cx=(A.x0+A.x1)/2,cz=(A.z0+A.z1)/2,w=A.x1-A.x0,d=A.z1-A.z0;
+  fadeReg(box(site,w,.06,d,0x2e9e57,cx,.2,cz,{rough:.9}),.35,0xbfe8cf).castShadow=false;
+  const lm=new THREE.MeshBasicMaterial({color:0xffffff});
+  for(const [bw,bd,bx,bz] of[[w,.35,cx,A.z0+.18],[w,.35,cx,A.z1-.18],[.35,d,A.x0+.18,cz],[.35,d,A.x1-.18,cz]])mesh(new THREE.BoxGeometry(bw,.02,bd),lm,site,bx,.25,bz,false);
+  const s=Math.min(w,d)*.62;const pl=mesh(new THREE.PlaneGeometry(s,s),new THREE.MeshStandardMaterial({map:apTex(no),roughness:.85}),site,cx,.24,cz,false);pl.rotation.x=-PI/2;pl.receiveShadow=true;
+  for(const dx of[-2.6,2.6]){const px=cx+Math.cos(signRy)*dx,pz=signZ-Math.sin(signRy)*dx;cyl(site,.12,.12,4.2,0x9aa6b0,px,2.1,pz,{metal:.4},8);}
+  signBox(site,no+'차 비상집결장소','EMERGENCY ASSEMBLY POINT',cx,4.2,signZ,6,1.5,'#1b8a3c','#ffffff',signRy);
+  LATE_LBL.push([`<span class="pin-no">${no}</span><span>${no}차 비상집결장소</span>`,[cx,7.6,signZ],'pin fac ap',null]);}
+apZone(AP1,1,AP1.z0+.6,0);apZone(AP2,2,AP2.z1-.6,0);
+
+/* 롤러코스터 (소음 전광판 앞) */
+const CO={};
+{const P=[[-131,3,66],[-131,3,52],[-134,3.6,45.5],[-142,6.5,43.5],[-151,12.5,43.5],[-159,17.5,45],[-165.5,15.5,49],[-169,8,56],[-169.5,3.8,64],[-166.5,5,72],[-159.5,10,76.5],[-151,12,78],[-143,6.5,78.5],[-137,3.6,76.5],[-132.5,3,72]].map(a=>new THREE.Vector3(a[0],a[1],a[2]));
+ const curve=new THREE.CatmullRomCurve3(P,true,'centripetal');CO.curve=curve;CO.L=curve.getLength();
+ const N=440,pts=curve.getSpacedPoints(N),up=new THREE.Vector3(0,1,0),RL=[],RR=[],SP=[];
+ for(let i=0;i<N;i++){const t=curve.getTangentAt(i/N),side=new THREE.Vector3().crossVectors(t,up).normalize(),q=pts[i];RL.push(q.clone().addScaledVector(side,.75));RR.push(q.clone().addScaledVector(side,-.75));SP.push(q.clone().setY(q.y-.55));}
+ const railM=M(0xdfe3e7,{metal:.6,rough:.3});
+ for(const arr of[RL,RR])mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(arr,true),N,.15,6,true),railM,site,0,0,0);
+ mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(SP,true),N,.32,8,true),M(0xe63946,{rough:.45}),site,0,0,0);
+ const d=new THREE.Object3D(),nt=Math.floor(CO.L/1.3);const tie=new THREE.InstancedMesh(new THREE.BoxGeometry(1.9,.16,.28),M(0x3d4650),nt);
+ for(let i=0;i<nt;i++){const u=i/nt,q=curve.getPointAt(u),t=curve.getTangentAt(u);d.position.set(q.x,q.y-.25,q.z);d.lookAt(q.x+t.x,q.y-.25+t.y,q.z+t.z);d.updateMatrix();tie.setMatrixAt(i,d.matrix);}site.add(tie);
+ const sup=[];for(let i=0;i<N;i+=6){const q=pts[i];if(!(q.x>-134&&q.z>48&&q.z<70))sup.push(q);}
+ const sm=new THREE.InstancedMesh(new THREE.CylinderGeometry(.2,.26,1,8),M(0xf4f6f8,{metal:.3,rough:.5}),sup.length);
+ sup.forEach((q,i)=>{const h=q.y-.8;d.position.set(q.x,h/2,q.z);d.rotation.set(0,0,0);d.scale.set(1,h,1);d.updateMatrix();sm.setMatrixAt(i,d.matrix);});sm.castShadow=true;site.add(sm);
+ // station
+ box(site,3.4,2.4,18,0xb8bfc6,-127.9,1.2,59);box(site,3.4,2.1,18,0x8d969e,-131.4,1.05,59);
+ for(let k=0;k<3;k++)box(site,3.4,.6*(3-k),1.2,0xa3abb3,-127.9,.3*(3-k),68.6+k*1.2);
+ for(const z of[50.5,59,67.5]){cyl(site,.16,.16,11.5,0xe9ecef,-133.4,5.75,z,{metal:.4},8);cyl(site,.16,.16,11.5,0xe9ecef,-126.4,5.75,z,{metal:.4},8);}
+ box(site,8.2,.3,19.5,0xe63946,-129.9,11.5,59);box(site,8.4,.12,19.7,0xffc233,-129.9,11.7,59);
+ signBox(site,'롤러코스터','공급권역 투어 익스프레스',-126.2,12.7,59,7.5,1.5,'#e63946','#ffffff',PI/2);
+ for(const z of[50,68])box(site,.12,1.1,.12,0xffc233,-126.3,2.95,z);box(site,.08,.08,18,0xffc233,-126.3,3.5,59);
+ // train (2 cars)
+ function car(front){const g=new THREE.Group();const c=front?0xffc233:0x3a86ff;
+   box(g,2.3,.85,3.1,c,0,.72,0,{rough:.35,metal:.2});box(g,2.1,.08,2.7,0x22262b,0,1.16,0);box(g,2.1,.9,.25,0x14324d,0,1.5,-1.4);box(g,2.1,.9,.25,0x14324d,0,1.5,.15);
+   for(const x of[-1.05,1.05])box(g,.12,.12,2.8,0xd0d4d8,x,1.55,-.2,{metal:.6});
+   if(front){box(g,2.3,.6,.7,0xe63946,0,.62,1.85,{rough:.35});box(g,1.4,.3,.1,0xffffff,0,.7,2.21,{emissive:0xffffff,ei:.6});}
+   for(const x of[-.75,.75])for(const z of[-1.1,1.1])cylX(g,.22,.22,.3,0x30363c,x,.15,z);
+   g.traverse(o=>{if(o.isMesh)o.castShadow=true;});site.add(g);return g;}
+ CO.cars=[car(true),car(false)];CO.box=new THREE.Box3(new THREE.Vector3(-172,0,40),new THREE.Vector3(-125,20,82));
+ let bu=0,bd=1e9;for(let i=0;i<600;i++){const q=curve.getPointAt(i/600);const dd=Math.hypot(q.x+131,q.z-58.5);if(dd<bd){bd=dd;bu=i/600;}}CO.sStation=bu*CO.L;
+ CO.zone=u=>{const q=curve.getPointAt(u);if(q.x>-135&&q.z>47&&q.z<74)return 'station';if(q.z<47.5&&q.x>-160&&q.x<-133)return 'lift';return null;};}
+function placeCars(sv){CO.cars.forEach((g,k)=>{const u=(((sv-k*3.35)/CO.L)%1+1)%1,q=CO.curve.getPointAt(u),t=CO.curve.getTangentAt(u);g.position.set(q.x,q.y+.05,q.z);g.lookAt(q.x+t.x,q.y+.05+t.y,q.z+t.z);});}
+placeCars(CO.sStation);
+const COASTER_ST={id:'coaster',name:'롤러코스터',sub:'타고 공급권역 투어',verb:'탑승하기',door:[-123.5,59],coaster:true};
+LATE_LBL.push(['<span class="pin-no">🎢</span><span>롤러코스터</span>',[-130,15,59],'pin fac',()=>{if(state.mode!=='site'||busy())return;player.position.set(COASTER_ST.door[0],0,COASTER_ST.door[1]);boardCoaster();},'--c:#ff7a59']);
+
+/* 비상상황 시뮬레이션 objects */
+const simG=new THREE.Group();simG.visible=false;site.add(simG);
+const fireL=new THREE.PointLight(0xff6a1a,0,80,1.4);fireL.position.set(-117,15,-62);site.add(fireL);
+const FLAMES=[],SMOKE=[],SIMW=[];
+{const fg=new THREE.ConeGeometry(1,1,8);fg.translate(0,.5,0);
+ const fm=new THREE.MeshBasicMaterial({color:0xff5a14,transparent:true,opacity:.9,blending:THREE.AdditiveBlending,depthWrite:false}),fm2=new THREE.MeshBasicMaterial({color:0xffd23f,transparent:true,opacity:.95,blending:THREE.AdditiveBlending,depthWrite:false});
+ const fl=(x,y,z,sc,delay)=>{const g=new THREE.Group();g.position.set(x,y,z);const a=new THREE.Mesh(fg,fm),b=new THREE.Mesh(fg,fm2);b.scale.set(.5,.62,.5);g.add(a,b);g.visible=false;simG.add(g);FLAMES.push({g,sc,delay,ph:Math.random()*9});};
+ let sd=11;const r=()=>(sd=(sd*16807)%2147483647)/2147483647;
+ for(let i=0;i<16;i++)fl(-124+r()*13,12.18,-76+r()*24,1+r()*1.3,r()*3.5);
+ for(let z=-79;z<=-47;z+=3.2)fl(-126.6,12.4,z,.75+r()*.5,.8+r()*3.5);
+ for(let x=-125;x<=-115;x+=3.4)fl(x,12.4,-31.2,.7+r()*.4,2+r()*3);
+ for(let i=0;i<6;i++)fl(-123+r()*10,16.6,-72+r()*18,1.4+r(),2.5+r()*3);
+ const sg=new THREE.SphereGeometry(1,10,8);for(let i=0;i<22;i++){const m=new THREE.Mesh(sg,new THREE.MeshLambertMaterial({color:0x3b3f44,transparent:true,opacity:0,depthWrite:false}));simG.add(m);SMOKE.push({m,ph:i/22,x:-124+r()*12,z:-74+r()*22});}
+ const SUITS=[0x2b3440,0x3a4a5c,0x5a4a3a,0x1f4e79,0x6b2d3a,0x2f5f4f,0x4a4a4a,0x7a6a55];
+ for(let i=0;i<28;i++){const w=makeWorker({office:true,suit:SUITS[i%SUITS.length]});w.scale.setScalar(1.05);simG.add(w);SIMW.push(w);}}
+const glowM=new THREE.MeshBasicMaterial({color:0xff7a1a,transparent:true,opacity:0,depthWrite:false});
+box(simG,.25,1.7,33,glowM,-126.45,13.8,-62).castShadow=false;box(simG,11.2,1.7,.25,glowM,-119.5,13.8,-31.3).castShadow=false;
+const simLeader=makeWorker({suit:0xd35400,helmet:0xffffff});simLeader.scale.setScalar(1.1);simG.add(simLeader);
+const simLabels=[];
+
 /* pipe rack: power block → DH (extraction heat) */
 {const pts=[[-26,7,6],[33,7,6],[33,7,-18],[36,7,-18]];pipe(site,pts,.55,0xb8c2ca);pipe(site,pts.map(p=>[p[0],p[1]+1.3,p[2]]),.45,0xb8c2ca);
  const post=(x,z)=>{if(distToRoad(x,z)<4.2)return;box(site,.6,7,.6,0x7d8a95,x,3.5,z);};for(let x=-22;x<=30;x+=8)post(x,6);for(let z=0;z>=-16;z-=8)post(35,z);}
@@ -688,7 +784,7 @@ let noiseAcc=0;
 function inPoly(x,z,poly){let c=false;for(let i=0,j=poly.length-1;i<poly.length;j=i++){const xi=poly[i][0],zi=poly[i][1],xj=poly[j][0],zj=poly[j][1];if(((zi>z)!==(zj>z))&&(x<(xj-xi)*(z-zi)/(zj-zi)+xi))c=!c;}return c;}
 /* trees */
 {let seed=7;const rnd=()=>(seed=(seed*16807)%2147483647)/2147483647;const trees=[];
- const ok=(x,z)=>{if(distToRoad(x,z)<6.5)return false;if(x>-86&&x<-62&&z>-100&&z<-56)return false;if(x>-82&&x<-64&&z>-60&&z<-40)return false;if(x>-14&&x<3&&z>-105&&z<3)return false;if(x>-38&&x<-14&&z>-75&&z<-65)return false;if(x>-108&&x<22&&z>58&&z<66)return false;if(x>-76&&x<-68&&z>36&&z<72)return false;for(const b of COL)if(x>b.x0-4&&x<b.x1+4&&z>b.z0-4&&z<b.z1+4)return false;for(const c of CIRC)if(Math.hypot(x-c.x,z-c.z)<c.r+4)return false;return true;};
+ const ok=(x,z)=>{if(distToRoad(x,z)<6.5)return false;if(x>-106&&x<-82&&z>-26&&z<0)return false;if(x>-182&&x<-96&&z>38&&z<92)return false;if(x>-86&&x<-62&&z>-100&&z<-56)return false;if(x>-82&&x<-64&&z>-60&&z<-40)return false;if(x>-14&&x<3&&z>-105&&z<3)return false;if(x>-38&&x<-14&&z>-75&&z<-65)return false;if(x>-108&&x<22&&z>58&&z<66)return false;if(x>-76&&x<-68&&z>36&&z<72)return false;for(const b of COL)if(x>b.x0-4&&x<b.x1+4&&z>b.z0-4&&z<b.z1+4)return false;for(const c of CIRC)if(Math.hypot(x-c.x,z-c.z)<c.r+4)return false;return true;};
  for(let i=0;i<900&&trees.length<120;i++){const x=-140+rnd()*290,z=-125+rnd()*260;const inside=inPoly(x,z,SITE);if((inside&&ok(x,z))||(!inside&&rnd()<.25&&ok(x,z)&&!(x>-205&&x<-112&&z>90&&z<155)))trees.push([x,z,.8+rnd()*.6]);}
  const tm=new THREE.InstancedMesh(new THREE.ConeGeometry(2.4,6,7),M(0x3f7f4a,{rough:1}),trees.length);const tr=new THREE.InstancedMesh(new THREE.CylinderGeometry(.35,.45,2.2,6),M(0x6b4f3a),trees.length);
  const d=new THREE.Object3D();trees.forEach(([x,z,s],i)=>{d.position.set(x,1.1*s,z);d.scale.setScalar(s);d.updateMatrix();tr.setMatrixAt(i,d.matrix);d.position.set(x,(2.2+3)*s,z);d.updateMatrix();tm.setMatrixAt(i,d.matrix);});
@@ -710,12 +806,13 @@ function makeOccluder(g){
 OCC_G.forEach(makeOccluder);
 const _ray=new THREE.Ray(),_hit=new THREE.Vector3(),_head=new THREE.Vector3(),_foot=new THREE.Vector3();
 function updateOccluders(dt){
-  const cp=camS.position;_head.set(player.position.x,5,player.position.z);_foot.set(player.position.x,1,player.position.z);
+  const cp=camS.position,FP=state.sim?camSCur.t:state.ride?CO.cars[0].position:player.position;_head.set(FP.x,5,FP.z);_foot.set(FP.x,1,FP.z);
   const dH=cp.distanceTo(_head),dF=cp.distanceTo(_foot);const k=reduceMotion?1:1-Math.exp(-dt*9);
   for(const o of OCC){
     let tgt=0;
     if(state.flow)tgt=1;
-    else if((state.mode==='site'||state.mode==='pick')&&!state.fac){
+    else if(state.sim&&state.simIn&&o.g===gAdmin)tgt=1;
+    else if(((state.mode==='site'||state.mode==='pick')&&!state.fac)||state.sim){
       _ray.origin.copy(cp);_ray.direction.copy(_head).sub(cp).normalize();
       if(_ray.intersectBox(o.box,_hit)&&cp.distanceTo(_hit)<dH-1.5)tgt=1;
       else{_ray.direction.copy(_foot).sub(cp).normalize();if(_ray.intersectBox(o.box,_hit)&&cp.distanceTo(_hit)<dF-1.5)tgt=1;}
@@ -726,7 +823,7 @@ function updateOccluders(dt){
     for(const m of o.mats){m.opacity=op;m.depthWrite=o.fade<.5;}
     o.em.opacity=.7*o.fade;const ev=o.fade>.02;
     for(const m of o.meshes){m.userData.edge.visible=ev;m.castShadow=o.fade<.5;}
-    if(o.internal)o.internal.visible=state.flow&&o.fade>.3;
+    if(o.internal)o.internal.visible=(state.flow||(state.simIn&&o.g===gAdmin))&&o.fade>.3;
   }
 }
 
@@ -828,6 +925,7 @@ function saveVisited(){try{localStorage.setItem('wirye-tour-v1',JSON.stringify([
 
 const siteLabels=[];
 const doorRings=[];
+LATE_LBL.forEach(a=>makeLabel(siteLabels,...a));
 STATIONS.forEach((st,i)=>{
   st.idx=i;
   st.pin=makeLabel(siteLabels,`<span class="pin-no"><span>${i+1}</span></span><span>${st.name}</span>`,st.lp,'pin',()=>walkTo(st,true),`--c:${CAT[st.cat]}`);
@@ -845,7 +943,8 @@ const START=[-122,74];
 player.position.set(START[0],0,START[1]);player.rotation.y=PI;
 
 /* ================= state ================= */
-const state={mode:'boot',flow:false,overview:false,focusStep:-1,auto:null,near:null,interior:null,spot:0,courseWas:null};
+const state={mode:'boot',flow:false,overview:false,focusStep:-1,auto:null,near:null,interior:null,spot:0,courseWas:null,sim:null,simIn:false,ride:null};
+const busy=()=>!!(state.sim||state.ride);let SIM_K=1;
 const camSCur=Orbit([-30,0,0],.35,.95,330),camSGoal=Orbit([-30,0,0],.35,.95,330);
 let activeScene=site,activeCam=camS;
 
@@ -854,6 +953,7 @@ const keys={};
 addEventListener('keydown',e=>{
   if(state.mode==='boot')return;
   if(state.mode==='promo'){if(e.code==='Escape'||e.code==='Space'||e.code==='Enter'){e.preventDefault();closePromo();}return;}
+  if(busy()&&state.mode==='site'){if(e.code==='Escape'){e.preventDefault();state.sim?endSim():exitRide();}else if(e.code==='KeyH')toggleClean();return;}
   if(e.code==='Space'&&(state.mode==='site'||state.mode==='interior')&&!/INPUT|TEXTAREA/.test((e.target||{}).tagName||'')){e.preventDefault();if(document.activeElement&&document.activeElement.blur)document.activeElement.blur();if(jmp.y===0&&jmp.v===0)jmp.v=11;return;}
   if(e.code==='KeyH'){toggleClean();return;}
   keys[e.code]=true;
@@ -935,10 +1035,11 @@ function renderFacSheet(){const f=FAC[state.fac];
   $('#shPrev').disabled=true;$('#shNext').textContent='닫기';$('#shClose').hidden=false;}
 const _rc=new THREE.Raycaster(),_ndc=new THREE.Vector2(),_hp=new THREE.Vector3();let downXY=null;
 canvas.addEventListener('pointerdown',e=>{downXY=ptrs.size===1?{x:e.clientX,y:e.clientY}:null;});
-canvas.addEventListener('pointerup',e=>{if(!downXY||ptrs.size!==1||Math.hypot(e.clientX-downXY.x,e.clientY-downXY.y)>6||state.mode!=='site'||state.flow)return;
+canvas.addEventListener('pointerup',e=>{if(!downXY||ptrs.size!==1||Math.hypot(e.clientX-downXY.x,e.clientY-downXY.y)>6||state.mode!=='site'||state.flow||busy())return;
   const r=canvas.getBoundingClientRect();_ndc.set((e.clientX-r.left)/r.width*2-1,-(e.clientY-r.top)/r.height*2+1);_rc.setFromCamera(_ndc,camS);
   let best=null,bd=1e9,kind=null;for(const [id,b] of PICKB){if(_rc.ray.intersectBox(b,_hp)){const d=_hp.distanceTo(_rc.ray.origin);if(d<bd){bd=d;best=id;kind='st';}}}
   for(const [id,b] of Object.entries(FACB)){if(_rc.ray.intersectBox(b,_hp)){const d=_hp.distanceTo(_rc.ray.origin);if(d<bd){bd=d;best=id;kind='fac';}}}
+  if(!best&&_rc.ray.intersectBox(CO.box,_hp)){player.position.set(COASTER_ST.door[0],0,COASTER_ST.door[1]);boardCoaster();return;}
   if(best){if(kind==='st'){state.fac=null;walkTo(STATIONS.find(s=>s.id===best),true);}else openFac(best);}});
 canvas.addEventListener('pointermove',e=>{if(state.mode!=='site'||ptrs.size)return;const r=canvas.getBoundingClientRect();_ndc.set((e.clientX-r.left)/r.width*2-1,-(e.clientY-r.top)/r.height*2+1);_rc.setFromCamera(_ndc,camS);
   let hit=false;if(!state.flow)for(const b of[...PICKB.map(e=>e[1]),...Object.values(FACB)])if(_rc.ray.intersectBox(b,_hp)){hit=true;break;}canvas.style.cursor=hit?'pointer':'';});
@@ -970,7 +1071,7 @@ function placeAtDoor(st){const dx=st.door[0]-st.lp[0],dz=st.door[1]-st.lp[2],L=M
   player.position.set(st.door[0]+dx/L*2,0,st.door[1]+dz/L*2);player.rotation.y=Math.atan2(dx,dz);
   camSGoal.t.set(player.position.x,2,player.position.z);camSCur.t.copy(camSGoal.t);}
 function walkTo(st,enter){
-  if(state.mode!=='site')return;
+  if(state.mode!=='site'||busy())return;
   if(enter){if(state.flow)toggleFlow(false);if(state.overview)toggleOverview(false);state.auto=null;beacon.visible=false;placeAtDoor(st);enterStation(st);return;}
   if(state.flow)toggleFlow(false);if(state.overview)toggleOverview(false);
   const path=planPath(player.position.x,player.position.z,st.node);path.push(st.door);
@@ -986,12 +1087,12 @@ $('#shMin').addEventListener('click',()=>setSheetMin(!sheet.classList.contains('
 function setFlowFade(on){for(const [m,op,col] of FADE){if(!m.userData.c0)m.userData.c0=m.color.clone();if(on)m.color.set(col);else m.color.copy(m.userData.c0);m.transparent=on;m.opacity=on?op:1;m.depthWrite=!on;m.needsUpdate=true;}
   const bg=on?0xeef3f5:0xa8d4e8;site.background.set(bg);site.fog.color.set(bg);}
 function toggleFlow(on){
-  on=on!=null?on:!state.flow;if(on===state.flow)return;state.flow=on;$('#flowBtn').setAttribute('aria-pressed',on);flowGroup.visible=on;
+  on=on!=null?on:!state.flow;if(on===state.flow||(on&&busy()))return;state.flow=on;$('#flowBtn').setAttribute('aria-pressed',on);flowGroup.visible=on;
   flowTags.forEach(l=>l.el.style.visibility=on?'':'hidden');setFlowFade(on);state.flowFollow=false;
   if(on){state.fac=null;state.auto=null;beacon.visible=false;state.focusStep=-1;state.courseWas=courseEl.classList.contains('collapsed');collapseCourse(true);setOverviewCam();setSheetMin(false);renderFlowSheet();setSheet(true);highlightStreams(null);}
   else{stopPlay();if(state.courseWas!=null)collapseCourse(state.courseWas);setSheet(false);if(!state.overview)followCam();}
 }
-function toggleOverview(on){on=on!=null?on:!state.overview;state.overview=on;$('#viewBtn').setAttribute('aria-pressed',on);if(on)setOverviewCam();else if(!state.flow)followCam();}
+function toggleOverview(on){on=on!=null?on:!state.overview;if(on&&busy())return;state.overview=on;$('#viewBtn').setAttribute('aria-pressed',on);if(on)setOverviewCam();else if(!state.flow)followCam();}
 function setOverviewCam(){camSGoal.t.set(-25,0,8);camSGoal.dist=innerWidth<760?440:320;camSGoal.pitch=1.0;}
 const camMem={dist:58,pitch:.66};
 function followCam(){camSGoal.dist=camMem.dist;camSGoal.pitch=camMem.pitch;}
@@ -1831,10 +1932,11 @@ function getInterior(id){
 function hideSiteUI(){$('#promoAsk').hidden=true;siteLabels.forEach(l=>l.el.hidden=true);flowTags.forEach(l=>l.el.style.visibility='hidden');document.querySelectorAll('.site-ui').forEach(e=>e.hidden=true);$('#prompt').hidden=true;$('#joy').hidden=true;state.near=null;}
 function showSiteUI(){siteLabels.forEach(l=>l.el.hidden=false);document.querySelectorAll('.site-ui').forEach(e=>e.hidden=false);$('#joy').hidden=!isTouch;}
 const PICKS={
-  admin:{eye:'행정동 · 엘리베이터',title:'몇 층으로 갈까요?',opts:[['office','4F','사무실','대표이사실 · 경영지원실 · 고객지원실 · 사업운영실'],['ccr','3F','중앙제어실','발전소 통합 감시·제어']]},
+  admin:{eye:'행정동 · 엘리베이터',title:'몇 층으로 갈까요?',opts:[['office','4F','사무실','대표이사실 · 경영지원실 · 고객지원실 · 사업운영실'],['ccr','3F','중앙제어실','발전소 통합 감시·제어'],['emergency','SOS','비상상황 시뮬레이션하기','4층 화재 발생 → 1차·2차 비상집결장소로 대피']]},
   demand:{eye:'수요처 아파트 · 지하 기계실',title:'무엇을 볼까요?',opts:[['demand','난방','지역난방','115℃ 온수로 난방과 온수(급탕)를 만들어요'],['cooling','냉방','지역냉방','온수의 열로 냉수를 만드는 흡수식 냉동기']]}};
 const LIFTS={admin:{label:'엘리베이터',items:[['office','4F','사무실'],['ccr','3F','제어실']]},demand:{label:'보기',items:[['demand','난방','지역난방'],['cooling','냉방','지역냉방']]}};
 function enterStation(st){
+  if(st.coaster){boardCoaster();return;}
   state.fac=null;
   if(state.mode!=='site')return;
   if(state.flow)toggleFlow(false);
@@ -1844,7 +1946,7 @@ function enterStation(st){
   openInterior(st.id,st);
 }
 function closePick(){$('#floorPick').hidden=true;if(state.mode==='pick')state.mode='site';}
-$('#floorPick').addEventListener('click',e=>{const b=e.target.closest('[data-f]');if(b){$('#floorPick').hidden=true;state.mode='site';openInterior(b.dataset.f,state.pickSt);}else if(e.target.id==='fpCancel'||e.target.id==='floorPick')closePick();});
+$('#floorPick').addEventListener('click',e=>{const b=e.target.closest('[data-f]');if(b){$('#floorPick').hidden=true;state.mode='site';if(b.dataset.f==='emergency')startSim();else openInterior(b.dataset.f,state.pickSt);}else if(e.target.id==='fpCancel'||e.target.id==='floorPick')closePick();});
 const WALK={ccr:[-31,31,-21,21],office:[-66,66,-6,24],room_mgmt:[-28,28,-18,18],room_cs:[-28,28,-18,18],room_ops:[-28,28,-18,18],room_ceo:[-22,22,-18,18],
   gov:[-60,60,-20,20],power:[-64,64,-31,31],hrsg:[-60,60,-28,28],tower:[-28,150,-21,21],dh:[-54,54,-29,29],storage:[-58,58,-57,29,0,[0,0,15.5]],
   trench:[-36,36,-24,20,.3],trench_build:[-20,20,-20,20,.3],demand:[-31,31,-19,19,-14],cooling:[-54,54,-26,26]};
@@ -1960,6 +2062,14 @@ const Snd={ctx:null,master:null,on:true,cur:null,tracks:{},duck:1,mus:null,
     for(const [id,t] of Object.entries(this.tracks)){if(id!==sel[0]){t.g.gain.cancelScheduledValues(now);t.g.gain.setTargetAtTime(0,now,.35);}}
     this.cur=key;this.music(key==='site'&&this.duck>0);if(!sel[0])return;const t=this.track(sel[0]);t.g.gain.cancelScheduledValues(now);t.g.gain.setTargetAtTime(sel[1]*this.duck,now,.5);},
   setDuck(d){this.duck=d;if(this.cur)this.scene(this.cur);},
+  siren(on){if(!this.ctx)return;const c=this.ctx,now=c.currentTime;
+    if(on){if(this.sir)return;const o=c.createOscillator();o.type='sawtooth';o.frequency.value=820;const l=c.createOscillator();l.frequency.value=.42;const lg=c.createGain();lg.gain.value=300;l.connect(lg);lg.connect(o.frequency);
+      const f=c.createBiquadFilter();f.type='lowpass';f.frequency.value=2000;const g=c.createGain();g.gain.value=0;g.gain.setTargetAtTime(.05,now,.3);o.connect(f);f.connect(g);g.connect(this.master);o.start();l.start();
+      const cr=this.noise('w','bandpass',900,.6,0,this.master);cr.gain.setTargetAtTime(.05,now,1.5);this.lfo(cr.gain,7.3,.03);this.sir={o,l,g,cr};}
+    else if(this.sir){const S=this.sir;this.sir=null;S.g.gain.setTargetAtTime(0,now,.3);S.cr.gain.cancelScheduledValues(now);S.cr.gain.setTargetAtTime(0,now,.3);setTimeout(()=>{try{S.o.stop();S.l.stop();}catch(e){}},1500);}},
+  coaster(v){if(!this.ctx)return;const now=this.ctx.currentTime;
+    if(!this.cst){this.cst=this.noise('b','lowpass',420,.8,0,this.master);this.cst2=this.noise('w','bandpass',2600,2.5,0,this.master);}
+    this.cst.gain.setTargetAtTime(v==null?0:.12+v*.035,now,.12);this.cst2.gain.setTargetAtTime(v==null?0:v*.0035,now,.12);},
   music(want){if(!this.ctx)return;const c=this.ctx;
     if(!this.mus){const g=c.createGain();g.gain.value=0;g.connect(this.master);const m=this.mus={g,file:false,step:0,next:0,timer:0};
       fetch('bgm.mp3').then(r=>{if(!r.ok)throw 0;return r.arrayBuffer();}).then(ab=>c.decodeAudioData(ab)).then(buf=>{m.file=true;clearInterval(m.timer);const s=c.createBufferSource();s.buffer=buf;s.loop=true;s.connect(g);s.start();}).catch(()=>{});
@@ -1989,12 +2099,118 @@ const PROMO_SRC='promo.mp4';
 let promoAsked=false,promoT=0,promoTimer=0;
 function showPromoAsk(){promoAsked=true;$('#promoAsk').hidden=false;promoT=15;}
 function hidePromoAsk(){$('#promoAsk').hidden=true;promoT=0;}
-function openPromo(){if(state.mode!=='site')return;hidePromoAsk();state.mode='promo';Snd.setDuck(0);$('#promo').hidden=false;const v=$('#promoVideo'),ph=$('#promoPh');
-  if(PROMO_SRC){ph.hidden=true;v.hidden=false;if(!v.getAttribute('src'))v.src=PROMO_SRC;try{v.currentTime=0;}catch(e){}v.play().catch(()=>{});}
-  else{v.hidden=true;ph.hidden=false;const bar=ph.querySelector('.pv-bar');bar.style.animation='none';void bar.offsetWidth;bar.style.animation='';clearTimeout(promoTimer);promoTimer=setTimeout(closePromo,8000);}
+const VIDS={promo:{src:PROMO_SRC,eye:'Narae Energy Service',title:'나래에너지서비스<br>홍보영상',ph:'영상 파일을 받으면 이 자리에서 재생돼요. 지금은 8초 뒤 견학으로 돌아갑니다.',label:'나래에너지서비스 홍보영상',close:'건너뛰기 ⏭'},
+  tour:{src:'tour.mp4',eye:'위례 · 지역난방 공급권역',title:'공급권역 투어',ph:'공급권역 투어 영상이 들어갈 자리예요. 영상 파일을 받으면 여기서 바로 재생됩니다.',label:'공급권역 투어 영상',close:'닫기 ✕'}};
+function openPromo(kind){if(typeof kind!=='string')kind='promo';if(state.mode!=='site')return;hidePromoAsk();state.mode='promo';Snd.setDuck(0);const V=VIDS[kind];
+  const pv=$('#promo');pv.hidden=false;pv.setAttribute('aria-label',V.label);$('#promoClose').textContent=V.close;
+  const v=$('#promoVideo'),ph=$('#promoPh');ph.querySelector('.eyebrow').textContent=V.eye;ph.querySelector('h2').innerHTML=V.title;ph.querySelector('p:not(.eyebrow)').textContent=V.ph;
+  const showPh=()=>{if(state.mode!=='promo')return;v.hidden=true;ph.hidden=false;const bar=ph.querySelector('.pv-bar');bar.style.animation='none';void bar.offsetWidth;bar.style.animation='';clearTimeout(promoTimer);promoTimer=setTimeout(closePromo,8000);};
+  v.onerror=showPh;
+  if(!V.src){showPh();}
+  else if(v.dataset.kind===kind&&v.error){showPh();}
+  else{ph.hidden=true;v.hidden=false;if(v.dataset.kind!==kind){v.dataset.kind=kind;v.src=V.src;}try{v.currentTime=0;}catch(e){}v.play().catch(()=>{});}
   $('#promoClose').focus();}
 function closePromo(){clearTimeout(promoTimer);Snd.setDuck(1);try{$('#promoVideo').pause();}catch(e){}$('#promo').hidden=true;if(state.mode==='promo')state.mode='site';}
 $('#promoPlay').addEventListener('click',openPromo);$('#promoSkip').addEventListener('click',hidePromoAsk);$('#promoClose').addEventListener('click',closePromo);$('#promoVideo').addEventListener('ended',closePromo);$('#promoBtn').addEventListener('click',openPromo);
+
+/* ================= 비상상황 시뮬레이션 ================= */
+const STAIR=[[-94,12.18,-44.6],[-94,10.15,-36.3],[-96,10.15,-36.3],[-96,8.18,-44.6],[-94,8.18,-44.6],[-94,6.15,-36.3],[-96,6.15,-36.3],[-96,4.18,-44.6],[-94,4.18,-44.6],[-94,2.15,-36.3],[-96,2.15,-36.3],[-96,0,-44.4]];
+const rr=(a,b)=>a+Math.random()*(b-a);
+function simMsg(eye,msg,btns){$('#simEye').textContent=eye;$('#simMsg').innerHTML=msg;$('#simBtns').innerHTML=btns.map(([k,t,c])=>`<button type="button" data-sim="${k}" class="${c||''}">${t}</button>`).join('');}
+$('#simBtns').addEventListener('click',e=>{const b=e.target.closest('[data-sim]');if(!b)return;if(b.dataset.sim==='evac2')simEvac2();else endSim();});
+function simBubbles(list){clearLabels(simLabels);list.forEach(([w,t,ok])=>{const L=makeLabel(simLabels,t,[0,0,0],'bubble'+(ok?' ok':''));L.w=w;});}
+function apPoint(A,m){return[rr(A.x0+m,A.x1-m),0,rr(A.z0+m,A.z1-m)];}
+function startSim(){
+  if(state.mode!=='site'||busy())return;
+  if(state.fac)closeFac();if(state.flow)toggleFlow(false);if(state.overview)toggleOverview(false);
+  state.auto=null;beacon.visible=false;hidePromoAsk();state.near=null;$('#prompt').hidden=true;
+  simG.visible=true;state.simIn=true;state.sim={t:0,phase:'fire',done1:false,done2:false};
+  SIMW.forEach(w=>{const u=w.userData;w.position.set(rr(-123,-100),12.18,rr(-82,-50));w.rotation.y=rr(0,PI*2);Object.assign(u,{path:null,pi:0,mode:'idle',delay:0,v:0,ph:rr(0,9),raise:Math.random()<.4,goal:null,tw:0});});
+  FLAMES.forEach(f=>{f.g.visible=false;});SMOKE.forEach(s=>s.m.material.opacity=0);
+  simLeader.position.set(-108,0,61);simLeader.rotation.y=PI;
+  siteLabels.forEach(l=>l.el.hidden=true);
+  simBubbles([[SIMW[0],'어? 이거 무슨 냄새야?'],[SIMW[5],'불이야!!'],[SIMW[11],'연기 난다!']]);
+  camSGoal.t.set(-108,9,-54);camSGoal.dist=105;camSGoal.pitch=.45;camSGoal.yaw=-.5;
+  simMsg('비상상황 시뮬레이션 · 행정동 4층','🔥 4층 사무실에서 화재 발생! 화재경보가 울립니다',[['end','중단']]);$('#simBar').hidden=false;
+  Snd.init();Snd.siren(true);Snd.setDuck(.2);toast('🚨 화재 경보! 행정동 4층에서 불이 났어요',3);
+}
+function simEvac1(){const S=state.sim;S.phase='evac1';
+  const order=SIMW.map(w=>[w,Math.hypot(w.position.x+94,w.position.z+46)]).sort((a,b)=>a[1]-b[1]);
+  order.forEach(([w],i)=>{const u=w.userData,j=()=>rr(-.35,.35);
+    u.path=[[rr(-101,-99),12.18,rr(-49,-47)],[-94+j(),12.18,-46.4],...STAIR.map(q=>[q[0]+j(),q[1],q[2]]),[-100,0,-38],[-109+rr(-2,2),0,-33.5],[-109+rr(-2,2),0,-28.5],[rr(-105,-99),0,rr(-26.5,-25)],[rr(-98,-95),0,-21.5],apPoint(AP1,1.2)];
+    u.pi=0;u.delay=i*.3+rr(0,.25);u.v=rr(10,12.5);u.mode='run';u.next='panic';});
+  simBubbles([[order[0][0],'계단으로! 엘리베이터 타지 마!'],[order[6][0],'으아아 빨리빨리!'],[order[15][0],'코 막고 낮게!']]);
+  simMsg('비상상황 시뮬레이션 · 대피','🏃 비상계단으로 대피 중… 1차 비상집결장소로!',[['end','중단']]);}
+function simEvac2(){const S=state.sim;if(!S||S.phase!=='evac1')return;S.phase='evac2';state.simIn=false;
+  const cols=7;SIMW.forEach((w,i)=>{const u=w.userData,jx=rr(-2.6,2.6),slot=[-115+(i%cols)*2.5,0,49.5+((i/cols)|0)*2.4];
+    u.path=[[rr(-99,-93),0,rr(-26,-24)],[-118+jx,0,-27.5+rr(-2.4,2.4)],[-122+jx,0,26],[-122+jx*.7,0,38],[rr(-118,-112),0,rr(45.5,47.5)],slot];
+    u.pi=0;u.delay=rr(0,1.8);u.v=rr(12.5,16);u.mode='run';u.next='line';u.goal=null;});
+  simBubbles([[SIMW[3],'2차 집결장소로 뛰어!'],[SIMW[9],'우와아아~'],[SIMW[17],'정문 밖으로!']]);
+  camSGoal.dist=78;camSGoal.pitch=.55;camSGoal.yaw=1.05;
+  simMsg('비상상황 시뮬레이션 · 2차 대피','🏃‍♂️ 화재 확산! 도로를 따라 정문 밖 2차 비상집결장소로 대피 중',[['end','중단']]);}
+function endSim(){if(!state.sim)return;state.sim=null;state.simIn=false;simG.visible=false;fireL.intensity=0;clearLabels(simLabels);$('#simBar').hidden=true;
+  Snd.siren(false);Snd.setDuck(1);followCam();camSGoal.t.set(player.position.x,2,player.position.z);toast('비상상황 시뮬레이션을 마쳤어요',2.2);}
+function simWalker(w,dt,T){const u=w.userData;let sp=0;
+  if(u.delay>0){u.delay-=dt;if(state.sim.phase!=='evac2')w.rotation.y+=Math.sin(T*3+u.ph)*dt*4;}
+  else if(u.path){const tg=u.path[u.pi],p=w.position,dx=tg[0]-p.x,dy=tg[1]-p.y,dz=tg[2]-p.z,d=Math.hypot(dx,dy,dz),v=u.v*(Math.abs(dy)>.05?.72:1),st=v*dt;
+    if(d<=st){p.set(tg[0],tg[1],tg[2]);u.pi++;if(u.pi>=u.path.length){u.path=null;u.mode=u.next;u.tw=0;}}
+    else{p.x+=dx/d*st;p.y+=dy/d*st;p.z+=dz/d*st;if(Math.hypot(dx,dz)>.05)w.rotation.y=Math.atan2(dx,dz);}sp=v;}
+  else if(u.mode==='idle'){w.rotation.y+=Math.sin(T*2.3+u.ph)*dt*3;}
+  else if(u.mode==='panic'){u.tw-=dt;if(u.tw<=0){u.tw=rr(.4,1.6);if(Math.random()<.3)u.goal=null;else{const q=apPoint(AP1,1);u.goal=[q[0],q[2]];u.pv=rr(4,11);}}
+    if(u.goal){const dx=u.goal[0]-w.position.x,dz=u.goal[1]-w.position.z,d=Math.hypot(dx,dz),st=u.pv*dt;if(d<=st){u.goal=null;}else{w.position.x+=dx/d*st;w.position.z+=dz/d*st;w.rotation.y=Math.atan2(dx,dz);sp=u.pv;}}
+    else w.rotation.y+=dt*(Math.sin(T*1.7+u.ph)>0?5:-5);}
+  else if(u.mode==='line'){let dr=-w.rotation.y;dr=Math.atan2(Math.sin(dr),Math.cos(dr));w.rotation.y+=dr*Math.min(1,dt*6);}
+  animWorker(w,dt,sp);
+  if(u.raise&&(u.mode==='panic'||(u.path&&state.sim.phase==='evac1'))){u.arms[0].rotation.x=-2.7+Math.sin(T*9+u.ph)*.5;u.arms[1].rotation.x=-2.7+Math.sin(T*9+u.ph+1.6)*.5;}
+  return sp;}
+function updateSim(dt,T){const S=state.sim;dt*=SIM_K;S.t+=dt;
+  const grow=clamp(S.t/3.5,0,1);
+  for(const f of FLAMES){const k=clamp((S.t-f.delay)/1.6,0,1)*f.sc;f.g.visible=k>.01;if(!f.g.visible)continue;const fl=1+.3*Math.sin(T*14+f.ph)+.15*Math.sin(T*23+f.ph*2);f.g.scale.set(k*.85,k*2.6*fl,k*.85);f.g.rotation.y=T*2+f.ph;}
+  fireL.intensity=grow*(1.5+.4*Math.sin(T*17)+.25*Math.sin(T*29));glowM.opacity=grow*(.6+.25*Math.sin(T*11));
+  for(const s of SMOKE){const f=(S.t*.11+s.ph)%1;s.m.position.set(s.x+f*16,16+f*36,s.z+f*5);s.m.scale.setScalar(1.6+f*6.5);s.m.material.opacity=grow*.5*(1-f)*Math.min(1,f*6);}
+  if(S.phase==='fire'&&S.t>2.6)simEvac1();
+  let n=0,cx=0,cz=0,allPanic=true,allLine=true,out=0;
+  for(const w of SIMW){simWalker(w,dt,T);const u=w.userData;if(u.mode!=='panic')allPanic=false;if(u.mode!=='line')allLine=false;if(w.position.z>-31)out++;cx+=w.position.x;cz+=w.position.z;n++;}
+  cx/=n;cz/=n;animWorker(simLeader,dt,0);
+  if(S.phase==='evac1'){
+    if(out>2&&!S.cam1){S.cam1=true;camSGoal.t.set(-101,3,-30);camSGoal.dist=92;camSGoal.pitch=.6;}
+    if(allPanic&&!S.done1){S.done1=true;
+      simBubbles([[SIMW[1],'어떡해!!'],[SIMW[4],'다 나온 거 맞아?'],[SIMW[8],'김 대리 어딨어?!'],[SIMW[13],'119 신고했어?'],[SIMW[19],'휴… 살았다'],[SIMW[24],'인원 확인해요!']]);
+      camSGoal.t.set(-94,2,-14);camSGoal.dist=58;camSGoal.pitch=.62;
+      simMsg('비상상황 시뮬레이션 · 1차 비상집결장소','😱 1차 집결장소에서 인원 파악 중… 다들 우왕좌왕! 불길이 커지고 있어요',[['evac2','2차 집결장소로 대피 ▶','danger'],['end','중단']]);}}
+  else if(S.phase==='evac2'){
+    if(!allLine)camSGoal.t.lerp(V([cx,2,cz]),Math.min(1,dt*3));
+    if(allLine&&!S.done2){S.done2=true;
+      simBubbles([[simLeader,'전원 이상 없음! ✅',true],[SIMW[2],'다행이다…',true],[SIMW[20],'훈련이라 다행!',true]]);
+      camSGoal.t.set(-108,2,55);camSGoal.dist=50;camSGoal.pitch=.5;camSGoal.yaw=.3;
+      simMsg('비상상황 시뮬레이션 · 2차 비상집결장소',`✅ 2차 비상집결장소 집결 완료 · ${SIMW.length}명 전원 확인`,[['end','시뮬레이션 종료','go']]);}}
+  for(const L of simLabels){L.pos.copy(L.w.position);L.pos.y+=L.w===simLeader?6.6:5.9;}}
+
+/* ================= 롤러코스터 ================= */
+const STATIONS_X=[...STATIONS,COASTER_ST];
+function boardCoaster(){if(state.mode!=='site'||busy())return;
+  if(state.fac)closeFac();if(state.flow)toggleFlow(false);if(state.overview)toggleOverview(false);
+  state.auto=null;beacon.visible=false;hidePromoAsk();state.near=null;$('#prompt').hidden=true;jmp.y=0;jmp.v=0;
+  state.ride={s:CO.sStation,v:2,t:0,base:null};CO.cars[0].add(player);player.position.set(0,-.78,-.25);player.rotation.set(0,0,0);
+  const u=player.userData;u.legs.forEach(l=>l.rotation.x=-1.45);u.arms.forEach(a=>a.rotation.x=-.9);
+  siteLabels.forEach(l=>l.el.hidden=true);$('#rideBar').hidden=false;
+  camSGoal.dist=17;camSGoal.pitch=.3;Snd.init();toast('출발합니다! 안전바를 꽉 잡으세요 🎢',2.4);}
+function exitRide(){if(!state.ride)return;state.ride=null;site.add(player);
+  const u=player.userData;u.legs.forEach(l=>l.rotation.x=0);u.arms.forEach(a=>a.rotation.x=0);
+  player.position.set(COASTER_ST.door[0],0,COASTER_ST.door[1]);player.rotation.set(0,PI/2,0);placeCars(CO.sStation);
+  $('#rideBar').hidden=true;Snd.coaster(null);followCam();camSGoal.t.set(player.position.x,2,player.position.z);toast('롤러코스터에서 내렸어요',1.8);}
+function updateRide(dt,T){const R=state.ride;
+  if(state.mode==='site'){
+    const u=((R.s/CO.L)%1+1)%1,q=CO.curve.getPointAt(u),z=CO.zone(u);
+    const phys=Math.max(4.5,Math.sqrt(2*9.8*Math.max(0,18.6-q.y))*1.05);
+    const tgt=z==='station'?(R.t<1.5?0:6):z==='lift'?5.5:phys;R.t+=dt;
+    R.v+=(tgt-R.v)*Math.min(1,dt*(z?2.2:9));R.s+=R.v*dt;placeCars(R.s);Snd.coaster(R.v);
+    const pu=player.userData,up=R.v>11;pu.arms.forEach((a,i)=>{a.rotation.x=lerp(a.rotation.x,up?-2.9+Math.sin(T*8+i)*.25:-.9,.12);});
+  }else Snd.coaster(null);
+  const c=CO.cars[0];const t=CO.curve.getTangentAt(((R.s/CO.L)%1+1)%1);const base=Math.atan2(t.x,t.z)+PI;
+  if(R.base==null)camSGoal.yaw=base;else{let off=camSGoal.yaw-R.base;off=Math.atan2(Math.sin(off),Math.cos(off));camSGoal.yaw=base+off;}R.base=base;
+  camSGoal.t.set(c.position.x,c.position.y+2.4,c.position.z);}
+$('#tourBtn').addEventListener('click',()=>openPromo('tour'));$('#rideExit').addEventListener('click',exitRide);
 
 /* ================= minimap ================= */
 const mm=$('#minimap'),mx=mm.getContext('2d');
@@ -2010,10 +2226,11 @@ function drawMinimap(){
   mx.fillStyle='#e8ebee';for(const c of CIRC){const p=w2m(c.x,c.z);mx.beginPath();mx.arc(p[0],p[1],c.r*s,0,PI*2);mx.fill();}
   const nxt=state.auto?state.auto.st:null;
   STATIONS.forEach(st=>{const p=w2m(st.door[0],st.door[1]);mx.fillStyle=visited.has(st.id)?'#3ddc84':CAT[st.cat];mx.beginPath();mx.arc(p[0],p[1],(st===nxt?6:4.2)*(W/196),0,PI*2);mx.fill();});
-  const pp=w2m(player.position.x,player.position.z),r=player.rotation.y,k=W/196;
+  const PP=state.ride?CO.cars[0].position:player.position;const pp=w2m(PP.x,PP.z),r=state.ride?CO.cars[0].rotation.y:player.rotation.y,k=W/196;
+  mx.fillStyle='#2ecc71';for(const A of[AP1,AP2]){const a=w2m(A.x0,A.z0),b=w2m(A.x1,A.z1);mx.fillRect(a[0],a[1],b[0]-a[0],b[1]-a[1]);}
   mx.save();mx.translate(pp[0],pp[1]);mx.rotate(-r+PI);mx.fillStyle='#ffc233';mx.strokeStyle='#1d1504';mx.lineWidth=1.5*k;mx.beginPath();mx.moveTo(0,-7*k);mx.lineTo(5*k,5*k);mx.lineTo(0,2.5*k);mx.lineTo(-5*k,5*k);mx.closePath();mx.fill();mx.stroke();mx.restore();
 }
-mm.addEventListener('click',e=>{if(state.mode!=='site')return;const r=mm.getBoundingClientRect();const x=MB.x0+(e.clientX-r.left)/r.width*(MB.x1-MB.x0),z=MB.z0+(e.clientY-r.top)/r.height*(MB.z1-MB.z0);
+mm.addEventListener('click',e=>{if(state.mode!=='site'||busy())return;const r=mm.getBoundingClientRect();const x=MB.x0+(e.clientX-r.left)/r.width*(MB.x1-MB.x0),z=MB.z0+(e.clientY-r.top)/r.height*(MB.z1-MB.z0);
   let best=null,bd=1e9;STATIONS.forEach(s=>{const d=Math.hypot(s.door[0]-x,s.door[1]-z);if(d<bd){bd=d;best=s;}});if(best&&bd<45)walkTo(best);});
 
 /* ================= loop ================= */
@@ -2030,7 +2247,7 @@ addEventListener('resize',resize);
 
 function updateSite(dt,T){
   let ix=0,iz=0;
-  if(state.mode==='site'){
+  if(state.mode==='site'&&!busy()){
     ix=(keys.KeyD||keys.ArrowRight?1:0)-(keys.KeyA||keys.ArrowLeft?1:0)+joyV.x;
     iz=(keys.KeyW||keys.ArrowUp?1:0)-(keys.KeyS||keys.ArrowDown?1:0)-joyV.y;
   }
@@ -2049,13 +2266,14 @@ function updateSite(dt,T){
     if(d<=step){p.x=tgt[0];p.z=tgt[1];a.i++;if(a.i>=a.path.length){state.auto=null;beacon.visible=false;if(a.enter)enterStation(a.st);else toast(`${a.st.name} 도착 — 들어가기 버튼(E)을 누르세요`,2.6);}}
     else{p.x+=dx/d*step;p.z+=dz/d*step;player.rotation.y=Math.atan2(dx,dz);speed=30;}
   }
-  stepJump(dt);player.position.y=jmp.y*1.4;animWorker(player,dt,jmp.y>0?0:speed);
-  if(state.mode==='site'&&!promoAsked&&Math.hypot(player.position.x+122,player.position.z-38)<14)showPromoAsk();
+  if(!state.ride){stepJump(dt);player.position.y=jmp.y*1.4;animWorker(player,dt,jmp.y>0?0:speed);}
+  if(state.mode==='site'&&!busy()&&!promoAsked&&Math.hypot(player.position.x+122,player.position.z-38)<14)showPromoAsk();
   if(promoT>0){promoT-=dt;if(promoT<=0||state.flow||Math.hypot(player.position.x+122,player.position.z-38)>34)hidePromoAsk();}
-  let near=null,nd2=1e9;if(state.mode==='site'&&!state.auto)for(const st of STATIONS){const d=Math.hypot(player.position.x-st.door[0],player.position.z-st.door[1]);if(d<7&&d<nd2){nd2=d;near=st;}}
-  if(near!==state.near){state.near=near;const pr=$('#prompt');pr.hidden=!near;if(near){$('#enterName').textContent=near.name;$('#enterSub').textContent=near.sub;}}
+  let near=null,nd2=1e9;if(state.mode==='site'&&!state.auto&&!busy())for(const st of STATIONS_X){const d=Math.hypot(player.position.x-st.door[0],player.position.z-st.door[1]);if(d<7&&d<nd2){nd2=d;near=st;}}
+  if(near!==state.near){state.near=near;const pr=$('#prompt');pr.hidden=!near;if(near){$('#enterName').textContent=near.name;$('#enterVerb').textContent=near.verb||'들어가기';$('#enterSub').textContent=near.sub;}}
+  if(state.sim)updateSim(dt,T);if(state.ride)updateRide(dt,T);
   if(state.mode==='boot'){camSGoal.yaw+=dt*.06;}
-  else if((!state.flow||state.flowFollow)&&!state.overview&&!state.fac){camSGoal.t.set(player.position.x,2,player.position.z);}
+  else if((!state.flow||state.flowFollow)&&!state.overview&&!state.fac&&!busy()){camSGoal.t.set(player.position.x,2,player.position.z);}
   camLerp(camSCur,camSGoal,reduceMotion?1:1-Math.exp(-dt*4.5));camApply(camS,camSCur);
   updateOccluders(dt);
   noiseAcc+=dt;if(noiseAcc>1.2){noiseAcc=0;noiseDb=clamp(noiseDb+(Math.random()-.5)*.8+(51-noiseDb)*.2,48.5,54);drawNoise();}
@@ -2068,7 +2286,7 @@ function updateSite(dt,T){
 }
 const PR=1.3;
 function walkable(x,z){
-  const inside=inPoly(x,z,SITE)||(x>-127&&x<-117&&z>30&&z<122)||(x>-200&&x<-117&&z>96&&z<152);
+  const inside=inPoly(x,z,SITE)||(x>-127&&x<-117&&z>30&&z<122)||(x>-118&&x<-98&&z>44&&z<63.5)||(x>-200&&x<-117&&z>96&&z<152);
   if(!inside)return false;
   for(const b of COL)if(x>b.x0-PR&&x<b.x1+PR&&z>b.z0-PR&&z<b.z1+PR)return false;
   for(const c of CIRC)if(Math.hypot(x-c.x,z-c.z)<c.r+PR)return false;
@@ -2096,7 +2314,7 @@ function frame(now){
   const dt=Math.min(.05,(now-last)/1000);last=now;T+=dt;
   if(toastT>0){toastT-=dt;if(toastT<=0)$('#toast').classList.add('hide');}
   if(state.mode==='interior'){updateInterior(dt,T);renderer.render(activeScene,activeCam);updateLabels(intLabels,activeCam);}
-  else{updateSite(dt,T);if(state.mode==='interior'){renderer.render(activeScene,activeCam);updateLabels(intLabels,activeCam);}else{renderer.render(site,camS);updateLabels(siteLabels,camS);if(state.flow)updateLabels(flowTags,camS);if(state.mode==='site')drawMinimap();}}
+  else{updateSite(dt,T);if(state.mode==='interior'){renderer.render(activeScene,activeCam);updateLabels(intLabels,activeCam);}else{renderer.render(site,camS);if(state.sim)updateLabels(simLabels,camS);else if(!state.ride)updateLabels(siteLabels,camS);if(state.flow)updateLabels(flowTags,camS);if(state.mode==='site')drawMinimap();}}
   requestAnimationFrame(frame);
 }
 
@@ -2109,7 +2327,7 @@ function startTour(){
   toast('정문 앞이에요. 코스 순서대로 걸어가거나 지도를 눌러 보세요',3.4);
 }
 $('#startBtn').addEventListener('click',startTour);
-window.__wirye={go(id){const ad={ccr:1,office:1,room_mgmt:1,room_cs:1,room_ops:1,room_ceo:1};const st=STATIONS.find(s=>s.id===(ad[id]?'admin':id==='cooling'?'demand':id));if(state.mode!=='interior'){player.position.set(st.door[0],0,st.door[1]);if(state.flow)toggleFlow(false);}openInterior(id==='admin'?'ccr':id,st);},
+window.__wirye={sim(){const st=STATIONS[0];player.position.set(st.door[0],0,st.door[1]);enterStation(st);document.querySelector('#floorPick [data-f="emergency"]').click();},sim2:()=>simEvac2(),simK:k=>{SIM_K=k;},simEnd:()=>endSim(),ride:()=>{player.position.set(-123.5,0,59);boardCoaster();},rideS:sv=>{state.ride.s=sv;},tour:()=>openPromo('tour'),go(id){const ad={ccr:1,office:1,room_mgmt:1,room_cs:1,room_ops:1,room_ceo:1};const st=STATIONS.find(s=>s.id===(ad[id]?'admin':id==='cooling'?'demand':id));if(state.mode!=='interior'){player.position.set(st.door[0],0,st.door[1]);if(state.flow)toggleFlow(false);}openInterior(id==='admin'?'ccr':id,st);},
   spot:i=>setSpot(i),exit:()=>exitInterior(),flow:()=>toggleFlow(),pick:()=>{const st=STATIONS[0];player.position.set(st.door[0],0,st.door[1]);enterStation(st);},
   play:()=>startPlay(),playSkip:()=>{if(state.play)state.play.t=99;},pickAt:(x,y)=>{const r=canvas.getBoundingClientRect();_ndc.set((x-r.left)/r.width*2-1,-(y-r.top)/r.height*2+1);_rc.setFromCamera(_ndc,camS);let best=null,bd=1e9;for(const [id,b] of PICKB){if(_rc.ray.intersectBox(b,_hp)){const d=_hp.distanceTo(_rc.ray.origin);if(d<bd){bd=d;best=id;}}}return best;},
   place(x,z,yaw){player.position.set(x,0,z);camSGoal.t.set(x,2,z);camSCur.t.set(x,2,z);if(yaw!=null){camSGoal.yaw=yaw;camSCur.yaw=yaw;}}};
