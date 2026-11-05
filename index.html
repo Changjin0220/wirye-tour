@@ -1306,7 +1306,7 @@ function drawWall(cv,t){const g=cv.getContext('2d'),W=cv.width,H=cv.height;g.fil
   g.fillStyle='#1c3346';g.fillRect(44,420,W-88,3);
 }
 INT.ccr={title:'3층 중앙제어실',short:'3층 제어실',eyebrow:'행정동 3F · 중앙제어실 CCR',lift:'ccr',specs:[['층','3F'],['역할','통합 감시·제어'],['연계','현장 계측']],
-  cam:{t:[0,5,-2],yaw:.42,pitch:.48,dist:58,ymin:-.5,ymax:1.55,dmax:110},
+  cam:{t:[0,5,-2],yaw:.42,pitch:.48,dist:58,dmax:110},
   spots:[
     {t:'대형 상황판',d:'발전소 전체 운전 상태를 한 화면에 띄워 둡니다. 발전 출력, 열 공급량, 축열조 저장률 같은 값을 실시간으로 봅니다. 화면 속 숫자는 견학용 예시 값이에요.',p:[0,9,-21],dist:40},
     {t:'운전 콘솔',d:'운전원이 발전동·HRSG·DH 설비를 원격으로 감시하고 제어하는 자리입니다. 현장에 가지 않고도 밸브 개도, 펌프 운전, 출력을 조정합니다.',p:[0,4,-4],dist:30},
@@ -1356,7 +1356,7 @@ function ceoSet(S,x,z,person){const wood=0x6b4a2f,dark=0x3d2a1c;
   plant(S,x+8,z+9);plant(S,x-10,z-6);}
 function plant(S,x,z){cyl(S,.7,.55,1.2,0x8a7a66,x,.6,z,{},12);sph(S,1.1,0x3f7f4a,x,1.9,z);sph(S,.8,0x4f9a5a,x+.4,2.6,z+.2);}
 INT.office={title:'4층 사무실',short:'4층 복도',eyebrow:'행정동 4F · 사무 공간',lift:'office',specs:[['층','4F'],['구성','대표이사실 · 3개 실']],
-  cam:{t:[-8,3,-4],yaw:.12,pitch:.72,dist:124,ymin:-.5,ymax:1.5,dmax:180},
+  cam:{t:[-8,3,-4],yaw:.12,pitch:.72,dist:124,dmax:180},
   doors:Object.keys(ORG).map(k=>({to:k,p:[ROOM_X[k],11.6,4.4]})),
   spots:[
     {t:'엘리베이터 홀',d:'3층 제어실과 4층 사무실을 오가는 엘리베이터입니다. 설명창의 층 버튼으로도 이동할 수 있어요.',p:[56,4,13],dist:40},
@@ -1381,7 +1381,7 @@ INT.office={title:'4층 사무실',short:'4층 복도',eyebrow:'행정동 4F · 
   }};
 function officeRoom(key){const o=ORG[key];const n=o.teams.length;const xs=o.teams.map((_,i)=>(i-(n-1)/2)*17);
   return{title:o.name,short:o.name,eyebrow:'행정동 4F · '+o.name,parent:'office',note:'팀 역할 문구는 예시예요. 실제 내용을 주시면 바꿔 넣을게요.',specs:[['위치','행정동 4층'],['팀','예시 '+n+'개']],
-    cam:{t:[0,3,2],yaw:.18,pitch:.62,dist:62,ymin:-.5,ymax:1.55,dmax:110},
+    cam:{t:[0,3,2],yaw:.18,pitch:.62,dist:62,dmax:110},
     spots:[{t:o.name+' 소개',d:o.intro,p:[0,8.5,-17.5],dist:42},...o.teams.map((tm,i)=>({t:tm[0],d:tm[1],p:[xs[i],4,0],dist:30}))],
     build(c){const S=c.S;room(c,60,40,12);
       for(let z=-14;z<=14;z+=7)box(S,.2,6,5.2,0x9fd3ef,-29.6,6.5,z,{emissive:0x9fd3ef,ei:.25});
@@ -1395,7 +1395,7 @@ function officeRoom(key){const o=ORG[key];const n=o.teams.length;const xs=o.team
     }};}
 for(const k of Object.keys(ORG))if(!ORG[k].ceo)INT[k]=officeRoom(k);
 INT.room_ceo={title:'대표이사실',short:'대표이사실',eyebrow:'행정동 4F · 대표이사실',parent:'office',note:'소개 문구는 예시예요. 실제 내용을 주시면 바꿔 넣을게요.',specs:[['위치','행정동 4층 서쪽 끝'],['구성','집무 · 접견']],
-  cam:{t:[0,3,0],yaw:.3,pitch:.6,dist:58,ymin:-.5,ymax:1.55,dmax:100},
+  cam:{t:[0,3,0],yaw:.3,pitch:.6,dist:58,dmax:100},
   spots:[{t:'대표이사실',d:'회사 경영을 총괄하는 대표이사의 집무 공간이에요. (예시 문구)',p:[0,8.5,-17.5],dist:44},{t:'집무 공간',d:'결재와 업무를 보는 책상이에요. 뒤쪽 서가에는 회사 연혁 자료와 도서가 있어요. (예시 문구)',p:[-4,3,-4],dist:28},{t:'접견 공간',d:'손님을 맞이하고 회의하는 소파와 테이블이에요. (예시 문구)',p:[-8,2,10],dist:28}],
   build(c){const S=c.S;room(c,48,40,12);
     for(let z=-14;z<=14;z+=7)box(S,.2,6,5.2,0x9fd3ef,-23.6,6.5,z,{emissive:0x9fd3ef,ei:.25});
@@ -1407,7 +1407,7 @@ INT.room_ceo={title:'대표이사실',short:'대표이사실',eyebrow:'행정동
 
 /* ---------- 정압기 ---------- */
 INT.gov={title:'정압기',eyebrow:'Governor Station · 연료 공급',outdoor:true,real:true,specs:[['공급 압력','35 bar(g)'],['기능','정압·계량·여과'],['안전장치','SSV·방출밸브']],
-  cam:{t:[-4,3,0],yaw:.32,pitch:.48,dist:82,ymin:-1.3,ymax:1.3,dmax:150},
+  cam:{t:[-4,3,0],yaw:.32,pitch:.48,dist:82,dmax:150},
   spots:[
     {t:'고압 가스 유입',d:'외부 배관망(한국가스공사)에서 고압 천연가스가 들어와 입구 헤더에서 두 계열로 나뉩니다.',p:[-54,4,0]},
     {t:'필터',d:'가스에 섞인 먼지 같은 이물질과 수분을 걸러냅니다. 앞쪽 원판은 필터 교체용 급속 개폐 덮개예요.',p:[-32,5,-4.5]},
@@ -1447,7 +1447,7 @@ INT.gov={title:'정압기',eyebrow:'Governor Station · 연료 공급',outdoor:t
 
 /* ---------- 발전동 ---------- */
 INT.power={title:'발전동',eyebrow:'Power Building · 단축형 복합발전',real:true,specs:[['설비 용량','450 MW'],['방식','GT + ST 단축'],['제어','현장 계측 → CCR']],
-  cam:{t:[-6,11,0],yaw:.3,pitch:.36,dist:104,ymin:-.45,ymax:1.55,dmax:170},
+  cam:{t:[-6,11,0],yaw:.3,pitch:.36,dist:104,dmax:170},
   spots:[
     {t:'공기 흡입 · 필터하우스',d:'지붕 쪽 필터하우스가 바깥 공기의 먼지를 걸러 흡기 덕트로 내려보냅니다. 흰 입자가 공기 흐름이에요.',p:[-9,31,0],dist:46},
     {t:'압축기 (17단)',d:'17단 날개가 공기를 단계적으로 눌러 고압 공기로 만듭니다. 위쪽 케이싱을 투명하게 해서 회전하는 날개가 보이게 했어요.',p:[-20,13,0],dist:30},
@@ -1520,7 +1520,7 @@ INT.power={title:'발전동',eyebrow:'Power Building · 단축형 복합발전',
 
 /* ---------- HRSG ---------- */
 INT.hrsg={title:'HRSG',eyebrow:'배열회수보일러 · 단면',outdoor:true,real:true,specs:[['증발량','약 656 t/h'],['압력단','HP / IP / LP'],['입구','약 630℃']],
-  cam:{t:[-6,16,0],yaw:.2,pitch:.32,dist:100,ymin:-1.2,ymax:1.2,dmax:170},
+  cam:{t:[-6,16,0],yaw:.2,pitch:.32,dist:100,dmax:170},
   spots:[
     {t:'입구 덕트',d:'가스터빈에서 나온 약 630℃ 배기가스가 넓어지는 덕트를 지나 들어옵니다. 그냥 버리면 큰 손실이 되는 열이에요.',p:[-36,10,0]},
     {t:'과열기',d:'가장 뜨거운 배기가스를 먼저 만나는 구간입니다. 증기를 한 번 더 가열해 물기 없는 고온 증기로 만듭니다.',p:[-18.5,14,0]},
@@ -1564,7 +1564,7 @@ INT.hrsg={title:'HRSG',eyebrow:'배열회수보일러 · 단면',outdoor:true,re
 
 /* ---------- 냉각탑 ---------- */
 INT.tower={title:'냉각탑',eyebrow:'Cooling Tower · 1개 셀 단면',outdoor:true,real:true,specs:[['방식','기계통풍식'],['셀 수','8 Cell'],['순환 수량','약 25,500 ㎥/h']],
-  cam:{t:[8,9,0],yaw:.55,pitch:.32,dist:70,ymin:-1.4,ymax:1.5,dmax:190},
+  cam:{t:[8,9,0],yaw:.55,pitch:.32,dist:70,dmax:190},
   spots:[
     {t:'냉각팬',d:'위쪽 대형 팬이 공기를 끌어올립니다. 팬으로 바람을 만드는 기계통풍식이라 바깥 바람에 덜 좌우돼요. 위로 벌어진 통은 공기를 부드럽게 내보내는 팬 스택입니다.',p:[0,18,0]},
     {t:'모터 · 감속기',d:'팬 스택 바깥 모터가 긴 구동축으로 가운데 감속기를 돌리고, 감속기가 팬을 천천히 큰 힘으로 돌립니다.',p:[6,16.5,0],dist:28},
@@ -1610,7 +1610,7 @@ INT.tower={title:'냉각탑',eyebrow:'Cooling Tower · 1개 셀 단면',outdoor:
 
 /* ---------- DH 설비동 ---------- */
 INT.dh={title:'DH 설비동',eyebrow:'District Heating · 지역난방',real:true,specs:[['열 공급 능력','232.5 Gcal/h'],['방식','열교환 · 펌프 수송']],
-  cam:{t:[4,6,0],yaw:.42,pitch:.52,dist:92,ymin:-.45,ymax:1.55,dmax:160},
+  cam:{t:[4,6,0],yaw:.42,pitch:.52,dist:92,dmax:160},
   spots:[
     {t:'발전 측 열',d:'증기터빈에서 추출한 증기 같은 발전 과정의 열이 들어옵니다(분홍). 원래라면 버려졌을 열이에요.',p:[-36,7,-20]},
     {t:'판형 열교환기',d:'얇은 금속판 수백 장을 겹쳐 조인 열교환기입니다. 판 사이로 발전 측 물과 난방수가 번갈아 흘러, 섞이지 않고 열만 건너가요.',p:[-18,5,-2],dist:40},
@@ -1650,7 +1650,7 @@ INT.dh={title:'DH 설비동',eyebrow:'District Heating · 지역난방',real:tru
 
 /* ---------- 축열조 ---------- */
 INT.storage={title:'축열조',eyebrow:'Thermal Storage · 절반 단면',outdoor:true,real:true,specs:[['저장 용량','40,000 ㎥'],['저장 온도','약 120℃'],['구성','축열조 2 · 순수 2']],
-  cam:{t:[0,14,0],yaw:.14,pitch:.22,dist:80,ymin:-1.2,ymax:1.2,dmax:170},
+  cam:{t:[0,14,0],yaw:.14,pitch:.22,dist:80,dmax:170},
   spots:[
     {t:'상부 고온수',d:'뜨거운 물(약 120℃)은 가벼워서 위쪽에 머뭅니다.',p:[0,25,0]},
     {t:'온도약층',d:'뜨거운 물과 찬 물 사이의 얇은 경계층입니다. 저장할 때는 아래로, 꺼내 쓸 때는 위로 움직여요.',p:[0,14,0],dyn:true},
@@ -1695,7 +1695,7 @@ function syncModes(c){document.querySelectorAll('#shExtra [data-m]').forEach(b=>
 
 /* ---------- 이중보온관 공사 (초안) ---------- */
 INT.trench={title:'이중보온관 공사',eyebrow:'열수송관 매설',outdoor:true,extra:'<div class="modes"><button type="button" data-open="trench_build" aria-pressed="true">▶ 공사 처음부터 보기</button></div>',specs:[['관 구성','공급관 + 회수관'],['공급관','진행방향 오른쪽']],
-  cam:{t:[0,-3,6],yaw:.42,pitch:.36,dist:50,ymin:-1.4,ymax:1.6,pmin:.05,dmax:110},
+  cam:{t:[0,-3,6],yaw:.42,pitch:.36,dist:50,pmin:.05,dmax:110},
   spots:[
     {t:'이중보온관 구조',d:'안쪽 강관으로 물이 흐르고, 그 바깥을 보온재가 감싸고, 가장 바깥은 외관(케이싱)이 보호합니다. 끝단 단면에서 층이 보여요.',p:[0,-3.6,12.6],dist:24},
     {t:'누수 감지선',d:'보온재 속에는 감지선이 함께 묻혀 있어요. 수요처 방향으로 봤을 때 배관 오른쪽에 빨간 sensor선, 왼쪽에 초록 feedback선, 위쪽에 나동선(피복 없는 구리선) 2가닥이 있어요. 보온재에 물이 스며들면 감지선과 강관 사이의 전기 저항이 떨어지는데, 이를 측정해 누수가 생긴 위치를 찾아내요.',p:[1.8,-3.4,12.4],dist:10},
@@ -1928,7 +1928,7 @@ INT.trench_build={title:'이중보온관 부설 공정',short:'이중보온관 �
   note:'일반적인 이중보온관 현장 접합 공정을 바탕으로 단순화했어요. 실제 시방과 순서·명칭은 다를 수 있어요.',
   specs:[['공정','11단계'],['검사','PAUT · 타격검측']],
   extra:'<div class="modes"><button type="button" data-proc="play">▶ 처음부터 다시</button><button type="button" data-proc="pause">⏯ 멈춤 / 계속</button><output id="procOut"></output></div>',
-  cam:{t:[0,-2,0],yaw:.6,pitch:.5,dist:50,ymin:-3,ymax:3,pmin:.05,dmax:120},
+  cam:{t:[0,-2,0],yaw:.6,pitch:.5,dist:50,pmin:.05,dmax:120},
   spots:PROC_STEPS.map(([t,d,,p,dist])=>({t,d,p,dist,yaw:dist<25?.22:.5,pitch:dist<25?.85:.6})),
   onSpot(i,I){if(I.c.proc)I.c.proc.jump(i,false);},
   build(c){const S=c.S;
@@ -2028,8 +2028,16 @@ function getInterior(id){
   const cam=new THREE.PerspectiveCamera(42,innerWidth/innerHeight,.3,1500);
   const goal=Orbit(def.cam.t,def.cam.yaw,def.cam.pitch,def.cam.dist);Object.assign(goal,{ymin:def.cam.ymin,ymax:def.cam.ymax,pmin:def.cam.pmin||.08,pmax:1.4,dmin:12,dmax:def.cam.dmax||140});
   const cur=Orbit(def.cam.t,def.cam.yaw,def.cam.pitch,def.cam.dist);
-  return builtInt[id]={id,def,S,c,cam,goal,cur};
+  /* 반대편에서 볼 때 카메라와 시점 사이를 가리는 벽은 자동으로 숨김 */
+  const walls=[];S.updateMatrixWorld(true);const _sz=new THREE.Vector3();
+  S.traverse(o=>{if(!o.isMesh||!o.geometry||o.geometry.type!=='BoxGeometry')return;const b=new THREE.Box3().setFromObject(o);b.getSize(_sz);if(_sz.y<2.5)return;
+    const ax=_sz.x<1.4&&_sz.z>6?'x':_sz.z<1.4&&_sz.x>6?'z':null;if(ax)walls.push({o,b,ax,c:(b.min[ax]+b.max[ax])/2,oa:ax==='x'?'z':'x',hid:false});});
+  return builtInt[id]={id,def,S,c,cam,goal,cur,walls};
 }
+function wallCull(I){const cp=I.cam.position,t=I.cur.t;
+  for(const w of I.walls){const a=w.ax,d0=cp[a]-w.c,d1=t[a]-w.c;let hide=false;
+    if(d0*d1<0){const f=d0/(d0-d1),po=cp[w.oa]+(t[w.oa]-cp[w.oa])*f,py=cp.y+(t.y-cp.y)*f;hide=po>w.b.min[w.oa]-3&&po<w.b.max[w.oa]+3&&py>w.b.min.y-3&&py<w.b.max.y+6;}
+    if(hide!==w.hid){w.hid=hide;if(hide)w.o.layers.disable(0);else w.o.layers.enable(0);}}}
 function hideSiteUI(){$('#promoAsk').hidden=true;siteLabels.forEach(l=>l.el.hidden=true);flowTags.forEach(l=>l.el.style.visibility='hidden');document.querySelectorAll('.site-ui').forEach(e=>e.hidden=true);$('#prompt').hidden=true;$('#joy').hidden=true;state.near=null;}
 function showSiteUI(){siteLabels.forEach(l=>l.el.hidden=false);document.querySelectorAll('.site-ui').forEach(e=>e.hidden=false);$('#joy').hidden=!isTouch;}
 const PICKS={
@@ -2446,7 +2454,7 @@ let last=performance.now(),T=0;
 function frame(now){
   const dt=Math.min(.05,(now-last)/1000);last=now;T+=dt;
   if(toastT>0){toastT-=dt;if(toastT<=0)$('#toast').classList.add('hide');}
-  if(state.mode==='interior'){updateInterior(dt,T);renderer.render(activeScene,activeCam);updateLabels(intLabels,activeCam);}
+  if(state.mode==='interior'){updateInterior(dt,T);if(state.interior&&state.interior.walls)wallCull(state.interior);renderer.render(activeScene,activeCam);updateLabels(intLabels,activeCam);}
   else{updateSite(dt,T);if(state.mode==='interior'){renderer.render(activeScene,activeCam);updateLabels(intLabels,activeCam);}else{renderer.render(site,camS);if(state.sim)updateLabels(simLabels,camS);else if(!state.ride)updateLabels(siteLabels,camS);if(state.flow)updateLabels(flowTags,camS);if(state.mode==='site')drawMinimap();}}
   requestAnimationFrame(frame);
 }
