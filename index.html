@@ -556,7 +556,7 @@ const gAdmin=bld(-109,-58.5,34,54,16,0xdcd6c8,0xbdb5a5);
  const R0=16.6,wood=M(0xa8743f,{rough:.8}),woodD=M(0x7a5230,{rough:.85});
  const deck=(ax,az,bx,bz)=>{const len=Math.hypot(bx-ax,bz-az),m=box(g,2.4,.16,len+2.4,wood,(ax+bx)/2,R0+.08,(az+bz)/2);m.rotation.y=Math.atan2(bx-ax,bz-az);m.receiveShadow=true;
    for(let t=0;t<=len+2.4;t+=.8){const f=(t-1.2)/len,l=box(g,2.42,.02,.06,woodD,ax+(bx-ax)*f,R0+.17,az+(bz-az)*f);l.rotation.y=m.rotation.y;l.castShadow=false;}};
- const DK=[[-9.5,-18.5],[-6.5,-18.5],[-6.5,21],[8,21],[8,10],[9.9,10]];for(let i=0;i<DK.length-1;i++)deck(DK[i][0],DK[i][1],DK[i+1][0],DK[i+1][1]);deck(-6.5,21,-9.5,21);
+ const DK=[[-9.5,-18.5],[-6.5,-18.5],[-6.5,21],[8,21],[13,21],[13,14.2]];for(let i=0;i<DK.length-1;i++)deck(DK[i][0],DK[i][1],DK[i+1][0],DK[i+1][1]);deck(-6.5,21,-9.5,21);
  const gazebo=(x,z)=>{box(g,5.4,.35,5.4,wood,x,R0+.3,z);for(const dx of[-2.3,2.3])for(const dz of[-2.3,2.3])box(g,.32,3.4,.32,woodD,x+dx,R0+2.1,z+dz);
    for(const [w,d,dx,dz] of[[5,.25,0,-2.3],[.25,5,-2.3,0],[.25,5,2.3,0]])box(g,w,.12,d,woodD,x+dx,R0+1.25,z+dz);
    box(g,5.6,.25,.25,woodD,x,R0+3.7,z-2.3);box(g,5.6,.25,.25,woodD,x,R0+3.7,z+2.3);box(g,.25,.25,5.6,woodD,x-2.3,R0+3.7,z);box(g,.25,.25,5.6,woodD,x+2.3,R0+3.7,z);
@@ -575,9 +575,9 @@ const gAdmin=bld(-109,-58.5,34,54,16,0xdcd6c8,0xbdb5a5);
   for(let k=-1;k<=1;k++)box(g,.12,.14,w+.4,0x8a97a2,cx+k*w/4,R0+h+.24,cz,{metal:.5});
   for(const [dx,dz,sc] of[[-2,-2,1],[2,1.5,.8],[-1,2.3,.7]]){cyl(g,.7*sc,.5*sc,.8,0x8b5e3c,cx+dx,R0+.4,cz+dz,{},10);sph(g,1.1*sc,0x4f9a54,cx+dx,R0+1.3*sc+.6,cz+dz);}}
  {const px=13,pz=10;box(g,6,4.4,7,0xcfc8ba,px,R0+2.2,pz);box(g,6.6,.35,7.6,0xb3ab9b,px,R0+4.55,pz);
-  box(g,.12,3,2.2,0x1f3b57,px-3.06,R0+1.5,pz,{metal:.3});const dr=box(g,.1,2.8,1.9,0x5d7b93,px-3.1,R0+1.45,pz,{metal:.3});dr.geometry.translate(0,0,.95);dr.position.z=pz-.95;dr.rotation.y=-.9;
-  box(g,.06,.5,1.8,0x2ecc71,px-3.12,R0+3.4,pz,{emissive:0x2ecc71,ei:.8});
-  signBox(g,'옥상 출입구','ROOF ACCESS',px-3.15,R0+3.4+.0,pz-2.4,2.2,.5,'#14324d','#ffffff',-PI/2);}
+  box(g,2.2,3,.12,0x1f3b57,px,R0+1.5,pz+3.56,{metal:.3});const dr=box(g,1.9,2.8,.1,0x5d7b93,px-.95,R0+1.45,pz+3.62,{metal:.3});dr.geometry.translate(.95,0,0);dr.rotation.y=-.9;
+  box(g,1.1,.35,.06,0x2ecc71,px,R0+3.25,pz+3.6,{emissive:0x2ecc71,ei:.8});
+  signBox(g,'옥상 출입구','ROOF ACCESS',px+2.1,R0+2.3,pz+3.62,1.6,.45,'#14324d','#ffffff');}
  for(const [w,d,dx,dz] of[[34.4,.25,0,-27.1],[34.4,.25,0,27.1],[.25,54.4,-17.1,0],[.25,54.4,17.1,0]])box(g,w,1.1,d,0xc9c2b4,dx,R0+.55,dz);}
 {const A=mkInt();gAdmin.userData.internal=A;for(const y of[4,8,12]){box(A,27.5,.35,53,0xb8c2ca,-111.75,y,-58.5);box(A,5.5,.35,38.5,0xb8c2ca,-95.25,y,-65.25);box(A,5.5,.35,2,0xb8c2ca,-95.25,y,-33);}box(A,26,.2,50,0x3a6fb0,-111,8.3,-58.5);
  {const sm=M(0x8d99a5),a=Math.atan2(2,7.5);for(let f=0;f<3;f++){const y0=f*4;box(A,1.8,.25,7.8,sm,-96,y0+1,-40.25).rotation.x=-a;box(A,1.8,.25,7.8,sm,-94,y0+3,-40.25).rotation.x=a;box(A,4,.25,2,sm,-95,y0+1.88,-35.5);box(A,4,.25,2,sm,-95,y0+3.88,-45);}
@@ -1735,7 +1735,7 @@ INT.trench={title:'이중보온관 공사',eyebrow:'열수송관 매설',outdoor
 INT.demand={title:'지역난방 기계실',eyebrow:'수요처 아파트 · 지하 1층 · 지역난방',outdoor:true,lift:'demand',liftSet:'demand',
   note:'나래에너지서비스 기계실 P&ID를 바탕으로 보기 쉽게 단순화했어요. 표시 온도는 대표값이고 고객별로 다르게 운영될 수 있어요. 배관 색은 물 온도(빨강 뜨거움 → 노랑 → 파랑 차가움)를 나타내요.',
   specs:[['1차 공급','115℃'],['1차 환수','35~55℃'],['난방','60 / 45℃'],['급탕','55℃']],
-  cam:{t:[-2,-8,0],yaw:.42,pitch:.42,dist:92,ymin:-1.1,ymax:1.4,pmin:.02,dmax:170},
+  cam:{t:[-2,-8,0],yaw:.42,pitch:.42,dist:92,pmin:.02,dmax:170},
   spots:[
     {t:'수요처 아파트',d:'발전소의 열을 받아 난방과 온수(급탕)에 쓰는 아파트예요. 땅속 이중보온관이 아파트 지하 기계실까지 들어옵니다.',p:[6,22,-8],dist:110},
     {t:'1차측 인입 · 주차단밸브',d:'도로 아래 이중보온관으로 115℃ 지역난방수가 들어와요. 들어오는 방향을 바라보고 오른쪽이 공급관, 왼쪽이 환수관이에요. 들어오자마자 공급·환수관에 주차단밸브가 있어서, 점검할 때 단지 배관을 발전소 배관망과 분리할 수 있어요.',p:[-29,-10,-12],dist:34},
@@ -1819,7 +1819,7 @@ INT.cooling={title:'지역냉방 기계실',eyebrow:'수요처 아파트 · 지�
   note:'나래에너지서비스 지역냉방 자료(흡수식 냉동기 원리 · 2단 흡수식 냉동기 외형)를 바탕으로 보기 쉽게 단순화했어요. 온도·압력은 대표값이에요.',
   specs:[['구동 열원','지역난방수 95℃↑'],['냉수','13 → 8℃'],['냉매','물'],['흡수제','리튬브로마이드']],
   extra:'<div class="legend">'+[['#ff4d4d','지역난방 온수 (95℃ → 55℃)'],['#3aa0ff','냉각수 (31℃ → 36.5℃)'],['#3ddc84','냉수 (13℃ → 8℃)'],['#eaf6ff','수증기 (냉매)'],['#7fe0ff','물 (냉매)'],['#ffd23f','묽은 흡수액'],['#ff8a3d','진한 흡수액']].map(([c,t])=>`<span style="--c:${c}"><i></i>${t}</span>`).join('')+'</div>',
-  cam:{t:[2,10,0],yaw:.3,pitch:.36,dist:118,ymin:-.6,ymax:1.4,dmax:170},
+  cam:{t:[2,10,0],yaw:.3,pitch:.36,dist:118,dmax:170},
   spots:[
     {t:'지역냉방이란?',dist:118,d:'발전소에서 보내준 95℃ 이상의 지역난방 온수로 시원한 냉수를 만들어 건물에 공급하는 중앙 냉방이에요. 전기로 압축기를 돌리는 에어컨 대신 열로 냉방하고, 냉매도 프레온 대신 물을 써요. 여름에 남는 지역난방 열을 쓰니 전력 피크도 줄여요.',p:[2,12,0],dist:118},
     {t:'흡수식 냉동기 원리 모형',d:'왼쪽은 원리를 보여주는 단면 모형이에요. 통 4개(증발기 · 흡수기 · 재생기 · 응축기)가 진공으로 이어져 있고, 물(냉매)과 리튬브로마이드 용액(흡수제)이 그 사이를 돌아요. ① → ② → ③ → ④ 순서로 따라가 보세요.',p:[-21,12,0],dist:62},
