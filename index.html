@@ -521,7 +521,7 @@ sun.position.set(-110,190,120);sun.target.position.set(-30,0,10);sun.castShadow=
 Object.assign(sun.shadow.camera,{left:-220,right:220,top:220,bottom:-220,near:20,far:600});
 sun.shadow.mapSize.set(2048,2048);sun.shadow.bias=-.0006;site.add(sun,sun.target);
 
-const SITE=[[-130,-90],[-75,-120],[145,-120],[145,-100],[10,115],[-82,115],[-94,36],[-130,36]];
+const SITE=[[-130,-90],[-75,-120],[145,-120],[145,-100],[10,115],[-82,115],[-94+12*11/79,47],[-130,47]];
 const FADE=[];function fadeReg(m,op,col){m.material=m.material.clone();FADE.push([m.material,op,col==null?0xffffff:col]);return m;}
 const ground=mesh(new THREE.PlaneGeometry(2400,2400),M(0x8fae79,{rough:1}),site,0,0,0,false);ground.rotation.x=-PI/2;ground.receiveShadow=true;
 const siteShape=new THREE.Shape(SITE.map(([x,z])=>new THREE.Vector2(x,-z)));
@@ -594,7 +594,9 @@ const gAdmin=bld(-109,-58.5,34,54,16,0xdcd6c8,0xbdb5a5);
 
 /* 발전동 */
 const gPower=bld(-55,2,57.5,70,24,0xdad6cd,0xc3bdaf);
-{const g=gPower;box(g,3.2,1.4,62,0xa9bac6,0,25.2,0,{rough:.3});for(let z=-28;z<=28;z+=8)box(g,.3,18,.6,0xc6c0b3,28.9,10,z);box(g,.3,11,13,0x8b98a3,28.9,5.5,10);}
+{const g=gPower;box(g,3.2,1.4,62,0xa9bac6,0,25.2,0,{rough:.3});
+ box(g,14,12,15,0xece9e2,-20.5,30,-26.5);box(g,14.6,.5,15.6,0xcfc9bc,-20.5,36.2,-26.5);for(let x=-26.5;x<=-14.5;x+=1.5)box(g,.3,11,.25,0xd2cdc2,x,30,-34.1);for(let z=-33;z<=-20;z+=1.5)box(g,.25,11,.3,0xd2cdc2,-27.6,30,z);
+ box(g,6,6,9,0xe4e0d8,-4,27,-28);box(g,.3,3.2,60,0x6b8076,-28.95,10.5,0,{rough:.4});box(g,.3,3.2,60,0x6b8076,-28.95,17,0,{rough:.4});for(let z=-28;z<=28;z+=8)box(g,.3,18,.6,0xc6c0b3,28.9,10,z);box(g,.3,11,13,0x8b98a3,28.9,5.5,10);}
 {const P=mkInt();gPower.userData.internal=P;const X=-55,Y=12;
  box(P,12,7,46,0xa7a9a6,X,3.5,-3);
  cylZ(P,3.4,4.6,5,0x9c6b4c,X,Y,-24.5,{metal:.4});
@@ -683,8 +685,31 @@ const gPGS=bld(38,-97,8,9,5,0xd6d1c5,0xbfb8a9);
 const gPLB=bld(57,-97,22,10,10,0xd9d5cb,0xc2bbad);
 {cyl(gPLB,1.3,1.5,26,0xa98666,9,13,0,{},16);box(gPLB,3.2,.4,3.2,0x1e1a17,9,26.2,0);signBox(gPLB,'첨두부하보일러동','PLB',-2,6,5.1,11,2.3,'#14324d','#ffffff');
  const I=mkInt();gPLB.userData.internal=I;cylX(I,3,3,13,0xc07a3a,55,4,-97);box(I,3,4,4,0xd62828,47.5,4,-97);pipe(I,[[61.5,6,-97],[66,6,-97],[66,24,-97]],.5,0x9aa6b0);}
-const gGas1=bld(17.5,72,7,14,6,0xd8d3c8);{const G1=mkInt();gGas1.userData.internal=G1;pipe(G1,[[17.5,2.5,65],[17.5,2.5,76],[14,2.5,76]],.55,0xf2b705);pipe(G1,[[17.5,2.5,72],[17.5,8,72]],.3,0x9aa6b0);box(G1,2,1.6,1.6,0xd62828,17.5,2.5,70);}const gTR=bld(-111,-12,14,17,7,0xd8d3c8);{signBox(gTR,'변압기실','ELECTRICAL',0,4.6,8.6,7,1.6,'#14324d','#ffffff');for(let y=1.5;y<5;y+=1)box(gTR,.3,.4,10,0x8a959e,7.1,y,0);
- const I=mkInt();gTR.userData.internal=I;for(const z of[-17,-8])box(I,5,4,5,0x5a6670,-111,2,z);for(let k=0;k<4;k++)box(I,1.6,4.4,1.2,0x2f3d4a,-116.4+k*1.8,2.2,-4.4);}
+const gGas1=bld(17.5,72,7,14,6,0xd8d3c8);{const G1=mkInt();gGas1.userData.internal=G1;pipe(G1,[[17.5,2.5,65],[17.5,2.5,76],[14,2.5,76]],.55,0xf2b705);pipe(G1,[[17.5,2.5,72],[17.5,8,72]],.3,0x9aa6b0);box(G1,2,1.6,1.6,0xd62828,17.5,2.5,70);}/* 행정동~정문 사이 전기설비 (도면 24·25·26·9·39·23) */
+const gTR=bld(-108,-4.5,16,17,9,0xe6e2d8,0xd8d3c5);
+{const g=gTR;for(let x=-7.2;x<=7.2;x+=1.2)box(g,.22,.3,17.4,0xc8c1b1,x,9.7,0);for(const x of[-4,0,4])box(g,1.1,.08,15.5,0xa9c3d1,x,9.85,0);
+ for(let y=2;y<7;y+=1)box(g,.3,.4,12,0x8a959e,-8.1,y,0);signBox(g,'주변압기실','MAIN & AUX TRANSFORMER',-8.2,7.6,0,8.4,1.4,'#14324d','#ffffff',-PI/2);
+ const I=mkInt();gTR.userData.internal=I;for(const z of[-9,-2])box(I,6,5,5,0x5a6670,-110,2.5,z);for(const z of[-9,-2])for(const dx of[-1.6,0,1.6])cyl(I,.25,.35,2.4,0xb7743e,-110+dx,6.2,z,{},8);for(let k=0;k<4;k++)box(I,1.6,4.4,1.2,0x2f3d4a,-114.4+k*1.8,2.2,2);}
+const gST=bld(-108,11.5,16,13,8,0xe2ded4,0x34393e);
+{const g=gST;for(let x=-7;x<=7;x+=1.4)box(g,.12,.1,13.2,0x1d2125,x,8.65,0);for(let z=-6;z<=6;z+=1.5)box(g,16.2,.1,.12,0x1d2125,0,8.66,z);
+ for(let y=1.6;y<6;y+=.9)box(g,.3,.4,9,0x8a959e,-8.1,y,0);signBox(g,'예비변압기실','STAND-BY UNIT TRANSFORMER',-8.2,6.6,0,8.4,1.4,'#14324d','#ffffff',-PI/2);
+ const I=mkInt();gST.userData.internal=I;box(I,6,5,5,0x5a6670,-108,2.5,11.5);for(const dx of[-1.6,0,1.6])cyl(I,.25,.35,2.4,0xb7743e,-108+dx,6.2,11.5,{},8);}
+const gPCC=bld(-92,10,12,12.3,6,0xd9d6cf,0xd6d0c2);
+{const g=gPCC;for(let x=-5.6;x<=5.6;x+=.8)box(g,.16,.22,12.6,0xc4bdae,x,6.7,0);for(let x=-4.5;x<=4.5;x+=1.5)box(g,.9,1.2,.1,0x6f8796,x,3.6,6.2,{rough:.2,metal:.3});
+ signBox(g,'전력제어센터','POWER CONTROL CENTER',0,5,6.25,7.6,1.3,'#14324d','#ffffff');
+ const st=box(g,1.4,.2,7.2,0x9aa6b0,-6.9,3,1.5,{metal:.4});st.rotation.x=-Math.atan2(6,7.2);for(const dz of[-2,0,2,4])box(g,.08,1.1,.08,0xffc233,-7.55,1+(dz+2)*.75+.6,dz-1);
+ const rl=box(g,.08,.08,7.6,0xffc233,-7.55,3.9,1.5);rl.rotation.x=-Math.atan2(6,7.2);box(g,1.6,.2,2,0x9aa6b0,-6.9,6,-3.4,{metal:.4});
+ const I=mkInt();gPCC.userData.internal=I;for(let k=0;k<5;k++)box(I,1.4,3.6,1.2,0x2f3d4a,-96.6+k*2.2,1.9,10);}
+const gFFC=bld(-88.5,-21.8,5.2,4.45,4,0xd8d3c8,0xb8b0a2);
+{const g=gFFC;box(g,1.4,2.6,.1,0xc0392b,0,1.3,2.25);signBox(g,'소화약제 용기실','FIRE FIGHTING CYLINDERS',0,3.4,2.3,4.4,.8,'#c0392b','#ffffff');
+ const I=mkInt();gFFC.userData.internal=I;for(let k=0;k<6;k++)cyl(I,.35,.35,2.6,0xd62828,-90.4+k*.75,1.3,-22.6,{},10);}
+/* 경비실 가는 길 펜스 + 압축기동 보행로 */
+{const fm2=new THREE.MeshStandardMaterial({color:0x4f7d5c,transparent:true,opacity:.55,roughness:.6,side:THREE.DoubleSide});
+ box(site,.08,2,60,fm2,-117.6,1,8).castShadow=false;for(let z=-22;z<=38;z+=4)box(site,.14,2.2,.14,0x3f5f49,-117.6,1.1,z);box(site,.1,.1,60,0x3f5f49,-117.6,2.15,8);colBox(-117.6,8,.4,60);
+ const wk=[[-100.5,42.5],[-93,44.5],[-87.5,58],[-81,71]];for(let i=0;i<wk.length-1;i++){const [ax,az]=wk[i],[bx,bz]=wk[i+1],l=Math.hypot(bx-ax,bz-az);const m=box(site,2.2,.06,l+2.2,0xc9c6bf,(ax+bx)/2,.13,(az+bz)/2,{rough:.9});m.rotation.y=Math.atan2(bx-ax,bz-az);m.castShadow=false;}}
+/* 발전동 → 주변압기 상분리모선 (하얀 버스덕트) */
+for(const z of[-10.6,-9.2,-7.8]){cylX(site,.45,.45,16.25,0xeef0f1,-91.875,6.4,z,{metal:.2,rough:.4},14);for(const x of[-99.6,-84.1])cylX(site,.58,.58,.3,0xd5d9dc,x,6.4,z);}
+box(site,.5,1.4,4,0xcfd4d8,-84.1,6.4,-9.2);
 const gEG=bld(-102,-95,14,8,6,0xd6d1c5,0xbfb8a9);{cyl(gEG,.5,.6,6,0x6b7782,5,9,0,{},12);for(let y=1.4;y<5;y+=.9)box(gEG,.3,.4,6,0x8a959e,-7.1,y,0);signBox(gEG,'비상발전기동','EMERGENCY GENERATOR',0,4,4.1,8.5,1.7,'#14324d','#ffffff');
  const I=mkInt();gEG.userData.internal=I;box(I,8,3,3,0xd6a019,-103,1.8,-95);box(I,3,3.2,3.2,0x2f6f9f,-97.5,1.8,-95);}
 /* SCR / YPES 옥외 설비 (환원제 저장탱크 · 주입펌프 · 기화기) */
@@ -709,25 +734,30 @@ const gEG=bld(-102,-95,14,8,6,0xd6d1c5,0xbfb8a9);{cyl(gEG,.5,.6,6,0x6b7782,5,9,0
  signBox(g,'SCR / YPES 설비','탈질 · 황연저감 환원제',-7.45,3.2,0,8,1.6,'#14324d','#ffffff',-PI/2);
  colBox(-27,-88,14,16);}
 pipe(site,[[-34,8,-84],[-37.5,8,-84]],.3,0x7ee081);
-/* transformer yard + transmission */
-{for(const x of[-110,-103,-96]){box(site,5,5,5.5,0x5a6670,x,2.5,12,{metal:.3});for(let k=-2;k<=2;k++)box(site,.25,4,6,0x46515a,x+2.6,2.4,12+k*.01);for(const dx of[-1.4,0,1.4])cyl(site,.25,.35,2.8,0xb7743e,x+dx,6.4,12,{},8);}
- const fence=M(0x8796a2,{opacity:.6});box(site,23,2,.2,fence,-103.5,1,3);box(site,23,2,.2,fence,-103.5,1,27);box(site,.2,2,24,fence,-115,1,15);box(site,.2,2,24,fence,-92,1,15);colBox(-103.5,15,23,24);
- for(const x of[-113,-93])box(site,.6,12,.6,0x8a97a2,x,6,20);box(site,21,.6,.6,0x8a97a2,-103,11.6,20);
+/* 개폐소 (9) + 송전 */
+{const wl=M(0xb9bcb8,{rough:.85}),X0=-114,X1=-92,Z0=20,Z1=33.5,cx=(X0+X1)/2,cz=(Z0+Z1)/2;
+ box(site,X1-X0,2.8,.3,wl,cx,1.4,Z0);box(site,X1-X0,2.8,.3,wl,cx,1.4,Z1);box(site,.3,2.8,Z1-Z0,wl,X1,1.4,cz);box(site,.3,2.8,4.5,wl,X0,1.4,Z0+2.25);box(site,.3,2.8,4.5,wl,X0,1.4,Z1-2.25);
+ box(site,.12,2.5,4.4,0x6b7782,X0-.05,1.25,cz,{metal:.5});colBox(cx,cz,X1-X0,Z1-Z0);box(site,X1-X0-.4,.08,Z1-Z0-.4,0x9a9f9e,cx,.12,cz).castShadow=false;
+ const W=M(0xf2f3f1,{rough:.35,metal:.15});
+ for(const z of[23.3,27,30.7])for(let x=-110;x<=-95;x+=3){box(site,1.8,1.1,1.6,W,x,.65,z);cylZ(site,.55,.55,2.6,W,x,1.9,z,{},14);cyl(site,.35,.35,2.2,W,x,3.3,z,{},12);for(let k=0;k<4;k++)cyl(site,.48,.48,.12,0xd9dcd7,x,2.5+k*.45,z,{},12);}
+ for(const z of[23.3,27,30.7])cylX(site,.32,.32,16,W,-102.5,4.5,z,{},10);
+ signBox(site,'개폐소','SWITCH YARD',X0-.25,3.6,cz,5,1,'#14324d','#ffffff',-PI/2);
+ for(const z of[21.5,32])box(site,.6,12,.6,0x8a97a2,-113,6,z);box(site,.6,.6,11,0x8a97a2,-113,11.6,26.75);
  const tw=new THREE.Group();tw.position.set(-152,0,14);site.add(tw);const st=M(0x9aa6b0,{metal:.4});
  for(const [dx,dz] of[[-3,-3],[3,-3],[-3,3],[3,3]]){const l=mesh(new THREE.CylinderGeometry(.25,.45,34,6),st,tw,dx*.55,17,dz*.55);l.rotation.z=dx>0?-.08:.08;l.rotation.x=dz>0?.08:-.08;}
  for(const [y,w] of[[22,14],[27,11],[32,8]])box(tw,.5,.5,w,st,0,y,0);
- for(const [y,w] of[[22,7],[27,5.5],[32,4]])for(const s of[-1,1])pipe(site,[[-103,11.6,20],[-140,y+4,14+s*w*.9],[-152,y,14+s*w*.9]],.07,0x2b2f33);}
+ for(const [y,w] of[[22,7],[27,5.5],[32,4]])for(const s of[-1,1])pipe(site,[[-113,11.6,26.75+s*3],[-140,y+4,14+s*w*.9],[-152,y,14+s*w*.9]],.07,0x2b2f33);}
 /* gate, fence */
 const RG={G0:[-94+12*13/79,49],G1:[-94+12*20/79,56],open:false,s:0,col:null};
 {const sign=canvasTex(1024,128,(g,w,h)=>{g.fillStyle='#14324d';g.fillRect(0,0,w,h);g.fillStyle='#ffc233';g.fillRect(0,0,18,h);g.fillStyle='#ffffff';g.font='bold 58px "IBM Plex Sans KR",sans-serif';g.textBaseline='middle';g.fillText('위례열병합발전소',48,68);g.font='500 30px "IBM Plex Sans KR",sans-serif';g.fillStyle='#b8c8d6';g.textAlign='right';g.fillText('나래에너지서비스',w-30,70);});
- for(const x of[-127.6,-116.4]){box(site,1.6,7,1.6,0x34495e,x,3.5,36);colBox(x,36,1.6,1.6);}
- box(site,12.8,1.8,.6,new THREE.MeshStandardMaterial({map:sign,roughness:.6}),-122,7.6,36);
- box(site,5,4,5,0xe2ddd3,-111,2,42);box(site,6,.4,6,0x34495e,-111,4.2,42);colBox(-111,42,5,5);
- {const gl=0x9cc3dc;box(site,.08,1.4,3.6,gl,-113.55,2.6,42,{rough:.1,metal:.4});box(site,3.6,1.4,.08,gl,-111,2.6,39.45,{rough:.1,metal:.4});box(site,3.6,1.4,.08,gl,-111,2.6,44.55,{rough:.1,metal:.4});
-  box(site,.08,2.6,1.3,0x5d4a3a,-108.45,1.3,43);signBox(site,'경비실','SECURITY',-113.65,3.65,42,3,.7,'#14324d','#ffffff',-PI/2);}
+ for(const x of[-127.6,-116.4]){box(site,1.6,7,1.6,0x34495e,x,3.5,47);colBox(x,47,1.6,1.6);}
+ box(site,12.8,1.8,.6,new THREE.MeshStandardMaterial({map:sign,roughness:.6}),-122,7.6,47);
+ box(site,10,3.5,4.5,0xe2ddd3,-106,1.75,42.5);box(site,10.8,.35,5.3,0x34495e,-106,3.68,42.5);colBox(-106,42.5,10,4.5);
+ {const gl=0x9cc3dc,go={rough:.1,metal:.4};box(site,.08,1.3,3.2,gl,-111.05,2.2,42.5,go);for(const x of[-108.5,-104])box(site,2.6,1.3,.08,gl,x,2.2,44.79,go);for(const x of[-108.5,-104])box(site,2.6,1.3,.08,gl,x,2.2,40.21,go);
+  box(site,.08,2.5,1.2,0x5d4a3a,-100.95,1.25,43.4);signBox(site,'경비실','GUARD HOUSE',-111.15,3.1,42.5,3.4,.7,'#14324d','#ffffff',-PI/2);}
  const fm=M(0x6f808c,{opacity:.85});
  for(let i=0;i<SITE.length;i++){const a=SITE[i],b=SITE[(i+1)%SITE.length];
-   const segs=(a[1]===36&&b[1]===36)?[[a,[-115.6,36]],[[-128.4,36],b]]:(a[0]===-82&&b[0]===-94)?[[a,RG.G1],[RG.G0,b]]:[[a,b]];
+   const segs=(a[1]===47&&b[1]===47)?[[a,[-115.6,47]],[[-128.4,47],b]]:(a[0]===-82&&b[1]===47)?[[a,RG.G1],[RG.G0,b]]:[[a,b]];
    for(const [p,q] of segs){const dx=q[0]-p[0],dz=q[1]-p[1],len=Math.hypot(dx,dz);if(len<.5)continue;const m=box(site,len,2.2,.25,fm,(p[0]+q[0])/2,1.1,(p[1]+q[1])/2);m.rotation.y=-Math.atan2(dz,dx);m.castShadow=false;}}}
 /* 소음측정 전광판 (정문) */
 const noiseCv=document.createElement('canvas');noiseCv.width=512;noiseCv.height=288;const noiseTex=new THREE.CanvasTexture(noiseCv);let noiseDb=51.0;
@@ -745,8 +775,7 @@ let noiseAcc=0;
 
 /* 비상집결장소 */
 const LATE_LBL=[];
-LATE_LBL.push(['<span class="pin-no">🛡</span><span>경비실</span>',[-111,7.5,42],'pin fac',null,'--c:#b8c4cf']);
-const AP1={x0:-101.5,x1:-86.5,z0:-23,z1:-4.5},AP2={x0:-117,x1:-99,z0:46.5,z1:62.5};
+const AP1={x0:-99.5,x1:-85,z0:-17,z1:3},AP2={x0:-117,x1:-99,z0:50,z1:61.4};
 function apTex(no){return canvasTex(512,512,(g,w,h)=>{g.fillStyle='#1f9a52';g.fillRect(0,0,w,h);g.strokeStyle='#fff';g.lineWidth=18;g.strokeRect(24,24,w-48,h-48);
   g.fillStyle='#fff';g.textAlign='center';g.textBaseline='middle';
   const cx=w/2,cy=170;for(const [dx,dy] of[[-1,-1],[1,-1],[-1,1],[1,1]]){g.save();g.translate(cx+dx*62,cy+dy*62);g.rotate(Math.atan2(-dy,-dx));g.beginPath();g.moveTo(26,0);g.lineTo(-18,-20);g.lineTo(-18,20);g.closePath();g.fill();g.restore();}
@@ -975,7 +1004,7 @@ const simLabels=[];
 function inPoly(x,z,poly){let c=false;for(let i=0,j=poly.length-1;i<poly.length;j=i++){const xi=poly[i][0],zi=poly[i][1],xj=poly[j][0],zj=poly[j][1];if(((zi>z)!==(zj>z))&&(x<(xj-xi)*(z-zi)/(zj-zi)+xi))c=!c;}return c;}
 /* trees */
 {let seed=7;const rnd=()=>(seed=(seed*16807)%2147483647)/2147483647;const trees=[];
- const ok=(x,z)=>{if(distToRoad(x,z)<6.5)return false;if(x>-106&&x<-82&&z>-26&&z<0)return false;if(x>-182&&x<-96&&z>38&&z<92)return false;if(x>-100&&x<-84&&z>44&&z<62)return false;if(x>-66&&x<-32&&z>35&&z<63)return false;if(x>-206&&x<-114&&z>116&&z<177)return false;if(x>-86&&x<-62&&z>-100&&z<-56)return false;if(x>-82&&x<-64&&z>-60&&z<-40)return false;if(x>-14&&x<3&&z>-105&&z<3)return false;if(x>-38&&x<-14&&z>-75&&z<-65)return false;if(x>-108&&x<22&&z>58&&z<66)return false;if(x>-76&&x<-68&&z>36&&z<72)return false;for(const b of COL)if(x>b.x0-4&&x<b.x1+4&&z>b.z0-4&&z<b.z1+4)return false;for(const c of CIRC)if(Math.hypot(x-c.x,z-c.z)<c.r+4)return false;return true;};
+ const ok=(x,z)=>{if(distToRoad(x,z)<6.5)return false;if(x>-119&&x<-83&&z>-26&&z<48)return false;if(x>-106&&x<-82&&z>-26&&z<0)return false;if(x>-182&&x<-96&&z>38&&z<92)return false;if(x>-100&&x<-84&&z>44&&z<62)return false;if(x>-66&&x<-32&&z>35&&z<63)return false;if(x>-206&&x<-114&&z>116&&z<177)return false;if(x>-86&&x<-62&&z>-100&&z<-56)return false;if(x>-82&&x<-64&&z>-60&&z<-40)return false;if(x>-14&&x<3&&z>-105&&z<3)return false;if(x>-38&&x<-14&&z>-75&&z<-65)return false;if(x>-108&&x<22&&z>58&&z<66)return false;if(x>-76&&x<-68&&z>36&&z<72)return false;for(const b of COL)if(x>b.x0-4&&x<b.x1+4&&z>b.z0-4&&z<b.z1+4)return false;for(const c of CIRC)if(Math.hypot(x-c.x,z-c.z)<c.r+4)return false;return true;};
  for(let i=0;i<900&&trees.length<120;i++){const x=-140+rnd()*290,z=-125+rnd()*260;const inside=inPoly(x,z,SITE);if((inside&&ok(x,z))||(!inside&&rnd()<.25&&ok(x,z)&&!(x>-205&&x<-112&&z>90&&z<155)))trees.push([x,z,.8+rnd()*.6]);}
  const tm=new THREE.InstancedMesh(new THREE.ConeGeometry(2.4,6,7),M(0x3f7f4a,{rough:1}),trees.length);const tr=new THREE.InstancedMesh(new THREE.CylinderGeometry(.35,.45,2.2,6),M(0x6b4f3a),trees.length);
  const d=new THREE.Object3D();trees.forEach(([x,z,s],i)=>{d.position.set(x,1.1*s,z);d.scale.setScalar(s);d.updateMatrix();tr.setMatrixAt(i,d.matrix);d.position.set(x,(2.2+3)*s,z);d.updateMatrix();tm.setMatrixAt(i,d.matrix);});
@@ -1190,9 +1219,24 @@ const FAC={
   scr:{name:'SCR / YPES 설비',en:'SCR · Yellow Plume Elimination',b:[-34,0,-96,-20,9,-80],lp:[-27,10,-88],specs:[['SCR','탈질 (NOx 저감)'],['YPES','황연 저감']],
     d:'가스터빈 배기가스 속 질소산화물(NOx)을 줄이는 환경설비의 약품 저장·주입 설비예요. 건물 없이 옥외에 설치돼 있어요. SCR은 선택적 촉매 환원(Selective Catalytic Reduction), YPES는 황연 저감 설비(Yellow Plume Elimination System)의 약자예요.',
     roles:['SCR: HRSG 안 촉매층 앞에 환원제(요소수나 암모니아수)를 뿌려, 촉매에서 NOx를 물과 질소로 바꿔요','YPES: 가스터빈을 막 켤 때는 배기 온도가 낮아 NO2가 많아져 굴뚝으로 노란 연기(황연)가 보여요. 이때 환원제를 주입해 노란 연기를 없애요','옥외 방류벽 안에 환원제 저장 탱크가 있고, 옆의 주입 펌프·기화 설비를 거쳐 배관으로 HRSG에 약품을 보내요','배출가스는 굴뚝 자동측정기(TMS)로 실시간 감시해요'],uncertain:true},
-  trr:{name:'변압기실',en:'Electrical / Transformer Room',b:[-118,0,-20.5,-104,8,-3.5],lp:[-111,9,-12],specs:[['역할','소내 전력 공급'],['연계','주변압기 · 송전']],
-    d:'발전소 안의 펌프·팬·조명·제어설비에 쓸 전기를 나눠 주는 변압기와 배전반이 있는 곳이에요.',
-    roles:['발전기나 외부 계통에서 받은 전기를 소내변압기로 설비에 맞는 전압으로 낮춰요','고압·저압 배전반(스위치기어)으로 각 설비에 전기를 나눠 보내요','바로 옆 옥외 변압기 구역의 주변압기가 발전한 전기를 높은 전압으로 올려 송전탑으로 보내요'],uncertain:true},
+  trr:{name:'주변압기실',en:'Main & Aux. Transformer · 24',b:[-116,0,-13,-100,10,4],lp:[-108,11,-4.5],specs:[['도면 번호','24'],['역할','발전 전력 승압 · 소내 전력'],['연계','발전동 → 개폐소']],
+    d:'발전기에서 나온 전기를 높은 전압으로 올려 개폐소로 보내고, 발전소 안에서 쓸 전기는 낮춰서 나눠 주는 변압기가 있는 건물이에요.',
+    roles:['발전동에서 나온 하얀 버스덕트(상분리모선)로 발전기 전기를 받아요','주변압기가 전압을 높여 옆 개폐소를 거쳐 송전선로로 보내요','소내변압기가 펌프·팬·조명에 쓸 전압으로 낮춰 전력제어센터로 보내요'],uncertain:true},
+  st25:{name:'예비변압기실',en:'Stand-by Unit Transformer · 25',b:[-116,0,5,-100,9,18],lp:[-108,10,11.5],specs:[['도면 번호','25'],['역할','기동·정지 시 소내 전력']],
+    d:'발전기가 멈춰 있거나 기동할 때 외부 계통에서 전기를 받아 발전소 안 설비에 공급하는 예비 변압기가 있어요.',
+    roles:['발전소를 기동할 때 필요한 전기를 외부에서 받아 공급해요','주변압기 점검·고장 때도 소내 전력을 이어 줘요'],uncertain:true},
+  pcc:{name:'전력제어센터',en:'Power Control Center · 26',b:[-98,0,3.85,-86,7,16.15],lp:[-92,8,10],specs:[['도면 번호','26'],['규격','11.0L × 12.28W × 6.0H'],['역할','소내 배전 · 제어']],
+    d:'발전소 안 설비로 가는 고압·저압 배전반과 전력 제어설비가 모여 있는 건물이에요.',
+    roles:['변압기에서 받은 전기를 배전반으로 각 설비에 나눠 보내요','차단기·보호계전기로 이상이 생기면 회로를 끊어 설비를 보호해요'],uncertain:true},
+  swy:{name:'개폐소',en:'Switch Yard · 9',b:[-114,0,20,-92,6,33.5],lp:[-103,8,26.75],specs:[['도면 번호','9'],['설비','개폐장치(GIS) 등'],['연계','주변압기 → 송전선로']],
+    d:'주변압기에서 올린 전기를 송전선로로 내보내거나 끊어 주는 개폐설비가 있는 옥외 구역이에요. 담장 안의 하얀 설비들이 전기 길을 여닫는 장치예요.',
+    roles:['차단기·단로기로 송전선로와 발전소를 연결하거나 분리해요','사고가 나면 빠르게 회로를 끊어 계통을 보호해요'],uncertain:true},
+  ffc:{name:'소화약제 용기실',en:'Fire Fighting Cylinder Room · 39',b:[-91.1,0,-24,-85.9,4,-19.6],lp:[-88.5,5.5,-21.8],specs:[['도면 번호','39'],['규격','5.2L × 4.45W × 4.0H']],
+    d:'전기설비 화재에 쓰는 가스계 소화약제 용기를 보관하는 작은 실이에요.',
+    roles:['화재가 감지되면 배관으로 소화약제를 방출해 불을 꺼요'],uncertain:true},
+  ghs:{name:'경비실',en:'Guard House · 23',b:[-111,0,40.25,-101,3.5,44.75],lp:[-106,5,42.5],specs:[['도면 번호','23'],['규격','10.0L × 4.5W × 3.5H']],
+    d:'정문 출입을 관리하는 경비실이에요. 경비실 옆 보행로로 압축기동 쪽까지 걸어갈 수 있어요.',
+    roles:['방문객·차량 출입을 확인하고 기록해요','비상 시 2차 집결장소 안내를 도와요']},
   egen:{name:'비상발전기동',en:'Emergency Generator',b:[-109,0,-99,-95,12,-91],lp:[-102,8,-95],specs:[['연료','경유 (디젤)'],['역할','정전 대비']],
     d:'외부 전력이 끊기는 정전 때 자동으로 켜져서 꼭 필요한 설비에 전기를 공급하는 디젤 발전기가 있는 건물이에요.',
     roles:['정전되면 수 초 안에 자동 기동해요','터빈 윤활유 펌프·제어설비·비상조명처럼 안전 정지에 필요한 설비에 전기를 줘요','회전하던 터빈과 설비가 손상 없이 안전하게 멈출 수 있게 지켜줘요','평소에는 정기적으로 시험 운전을 해요']},
@@ -2497,7 +2541,7 @@ function startSim(){
     u.arms.forEach(a=>a.rotation.set(0,0,0));u.legs.forEach(l=>l.rotation.set(0,0,0));});
   CEO.position.set(-101,12.18,-52);CEO.userData.raise=false;JAE.userData.role='J';KYH.userData.role='K';JAE.userData.raise=KYH.userData.raise=false;
   FLAMES.forEach(f=>{f.g.visible=false;});SMOKE.forEach(s=>s.m.material.opacity=0);
-  simLeader.position.set(-108,0,61);simLeader.rotation.y=PI;
+  simLeader.position.set(-108,0,60.2);simLeader.rotation.y=PI;
   siteLabels.forEach(l=>l.el.hidden=true);
   clearLabels(simNames);SIMW.forEach(w=>{const n=w.userData.name;if(!n)return;const L=makeLabel(simNames,n,[0,0,0],'nametag'+(n==='대표님'?' ceo':w.userData.female?' f':''));L.w=w;});
   simBubbles([[SIMP('정순영'),'어? 이거 무슨 냄새야?'],[SIMP('조해선'),'불이야!!'],[SIMP('서봉섭'),'연기 난다!']]);
@@ -2516,10 +2560,10 @@ function simEvac1(){const S=state.sim;S.phase='evac1';
   simMsg('비상상황 시뮬레이션 · 대피','🏃 대표님을 따라 비상계단으로 대피 중… 1차 비상집결장소로!',[['end','중단']]);}
 function simEvac2(){const S=state.sim;if(!S||S.phase!=='evac1')return;S.phase='evac2';state.simIn=false;
   const cols=7,list=SIMW.filter(w=>w!==JAE&&w!==KYH);list.sort((a,b)=>(b===CEO)-(a===CEO));
-  const route=jx=>[[rr(-99,-93),0,rr(-26,-24)],[-122+jx,0,-27.5+rr(-2,2)],[-122+jx,0,26],[-122+jx*.7,0,38],[rr(-118,-112),0,rr(45.5,47.5)]];
-  list.forEach((w,i)=>{const u=w.userData,slot=[-115+(i%cols)*2.5,0,49.5+((i/cols)|0)*2.4];
+  const route=jx=>[[rr(-99,-95),0,rr(-26,-24)],[-122+jx,0,-27.5+rr(-2,2)],[-122+jx,0,26],[-122+jx*.7,0,49],[rr(-118,-112),0,rr(50.5,52)]];
+  list.forEach((w,i)=>{const u=w.userData,slot=[-115+(i%cols)*2.5,0,51.8+((i/cols)|0)*2.1];
     u.path=[...route(rr(-2.6,2.6)),slot];u.pi=0;u.delay=w===CEO?0:rr(.5,1.8);u.v=w===CEO?24:rr(12.5,15.5);u.mode='run';u.next='line';u.goal=null;});
-  const J=JAE.userData;J.path=[...route(1.5),[-100,0,49.5+3*2.4]];J.pi=0;J.delay=.6;J.v=6.6;J.mode='run';J.next='line';
+  const J=JAE.userData;J.path=[...route(1.5),[-100,0,51.8+3*2.1]];J.pi=0;J.delay=.6;J.v=6.6;J.mode='run';J.next='line';
   simBubbles([[CEO,'2차 집결장소로! 나를 따라와!'],[SIMP('양은빈'),'우와아아~'],[KYH,'재균아 천천히, 내가 잡을게'],[JAE,'으… 다리야…']]);
   camSGoal.dist=78;camSGoal.pitch=.55;camSGoal.yaw=1.05;
   simMsg('비상상황 시뮬레이션 · 2차 대피','🏃‍♂️ 화재 확산! 도로를 따라 정문 밖 2차 비상집결장소로 대피 중',[['end','중단']]);}
@@ -2575,7 +2619,7 @@ function updateSim(dt,T){const S=state.sim;dt*=SIM_K;S.t+=dt;
     if(!allLine){if(S.wait)camSGoal.t.lerp(V([JAE.position.x,2,JAE.position.z]),Math.min(1,dt*2));else camSGoal.t.lerp(V([cx,2,cz]),Math.min(1,dt*3));}
     if(allLine&&!S.done2){S.done2=true;
       simBubbles([[simLeader,'전원 이상 없음! ✅',true],[CEO,'다친 사람 응급처치부터!',true],[JAE,'괜찮아요… ㅎㅎ',true]]);
-      camSGoal.t.set(-108,2,55);camSGoal.dist=50;camSGoal.pitch=.5;camSGoal.yaw=.3;
+      camSGoal.t.set(-108,2,56);camSGoal.dist=50;camSGoal.pitch=.5;camSGoal.yaw=.3;
       simMsg('비상상황 시뮬레이션 · 2차 비상집결장소',`✅ 2차 비상집결장소 집결 완료 · ${SIMW.length}명 전원 확인 (부상 1명: 안재균)`,[['end','시뮬레이션 종료','go']]);}}
   const talking=new Set(simLabels.map(L=>L.w));for(const L of simLabels){L.pos.copy(L.w.position);L.pos.y+=L.w===simLeader?7.4:8.4;}
   for(const L of simNames){L.pos.copy(L.w.position);L.pos.y+=5.15;L.el.classList.toggle('hurt',L.w===JAE&&S.fell);const tk=talking.has(L.w);if(L.tk!==tk){L.tk=tk;L.el.style.visibility=tk?'hidden':'';}}}
@@ -2692,7 +2736,7 @@ function updateSite(dt,T){
     else{p.x+=dx/d*step;p.z+=dz/d*step;player.rotation.y=Math.atan2(dx,dz);speed=30;}
   }
   if(!state.ride){stepJump(dt);player.position.y=jmp.y*1.4;animWorker(player,dt,jmp.y>0?0:speed);}
-  if(state.mode==='site'&&!busy()&&!promoAsked&&Math.hypot(player.position.x+122,player.position.z-38)<14)showPromoAsk();
+  if(state.mode==='site'&&!busy()&&!promoAsked&&Math.hypot(player.position.x+122,player.position.z-50)<14)showPromoAsk();
   if(promoT>0){promoT-=dt;if(promoT<=0||state.flow||Math.hypot(player.position.x+122,player.position.z-38)>34)hidePromoAsk();}
   let near=null,nd2=1e9;if(state.mode==='site'&&!state.auto&&!busy())for(const st of [...STATIONS_X,...BIZ.map(c=>c.st)]){const d=Math.hypot(player.position.x-st.door[0],player.position.z-st.door[1]);if(d<7&&d<nd2){nd2=d;near=st;}}
   if(near!==state.near){state.near=near;const pr=$('#prompt');pr.hidden=!near;if(near){$('#enterName').textContent=near.name;$('#enterVerb').textContent=near.verb||'들어가기';$('#enterBtn').dataset.kind=near.car?'car':near.gate?'gate':'';$('#enterSub').textContent=near.sub;}}
@@ -2711,7 +2755,7 @@ function updateSite(dt,T){
 }
 const PR=1.3;
 function walkable(x,z){
-  const inside=inPoly(x,z,SITE)||(x>-127&&x<-117&&z>30&&z<122)||(x>-118&&x<-98&&z>44&&z<63.5)||(x>-99&&x<-90&&z>49.8&&z<55.2)||(x>-200&&x<-117&&z>96&&z<152);
+  const inside=inPoly(x,z,SITE)||(x>-127&&x<-117&&z>30&&z<122)||(x>-118&&x<-98&&z>47&&z<67)||(x>-99&&x<-90&&z>49.8&&z<55.2)||(x>-200&&x<-117&&z>96&&z<152);
   if(!inside)return false;
   for(const b of COL)if(x>b.x0-PR&&x<b.x1+PR&&z>b.z0-PR&&z<b.z1+PR)return false;
   for(const c of CIRC)if(Math.hypot(x-c.x,z-c.z)<c.r+PR)return false;
