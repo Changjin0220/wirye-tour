@@ -2139,8 +2139,8 @@ const TIE_CUT=[
   ['피복 · 보온재 제거','기존관을 잘라낼 양쪽 두 곳의 외관(피복)과 보온재를 걷어내 강관을 드러내요.',5,[0,-4.5,0],24],
   ['온수 배수','강관 일부를 잘라 관 안의 온수를 빼요. 뜨거운 물이 쏟아지며 김이 모락모락 올라와요. 바닥에 비닐을 깔아 물을 받고, 양수기로 퍼 올려 옆에 대기한 물차에 담아요.',10,[3,-3,3],42],
   ['기존관 절단 · 철거','양쪽 두 곳의 강관을 절단하고, 가운데 토막을 크레인으로 들어내요.',7,[0,-4.5,0],28],
-  ['일반 Tee 거치','일반 Tee를 내려 양쪽 기존관 끝과 인입관 방향에 맞춰 위치를 잡아요.',6,[0,-4,0],24],
-  ['연결부 용접 · 보온','Tee와 기존관이 만나는 양쪽 연결부를 용접하고, 슬리브를 씌워 보온해요.',8,[0,-4.5,0],22],
+  ['일반 Tee 거치','공장에서 보온·피복까지 마친 일반 Tee(연결부 끝만 강관이 드러나 있어요)를 내려 양쪽 기존관 끝과 인입관 방향에 맞춰 위치를 잡아요.',6,[0,-4,0],24],
+  ['연결부 용접 · 보온','Tee와 기존관이 만나는 양쪽 연결부를 용접하고, 그 자리만 열수축 슬리브를 씌워 보온해요.',8,[0,-4.5,0],22],
   ['인입관 연결 · 보온','미리 매설해 둔 수요처 인입관과 Tee 분기부를 용접하고 보온해요. 이제 온수가 수요처로 흘러가요.',7,[0,-4.5,-3],22]];
 const TIE_HOT=[
   ['피복 · 보온재 제거','분기할 위치의 외관(피복)과 보온재를 걷어내 강관을 드러내요. 기존관은 계속 운전 중이라 물을 빼지 않아요.',4,[0,-4.5,0],20],
@@ -2149,7 +2149,7 @@ const TIE_HOT=[
   ['천공 · 밸브 차단','천공기 날을 내려 기존관에 구멍을 뚫고, 잘라낸 조각(쿠폰)을 끌어올린 뒤 샌드위치 밸브를 잠가 물을 막아요.',8,[0,-2,0],20],
   ['상부 뚜껑 용접','천공기를 떼어내고 맨 위에 뚜껑을 용접해 막아요.',7,[0,-1.4,0],16],
   ['수요처 배관 연결 용접','핫태핑 Tee 옆 분기구와 미리 매설해 둔 수요처 배관을 맞대고 용접해요.',6,[0,-2.6,-1.9],16],
-  ['보온 · 검측','핫태핑 Tee 전체를 보온재와 외관으로 감싸고, 용접부와 보온 상태를 검측해요. 이제 온수가 수요처로 흘러가요.',7,[0,-3,-1],22]];
+  ['보온 · 검측','밸브 핸들을 떼어내고 핫태핑 Tee 전체를 보온재로 감싼 뒤, 기존관·수요처 배관과 만나는 틈까지 열수축 케이싱으로 덮어 이어줘요. 마지막으로 용접부와 보온 상태를 검측하면 온수가 수요처로 흘러가요.',7,[0,-3,-1],22]];
 function tieProc(c,P,fn){let acc=0;const T0=P.map(x=>{const t=acc;acc+=x[2];return t;}),TOT=acc;
   const pr=c.proc={t:0,play:true,k:-1,jump(i,cam){this.t=T0[i];this.play=true;this.k=i;if(cam)setSpot(i,true,false,true);},toggle(){if(this.t>=TOT){this.jump(0,true);return;}this.play=!this.play;}};
   c.updates.push((dt,T)=>{if(pr.play){pr.t+=dt;if(pr.t>=TOT){pr.t=TOT;pr.play=false;}}
@@ -2190,9 +2190,10 @@ function tieBuild(c,kind){const S=c.S,hot=kind==='hot',PY=-4.5,BY=hot?-2.6:PY;
     /* branch (pre-laid) */
     cylZ(S,1,1,25.9,CAS,0,PY,-17.05);cylZ(S,.9,.9,25.9,INS,0,PY,-17.05);cylZ(S,.5,.5,26.7,STC,0,PY,-16.65,SO);
     /* tee */
-    const tee=new THREE.Group();S.add(tee);cylX(tee,.5,.5,6.4,STC,0,PY,0,SO);cylZ(tee,.5,.5,3.3,STC,0,PY,-1.65,SO);sph(tee,.62,STC,0,PY,0,SO);tee.visible=false;
+    const tee=new THREE.Group();S.add(tee);cylX(tee,.5,.5,6.4,STC,0,PY,0,SO);cylZ(tee,.5,.5,3.3,STC,0,PY,-1.65,SO);cylX(tee,1,1,4.8,CAS,0,PY,0);cylZ(tee,1,1,1.5,CAS,0,PY,-1.75);
+    for(const x of[-2.41,2.41])cylX(tee,.9,.9,.04,INS,x,PY,0);cylZ(tee,.9,.9,.04,INS,0,PY,-2.51);tee.visible=false;
     const bL=bead(-3.2,PY,0,'x'),bR=bead(3.2,PY,0,'x'),bB=bead(0,PY,-3.3,'z');
-    const SLV=0x2b2f33,ins=[cylX(S,1.07,1.07,2,SLV,-3.2,PY,0),cylX(S,1.07,1.07,2,SLV,3.2,PY,0),cylX(S,1,1,4.6,CAS,0,PY,0)],insB=[cylZ(S,1,1,2.2,CAS,0,PY,-2.1),cylZ(S,1.07,1.07,2,SLV,0,PY,-3.6)];
+    const SLV=0x3a3f44,ins=[cylX(S,1.08,1.08,2.2,SLV,-3.2,PY,0),cylX(S,1.08,1.08,2.2,SLV,3.2,PY,0)],insB=[cylZ(S,1.08,1.08,2.4,SLV,0,PY,-3.3)];
     [...ins,...insB].forEach(m=>m.visible=false);
     /* drain: vinyl, water, steam, puddle, pump, hose, water truck */
     const vin=mesh(new THREE.PlaneGeometry(13,9),new THREE.MeshStandardMaterial({color:0x3a86ff,roughness:.4,transparent:true,opacity:.85}),S,0,-6.68,0,false);vin.rotation.x=-PI/2;vin.visible=false;
@@ -2229,14 +2230,15 @@ function tieBuild(c,kind){const S=c.S,hot=kind==='hot',PY=-4.5,BY=hot?-2.6:PY;
     const strip=new THREE.Group();strip.position.set(0,PY,0);S.add(strip);cylX(strip,1,1,2.4,CAS,0,0,0);cylX(strip,.9,.9,2.4,INS,0,0,0);
     cylZ(S,1,1,27.3,CAS,0,BY,-16.35);cylZ(S,.9,.9,27.3,INS,0,BY,-16.35);cylZ(S,.4,.4,28.1,STC,0,BY,-15.95,SO);
     const ht=new THREE.Group();S.add(ht);cyl(ht,.45,.45,2.45,STC,0,-2.825,0,SO);cyl(ht,.62,.62,.3,STC,0,-3.95,0,SO);cylZ(ht,.4,.4,1.9,STC,0,BY,-.95,SO);cyl(ht,.8,.8,.2,STC,0,-1.6,0,SO);ht.visible=false;
-    const sv=new THREE.Group();S.add(sv);box(sv,1.7,.45,1.7,0x3a5f8a,0,-1.275,0,{metal:.4});cylX(sv,.06,.06,.5,0x9aa6b0,1.1,-1.275,0);
+    const sv=new THREE.Group();S.add(sv);box(sv,1.7,.45,1.7,0x3a5f8a,0,-1.275,0,{metal:.4});const stem=cylX(sv,.06,.06,.5,0x9aa6b0,1.1,-1.275,0);
     const wheel=mesh(new THREE.TorusGeometry(.42,.06,6,20),M(0x2e86de),sv,1.38,-1.275,0);wheel.rotation.y=PI/2;const ind=box(sv,.3,.12,.3,0x2ecc71,0,-1.0,.6,{emissive:0x2ecc71,ei:.6});sv.visible=false;
     const dm=new THREE.Group();S.add(dm);cyl(dm,.6,.6,2.6,0xc0392b,0,.25,0,{metal:.3});box(dm,1.1,1,1.1,0x2b2f33,0,2.05,0);cylX(dm,.08,.08,1.6,0x9aa6b0,0,1.4,0);dm.visible=false;
     const shaft=cyl(S,.18,.18,1,0x9aa6b0,0,0,0,{metal:.7},10);const coupon=cyl(S,.36,.36,.1,STC,0,0,0,SO,16);shaft.visible=coupon.visible=false;
     const cap=cyl(S,.72,.72,.3,STC,0,-.9,0,SO);cap.visible=false;
     const bT=bead(0,-3.95,0,'y',.66),bC=bead(0,-1.05,0,'y',.74),bB=bead(0,BY,-1.9,'z',.42);
     const foam=new THREE.Group(),cas=new THREE.Group();S.add(foam,cas);
-    for(const [gr,col,dr] of[[foam,INS,0],[cas,CAS,.1]]){cyl(gr,.85+dr,.85+dr,3.3,col,0,-2.4,0);box(gr,2+dr*2,.75+dr,2+dr*2,col,0,-1.15,0);cylZ(gr,.82+dr,.82+dr,2.5,col,0,BY,-1.3);cylX(gr,.92+dr,.92+dr,2.6,col,0,PY,0);}
+    for(const [gr,col,dr] of[[foam,INS,0],[cas,CAS,.08]]){cyl(gr,.85+dr,.85+dr,3.3,col,0,-2.4,0);box(gr,1.9+dr*2,.75+dr,1.9+dr*2,col,0,-1.15,0);cylZ(gr,.9+dr,.9+dr,2.9,col,0,BY,-1.45);cylX(gr,.92+dr,.92+dr,2.6,col,0,PY,0);}
+    for(const x of[-1.4,1.4])cylX(cas,1.1,1.1,1.2,0x3a3f44,x,PY,0);cylZ(cas,1.1,1.1,1.4,0x3a3f44,0,BY,-2.8);
     foam.visible=cas.visible=false;
     const scrn=new THREE.Group();scrn.position.set(4,-6.7,3);scrn.rotation.y=-.5;S.add(scrn);cyl(scrn,.08,.08,2.4,0x6b7782,0,1.2,0,{},6);
     const pt=canvasTex(256,160,(g2,w,h)=>{g2.fillStyle='#071019';g2.fillRect(0,0,w,h);g2.fillStyle='#3ddc84';g2.font='bold 30px sans-serif';g2.fillText('검측 합격 ✓',20,70);g2.fillStyle='#9fb3c8';g2.font='18px sans-serif';g2.fillText('용접부 · 보온 상태 양호',20,115);});
@@ -2254,7 +2256,8 @@ function tieBuild(c,kind){const S=c.S,hot=kind==='hot',PY=-4.5,BY=hot?-2.6:PY;
       const vc=cl((h4-.85)/.15);wheel.rotation.x=vc*PI*4;ind.material.color.setHex(vc>=1?0xe63946:0x2ecc71);ind.material.emissive.setHex(vc>=1?0xe63946:0x2ecc71);
       cap.visible=h5>.3;cap.position.y=-.9+lerp(6,0,ease(cl((h5-.3)/.15)));const wC=h5>.45&&h5<1;setBead(bC,cl((h5-.45)/.55),wC);
       const wB=h6>0&&h6<1;setBead(bB,h6,wB);
-      const fF=ease(cl(h7/.4)),cF=ease(cl((h7-.4)/.3));foam.visible=fF>0&&cF<1;foam.scale.setScalar(Math.max(.01,fF));cas.visible=cF>0;cas.scale.setScalar(Math.max(.01,cF));
+      const fF=ease(cl(h7/.4)),cF=ease(cl((h7-.4)/.3));foam.visible=fF>0&&cF<1;foam.children.forEach(m=>m.scale.set(Math.max(.01,fF),1,Math.max(.01,fF)));cas.visible=cF>0;cas.children.forEach(m=>m.scale.set(Math.max(.01,cF),1,Math.max(.01,cF)));
+      wheel.visible=stem.visible=h7<=0;
       scrn.visible=h7>.7;
       if(wT)sparks(true,[0,-3.95,0],.6,T);else if(wC)sparks(true,[0,-1.05,0],.7,T);else if(wB)sparks(true,[0,BY,-1.9],.45,T);else sparks(false);
       const wk=(h1>0&&h1<1)||wT||wC||wB||(h7>0&&h7<.7)||(h4>0&&h4<1);welder.visible=wk;welder.position.set(1.8,-6.7,wB?-1.9:1.8);welder.rotation.y=wB?-1.9:-2.4;
@@ -2374,7 +2377,7 @@ function setSpot(i,silent,noCam,fromProc){
   if(i>=n){if(!silent)exitInterior();return;}i=clamp(i,0,n-1);state.spot=i;
   const s=I.def.spots[i];
   if(!fromProc&&I.def.onSpot)I.def.onSpot(i,I);
-  if(!noCam){if(s.yaw!=null)I.goal.yaw=s.yaw;if(s.pitch!=null)I.goal.pitch=s.pitch;I.goal.t.set(s.p[0],s.dyn&&I.c.f!=null?28*(1-I.c.f):s.p[1],s.p[2]);I.goal.dist=(s.dist||34)*(innerWidth<=760?1.4:1);}
+  if(!noCam){const keep=!!I.c.proc;if(!keep){if(s.yaw!=null)I.goal.yaw=s.yaw;if(s.pitch!=null)I.goal.pitch=s.pitch;}I.goal.t.set(s.p[0],s.dyn&&I.c.f!=null?28*(1-I.c.f):s.p[1],s.p[2]);if(!fromProc)I.goal.dist=(s.dist||34)*(innerWidth<=760?1.4:1);}
   $('#shCard').innerHTML=`<h4><span>${String(i+1).padStart(2,'0')}</span>${s.t}</h4><p>${s.d}</p>`;
   $('#shList').innerHTML=I.def.spots.map((x,k)=>`<li class="${k===i?'on':''}"><button type="button" data-s="${k}"><span class="n">${k+1}</span><span>${x.t}</span></button></li>`).join('');
   $('#shPrev').disabled=i===0;$('#shNext').textContent=i===n-1?(I.def.parent?`${INT[I.def.parent].short||INT[I.def.parent].title}로 →`:'부지로 나가기 →'):'다음 →';
@@ -2396,7 +2399,7 @@ $('#viewBtn').addEventListener('click',()=>toggleOverview());
 
 /* ================= sound ================= */
 const SFX_FILES={bg_site:'sfx/bg_site.mp3',power:'sfx/power.mp3',hrsg:'sfx/hrsg.mp3',tower:'sfx/tower.mp3',pumps:'sfx/pumps.mp3',gas:'sfx/gas.mp3',control:'sfx/control.mp3',construction:'sfx/construction.mp3'};
-const SCENE_SFX={site:[null,0],gov:['gas',.55],power:['power',.7],hrsg:['hrsg',.7],tower:['tower',.65],dh:['pumps',.6],storage:['pumps',.3],trench:['construction',.6],trench_build:['construction',.55],tiein_cut:['construction',.55],tiein_hot:['construction',.55],demand:['pumps',.55],cooling:['pumps',.5],ccr:['control',.5],office:['control',.3],room_mgmt:['control',.3],room_cs:['control',.3],room_ops:['control',.3],room_ceo:['control',.18]};
+const SCENE_SFX={site:[null,0],gov:['gas',.55],power:['power',.7],hrsg:['hrsg',.7],tower:[null,0],dh:['pumps',.6],storage:['pumps',.3],trench:['construction',.6],trench_build:['construction',.55],tiein_cut:['construction',.55],tiein_hot:['construction',.55],demand:['pumps',.55],cooling:['pumps',.5],ccr:['control',.5],office:['control',.3],room_mgmt:['control',.3],room_cs:['control',.3],room_ops:['control',.3],room_ceo:['control',.18]};
 const Snd={ctx:null,master:null,on:true,cur:null,tracks:{},duck:1,mus:null,
   init(){if(this.ctx)return;try{const AC=window.AudioContext||window.webkitAudioContext;this.ctx=new AC();}catch(e){return;}
     this.master=this.ctx.createGain();this.master.gain.value=this.on?.9:0;this.master.connect(this.ctx.destination);
@@ -2587,7 +2590,7 @@ function boardCar(c){if(state.mode!=='site'||busy())return;saveCam();
   if(state.fac)closeFac();if(state.flow)toggleFlow(false);if(state.overview)toggleOverview(false);
   state.auto=null;beacon.visible=false;hidePromoAsk();state.near=null;$('#prompt').hidden=true;jmp.y=0;jmp.v=0;
   state.drive={c,base:null};c.v=0;{const i=COL.indexOf(c.col);if(i>=0)COL.splice(i,1);c.col=null;}if(c.cable)c.cable.visible=false;player.visible=false;$('#driveBar').hidden=false;
-  camSGoal.dist=24;camSGoal.pitch=.36;Snd.init();toast(c.ev?'전기차 시동 ON · 도로를 따라 달려요':'시동 ON · 도로를 따라 달려요',2);}
+  Snd.init();toast(c.ev?'전기차 시동 ON · 도로를 따라 달려요':'시동 ON · 도로를 따라 달려요',2);}
 function exitDrive(){const D=state.drive;if(!D)return;const c=D.c,p=c.g.position,y=c.g.rotation.y;
   if(Math.abs(c.v)>3){toast('차를 먼저 멈춰 주세요 (S)',1.4);return;}
   let out=null;for(const s of[1,-1]){const x=p.x+Math.cos(y)*2.6*s,z=p.z-Math.sin(y)*2.6*s;if(walkable(x,z)&&!COL.some(k=>k!==c.col&&x>k.x0-1.3&&x<k.x1+1.3&&z>k.z0-1.3&&z<k.z1+1.3)){out=[x,z];break;}}
@@ -2598,11 +2601,11 @@ function exitDrive(){const D=state.drive;if(!D)return;const c=D.c,p=c.g.position
 function updateDrive(dt,T){const D=state.drive,c=D.c,g=c.g;
   let th=0,stv=0;if(state.mode==='site'){th=(keys.KeyW||keys.ArrowUp?1:0)-(keys.KeyS||keys.ArrowDown?1:0)-joyV.y;stv=(keys.KeyA||keys.ArrowLeft?1:0)-(keys.KeyD||keys.ArrowRight?1:0)-joyV.x;}
   th=clamp(th,-1,1);stv=clamp(stv,-1,1);
-  if(th*c.v<0)c.v+=th*34*dt;else c.v+=th*(c.v>=0?15:8)*dt;
-  if(!th)c.v*=Math.max(0,1-dt*1.2);if(Math.abs(c.v)<.05&&!th)c.v=0;c.v=clamp(c.v,-7,26);
-  const ny=g.rotation.y+stv*1.7*dt*clamp(c.v/7,-1,1);const nx=g.position.x+Math.sin(ny)*c.v*dt,nz=g.position.z+Math.cos(ny)*c.v*dt;
+  if(th*c.v<0)c.v+=th*26*dt;else c.v+=th*(c.v>=0?7:5)*dt;
+  if(!th)c.v*=Math.max(0,1-dt*1.2);if(Math.abs(c.v)<.05&&!th)c.v=0;c.v=clamp(c.v,-4,12);
+  const ny=g.rotation.y+stv*1.5*dt*clamp(c.v/5,-1,1);const nx=g.position.x+Math.sin(ny)*c.v*dt,nz=g.position.z+Math.cos(ny)*c.v*dt;
   if(carFits(c,nx,nz,ny)){g.position.x=nx;g.position.z=nz;g.rotation.y=ny;}
-  else if(carFits(c,g.position.x,g.position.z,ny)){g.rotation.y=ny;c.v*=.3;}else{if(Math.abs(c.v)>8)toast('쿵! 도로 밖으로는 못 가요',1);c.v=0;}
+  else if(carFits(c,g.position.x,g.position.z,ny)){g.rotation.y=ny;c.v*=.3;}else{if(Math.abs(c.v)>6)toast('쿵! 도로 밖으로는 못 가요',1);c.v=0;}
   player.position.set(g.position.x,0,g.position.z);Snd.coaster(Math.abs(c.v)*.25);
   const base=g.rotation.y+PI;if(D.base==null)camSGoal.yaw=base;else{let off=camSGoal.yaw-D.base;off=Math.atan2(Math.sin(off),Math.cos(off));off*=Math.max(0,1-dt*(Math.abs(c.v)>2?.8:0));camSGoal.yaw=base+off;}D.base=base;
   camSGoal.t.set(g.position.x,2,g.position.z);}
