@@ -204,9 +204,11 @@ body.interior #sheet{top:calc(var(--gap) + env(safe-area-inset-top,0px))}
 .pa-btns .danger{background:#e63946;color:#fff;border-color:#e63946}
 .fp-btns button[data-f="emergency"]{border-color:rgba(255,90,79,.55);background:rgba(230,57,70,.12)}
 .fp-btns button[data-f="emergency"] b{color:#ff6b60}
-.lbl.bubble{padding:4px 9px;border-radius:12px;background:#fff;color:#c0392b;font-weight:800;font-size:13px;box-shadow:0 3px 10px rgba(0,0,0,.3)}
+.lbl.bubble{padding:3px 8px;border-radius:10px;background:rgba(255,255,255,.94);color:#c0392b;font-weight:800;font-size:12px;box-shadow:0 3px 10px rgba(0,0,0,.3);z-index:2;white-space:nowrap}
+.lbl.bubble .who{display:inline-block;margin-right:5px;padding:0 5px;border-radius:5px;background:#10161c;color:#fff;font-size:10px;font-weight:700}
+.lbl.bubble .who.f{background:#b03a6e}.lbl.bubble .who.ceo{background:#ffc233;color:#10161c}
 .lbl.bubble.ok{color:#1b8a3c}
-.lbl.nametag{padding:1px 7px;border-radius:7px;background:rgba(16,22,28,.78);color:#fff;font-size:11px;font-weight:600;white-space:nowrap}
+.lbl.nametag{z-index:3;padding:1px 7px;border-radius:7px;background:rgba(16,22,28,.78);color:#fff;font-size:11px;font-weight:600;white-space:nowrap}
 .lbl.nametag.f{background:rgba(176,58,110,.85)}
 .lbl.nametag.ceo{background:#ffc233;color:#10161c;font-weight:800}
 .lbl.nametag.hurt{background:#e63946}
@@ -2320,7 +2322,7 @@ const STAIR=[[-94,12.18,-44.6],[-94,10.15,-36.3],[-96,10.15,-36.3],[-96,8.18,-44
 const rr=(a,b)=>a+Math.random()*(b-a);
 function simMsg(eye,msg,btns){$('#simEye').textContent=eye;$('#simMsg').innerHTML=msg;$('#simBtns').innerHTML=btns.map(([k,t,c])=>`<button type="button" data-sim="${k}" class="${c||''}">${t}</button>`).join('');}
 $('#simBtns').addEventListener('click',e=>{const b=e.target.closest('[data-sim]');if(!b)return;if(b.dataset.sim==='evac2')simEvac2();else endSim();});
-function simBubbles(list){clearLabels(simLabels);list.forEach(([w,t,ok])=>{const L=makeLabel(simLabels,t,[0,0,0],'bubble'+(ok?' ok':''));L.w=w;});}
+function simBubbles(list){clearLabels(simLabels);list.forEach(([w,t,ok])=>{const n=w.userData&&w.userData.name,h=n?`<span class="who${n==='대표님'?' ceo':w.userData.female?' f':''}">${n}</span>${t}`:t;const L=makeLabel(simLabels,h,[0,0,0],'bubble'+(ok?' ok':''));L.w=w;});}
 function apPoint(A,m){return[rr(A.x0+m,A.x1-m),0,rr(A.z0+m,A.z1-m)];}
 const simNames=[];
 function startSim(){
@@ -2355,7 +2357,7 @@ function simEvac2(){const S=state.sim;if(!S||S.phase!=='evac1')return;S.phase='e
   const route=jx=>[[rr(-99,-93),0,rr(-26,-24)],[-118+jx,0,-27.5+rr(-2.4,2.4)],[-122+jx,0,26],[-122+jx*.7,0,38],[rr(-118,-112),0,rr(45.5,47.5)]];
   list.forEach((w,i)=>{const u=w.userData,slot=[-115+(i%cols)*2.5,0,49.5+((i/cols)|0)*2.4];
     u.path=[...route(rr(-2.6,2.6)),slot];u.pi=0;u.delay=w===CEO?0:rr(.5,1.8);u.v=w===CEO?24:rr(12.5,15.5);u.mode='run';u.next='line';u.goal=null;});
-  const J=JAE.userData;J.path=[...route(1.5),[-100,0,49.5+3*2.4]];J.pi=0;J.delay=.6;J.v=4.6;J.mode='run';J.next='line';
+  const J=JAE.userData;J.path=[...route(1.5),[-100,0,49.5+3*2.4]];J.pi=0;J.delay=.6;J.v=6.6;J.mode='run';J.next='line';
   simBubbles([[CEO,'2차 집결장소로! 나를 따라와!'],[SIMP('양은빈'),'우와아아~'],[KYH,'재균아 천천히, 내가 잡을게'],[JAE,'으… 다리야…']]);
   camSGoal.dist=78;camSGoal.pitch=.55;camSGoal.yaw=1.05;
   simMsg('비상상황 시뮬레이션 · 2차 대피','🏃‍♂️ 화재 확산! 도로를 따라 정문 밖 2차 비상집결장소로 대피 중',[['end','중단']]);}
@@ -2402,7 +2404,7 @@ function updateSim(dt,T){const S=state.sim;dt*=SIM_K;S.t+=dt;
   if(S.phase==='evac1'){
     if(out>2&&!S.cam1){S.cam1=true;camSGoal.t.set(-101,3,-30);camSGoal.dist=92;camSGoal.pitch=.6;}
     if(allPanic&&!S.done1){S.done1=true;
-      simBubbles([[SIMP('심정연'),'어떡해!!'],[CEO,'다 나온 거 맞아? 인원 확인해!'],[SIMP('최주영'),'손대호 님 어딨어?!'],[SIMP('김미진'),'119 신고했어요?'],[KYH,'여기 부상자 있어요!'],[JAE,'아이고 다리야…'],[SIMP('신창진'),'휴… 살았다']]);
+      simBubbles([[CEO,'다 나온 거 맞아? 인원 확인해!'],[SIMP('김미진'),'119 신고했어요?'],[KYH,'여기 부상자 있어요!'],[JAE,'아이고 다리야…']]);
       camSGoal.t.set(-94,2,-14);camSGoal.dist=58;camSGoal.pitch=.62;
       simMsg('비상상황 시뮬레이션 · 1차 비상집결장소','😱 1차 집결장소에서 인원 파악 중… 다들 우왕좌왕! 안재균 님 다리 부상 · 불길이 커지고 있어요',[['evac2','2차 집결장소로 대피 ▶','danger'],['end','중단']]);}}
   else if(S.phase==='evac2'){
@@ -2410,11 +2412,11 @@ function updateSim(dt,T){const S=state.sim;dt*=SIM_K;S.t+=dt;
       simMsg('비상상황 시뮬레이션 · 2차 대피','🩹 이경환 님이 다리를 다친 안재균 님을 부축하며 마지막으로 도착 중…',[['end','중단']]);}
     if(!allLine){if(S.wait)camSGoal.t.lerp(V([JAE.position.x,2,JAE.position.z]),Math.min(1,dt*2));else camSGoal.t.lerp(V([cx,2,cz]),Math.min(1,dt*3));}
     if(allLine&&!S.done2){S.done2=true;
-      simBubbles([[simLeader,'전원 이상 없음! ✅',true],[CEO,'다친 사람 응급처치부터!',true],[JAE,'괜찮아요… ㅎㅎ',true],[SIMP('최은실'),'훈련이라 다행!',true]]);
+      simBubbles([[simLeader,'전원 이상 없음! ✅',true],[CEO,'다친 사람 응급처치부터!',true],[JAE,'괜찮아요… ㅎㅎ',true]]);
       camSGoal.t.set(-108,2,55);camSGoal.dist=50;camSGoal.pitch=.5;camSGoal.yaw=.3;
       simMsg('비상상황 시뮬레이션 · 2차 비상집결장소',`✅ 2차 비상집결장소 집결 완료 · ${SIMW.length}명 전원 확인 (부상 1명: 안재균)`,[['end','시뮬레이션 종료','go']]);}}
-  for(const L of simLabels){L.pos.copy(L.w.position);L.pos.y+=L.w===simLeader?6.6:6.5;}
-  for(const L of simNames){L.pos.copy(L.w.position);L.pos.y+=5.15;L.el.classList.toggle('hurt',L.w===JAE&&S.fell);}}
+  const talking=new Set(simLabels.map(L=>L.w));for(const L of simLabels){L.pos.copy(L.w.position);L.pos.y+=L.w===simLeader?7.4:8.4;}
+  for(const L of simNames){L.pos.copy(L.w.position);L.pos.y+=5.15;L.el.classList.toggle('hurt',L.w===JAE&&S.fell);const tk=talking.has(L.w);if(L.tk!==tk){L.tk=tk;L.el.style.visibility=tk?'hidden':'';}}}
 function m0(m){return m==='pairIdle'?'panic':m==='fallen'?'x':m;}
 
 /* ================= 업무용 차량 운전 ================= */
