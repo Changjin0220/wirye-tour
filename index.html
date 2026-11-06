@@ -856,6 +856,20 @@ const LOT={x0:-62,x1:-36,z0:39,z1:61},BIZ=[];
 function carCol(c){const i=COL.indexOf(c.col);if(i>=0)COL.splice(i,1);const y=c.g.rotation.y,cs=Math.abs(Math.cos(y)),sn=Math.abs(Math.sin(y)),hx=cs*1.05+sn*2.25,hz=sn*1.05+cs*2.25,p=c.g.position;
   c.col={x0:p.x-hx,x1:p.x+hx,z0:p.z-hz,z1:p.z+hz};COL.push(c.col);c.st.door=[p.x,p.z];}
 
+/* 추가 주차공간: 연료가스가열기동 옆 도로변 · HRSG 북측 도로변 + 창고 */
+{const lm=new THREE.MeshBasicMaterial({color:0xeeeeee});FADE.push([lm,.2,0xffffff]);
+ const pave=(x0,x1,z0,z1)=>{fadeReg(box(site,x1-x0,.1,z1-z0,0x5a6066,(x0+x1)/2,.1,(z0+z1)/2,{rough:.95}),.35,0xd5dbe0).castShadow=false;};
+ const line=(x,z,w,d)=>mesh(new THREE.BoxGeometry(w,.02,d),lm,site,x,.17,z,false);
+ const CC=[0xd9dde1,0x2b2f33,0x9aa6b0,0x1f4e79,0xb03a2e,0xf4f6f7];let k=0;
+ const car=(x,z)=>{const c=CC[(k++*5)%CC.length];fadeReg(box(site,1.9,1.1,4.3,c,x,.75,z,{metal:.4,rough:.4}),.12);fadeReg(box(site,1.75,.85,2.3,0x2b3a47,x,1.7,z+.2,{rough:.2,metal:.5}),.12);colBox(x,z,1.9,4.3);};
+ pave(-84.4,-80.2,-57.5,-39);line(-80.4,-48.25,.14,18.5);for(const z of[-57.3,-51.1,-44.9,-39.2])line(-82.3,z,4,.14);car(-82.3,-54.2);car(-82.3,-42);
+ pave(-71.2,-47.4,-114.4,-108.4);for(let i=0;i<=7;i++)line(-71+i*3.35,-111.5,.14,5.8);line(-59.3,-114.2,23.6,.14);
+ pave(-44.2,-37.2,-114.4,-108.4);for(let i=0;i<=2;i++)line(-44+i*3.35,-111.5,.14,5.8);line(-40.65,-114.2,6.9,.14);
+ for(const i of[0,1,3,4,6])car(-69.3+i*3.35,-111.2);car(-42.3,-111.2);
+ const gW=bld(-29,-114.5,12,8.5,6.5,0xd5d1c6,0x9fa9b2);for(let x=-5.6;x<=5.6;x+=.7)box(gW,.12,6.3,.12,0xc2bdb1,x,3.2,4.3);
+ for(const x of[-3,2.6]){box(gW,3.4,4,.12,0x8f9aa3,x,2,4.32,{metal:.4});for(let y=.4;y<4;y+=.4)box(gW,3.4,.05,.14,0x76818a,x,y,4.33);}
+ signBox(gW,'창고','WORKSHOP & WAREHOUSE',0,5.6,4.4,6.4,1,'#14324d','#ffffff');}
+
 /* HRSG 연돌 연기 (평소) */
 const STACK_SMOKE=[];{const sg=new THREE.SphereGeometry(1,10,8);for(let i=0;i<16;i++){const m=new THREE.Mesh(sg,new THREE.MeshLambertMaterial({color:0xeef1f4,transparent:true,opacity:0,depthWrite:false}));m.castShadow=false;site.add(m);STACK_SMOKE.push({m,ph:i/16,jx:Math.random()*2-1,jz:Math.random()*2-1});}}
 /* 밀리토피아 골프연습장 (수요처 아파트 맞은편 · 서→동 타격 · 2층 · 그물 닭장) */
@@ -1004,7 +1018,7 @@ const simLabels=[];
 function inPoly(x,z,poly){let c=false;for(let i=0,j=poly.length-1;i<poly.length;j=i++){const xi=poly[i][0],zi=poly[i][1],xj=poly[j][0],zj=poly[j][1];if(((zi>z)!==(zj>z))&&(x<(xj-xi)*(z-zi)/(zj-zi)+xi))c=!c;}return c;}
 /* trees */
 {let seed=7;const rnd=()=>(seed=(seed*16807)%2147483647)/2147483647;const trees=[];
- const ok=(x,z)=>{if(distToRoad(x,z)<6.5)return false;if(x>-119&&x<-83&&z>-26&&z<48)return false;if(x>-106&&x<-82&&z>-26&&z<0)return false;if(x>-182&&x<-96&&z>38&&z<92)return false;if(x>-100&&x<-84&&z>44&&z<62)return false;if(x>-66&&x<-32&&z>35&&z<63)return false;if(x>-206&&x<-114&&z>116&&z<177)return false;if(x>-86&&x<-62&&z>-100&&z<-56)return false;if(x>-82&&x<-64&&z>-60&&z<-40)return false;if(x>-14&&x<3&&z>-105&&z<3)return false;if(x>-38&&x<-14&&z>-75&&z<-65)return false;if(x>-108&&x<22&&z>58&&z<66)return false;if(x>-76&&x<-68&&z>36&&z<72)return false;for(const b of COL)if(x>b.x0-4&&x<b.x1+4&&z>b.z0-4&&z<b.z1+4)return false;for(const c of CIRC)if(Math.hypot(x-c.x,z-c.z)<c.r+4)return false;return true;};
+ const ok=(x,z)=>{if(distToRoad(x,z)<6.5)return false;if(x>-119&&x<-83&&z>-26&&z<48)return false;if(x>-86&&x<-20&&z>-121&&z<-107)return false;if(x>-86&&x<-79&&z>-59&&z<-37)return false;if(x>-106&&x<-82&&z>-26&&z<0)return false;if(x>-182&&x<-96&&z>38&&z<92)return false;if(x>-100&&x<-84&&z>44&&z<62)return false;if(x>-66&&x<-32&&z>35&&z<63)return false;if(x>-206&&x<-114&&z>116&&z<177)return false;if(x>-86&&x<-62&&z>-100&&z<-56)return false;if(x>-82&&x<-64&&z>-60&&z<-40)return false;if(x>-14&&x<3&&z>-105&&z<3)return false;if(x>-38&&x<-14&&z>-75&&z<-65)return false;if(x>-108&&x<22&&z>58&&z<66)return false;if(x>-76&&x<-68&&z>36&&z<72)return false;for(const b of COL)if(x>b.x0-4&&x<b.x1+4&&z>b.z0-4&&z<b.z1+4)return false;for(const c of CIRC)if(Math.hypot(x-c.x,z-c.z)<c.r+4)return false;return true;};
  for(let i=0;i<900&&trees.length<120;i++){const x=-140+rnd()*290,z=-125+rnd()*260;const inside=inPoly(x,z,SITE);if((inside&&ok(x,z))||(!inside&&rnd()<.25&&ok(x,z)&&!(x>-205&&x<-112&&z>90&&z<155)))trees.push([x,z,.8+rnd()*.6]);}
  const tm=new THREE.InstancedMesh(new THREE.ConeGeometry(2.4,6,7),M(0x3f7f4a,{rough:1}),trees.length);const tr=new THREE.InstancedMesh(new THREE.CylinderGeometry(.35,.45,2.2,6),M(0x6b4f3a),trees.length);
  const d=new THREE.Object3D();trees.forEach(([x,z,s],i)=>{d.position.set(x,1.1*s,z);d.scale.setScalar(s);d.updateMatrix();tr.setMatrixAt(i,d.matrix);d.position.set(x,(2.2+3)*s,z);d.updateMatrix();tm.setMatrixAt(i,d.matrix);});
@@ -1240,6 +1254,8 @@ const FAC={
   egen:{name:'비상발전기동',en:'Emergency Generator',b:[-109,0,-99,-95,12,-91],lp:[-102,8,-95],specs:[['연료','경유 (디젤)'],['역할','정전 대비']],
     d:'외부 전력이 끊기는 정전 때 자동으로 켜져서 꼭 필요한 설비에 전기를 공급하는 디젤 발전기가 있는 건물이에요.',
     roles:['정전되면 수 초 안에 자동 기동해요','터빈 윤활유 펌프·제어설비·비상조명처럼 안전 정지에 필요한 설비에 전기를 줘요','회전하던 터빈과 설비가 손상 없이 안전하게 멈출 수 있게 지켜줘요','평소에는 정기적으로 시험 운전을 해요']},
+  whs:{name:'창고',en:'Workshop & Ware House',b:[-35,0,-118.75,-23,7,-110.25],lp:[-29,8.5,-114.5],specs:[['위치','HRSG 북측 도로변'],['용도','자재 · 예비품 보관 · 정비']],
+    d:'HRSG 북측 주차공간 옆에 있는 창고 건물이에요. 정비 자재와 예비품을 보관해요.',roles:['예비 부품·소모품을 보관해요','간단한 정비 작업 공간으로도 써요'],uncertain:true},
   fgh:{name:'연료가스가열기동',en:'Fuel Gas Heater',b:[-80,0,-57,-68,10,-43],lp:[-74,12,-50],specs:[['위치','HRSG 서측'],['열원','HRSG 급수(온수)']],
     d:'가스터빈에 들어가기 직전의 천연가스를 데우는 설비예요. 가스를 미리 데워 들여보내면 같은 연료로 더 많은 전기를 만들 수 있어요.',
     roles:['HRSG에서 데워진 급수(온수)로 천연가스를 가열해 가스터빈 효율을 높여요','가스 온도를 이슬점보다 충분히 높게 유지해 배관 속 응축과 결빙을 막아요','NG압축기동을 지난 가스가 여기를 거쳐 발전동 연소기로 가요'],uncertain:true},
@@ -2626,7 +2642,7 @@ function updateSim(dt,T){const S=state.sim;dt*=SIM_K;S.t+=dt;
 function m0(m){return m==='pairIdle'?'panic':m==='fallen'?'x':m;}
 
 /* ================= 업무용 차량 운전 ================= */
-function drivable(x,z){if(distToRoad(x,z)<RW/2+.7)return true;if(x>LOT.x0&&x<LOT.x1&&z>LOT.z0&&z<LOT.z1)return true;if(x>-6.6&&x<.8&&z>-103&&z<1)return true;return false;}
+function drivable(x,z){if(distToRoad(x,z)<RW/2+.7)return true;if(x>-84.4&&x<-80.2&&z>-57.5&&z<-39)return true;if(((x>-71.2&&x<-47.4)||(x>-44.2&&x<-37.2))&&z>-114.4&&z<-108)return true;if(x>LOT.x0&&x<LOT.x1&&z>LOT.z0&&z<LOT.z1)return true;if(x>-6.6&&x<.8&&z>-103&&z<1)return true;return false;}
 function carFits(c,x,z,y){const f=[Math.sin(y),Math.cos(y)],r=[-Math.cos(y),Math.sin(y)];
   for(const [a,b] of[[2.15,.9],[2.15,-.9],[-2.15,.9],[-2.15,-.9],[0,0],[2.15,0],[-2.15,0]]){const px=x+f[0]*a+r[0]*b,pz=z+f[1]*a+r[1]*b;if(!drivable(px,pz))return false;
     for(const k of COL)if(k!==c.col&&px>k.x0&&px<k.x1&&pz>k.z0&&pz<k.z1)return false;}return true;}
