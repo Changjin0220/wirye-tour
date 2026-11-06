@@ -206,6 +206,10 @@ body.interior #sheet{top:calc(var(--gap) + env(safe-area-inset-top,0px))}
 .fp-btns button[data-f="emergency"] b{color:#ff6b60}
 .lbl.bubble{padding:4px 9px;border-radius:12px;background:#fff;color:#c0392b;font-weight:800;font-size:13px;box-shadow:0 3px 10px rgba(0,0,0,.3)}
 .lbl.bubble.ok{color:#1b8a3c}
+.lbl.nametag{padding:1px 7px;border-radius:7px;background:rgba(16,22,28,.78);color:#fff;font-size:11px;font-weight:600;white-space:nowrap}
+.lbl.nametag.f{background:rgba(176,58,110,.85)}
+.lbl.nametag.ceo{background:#ffc233;color:#10161c;font-weight:800}
+.lbl.nametag.hurt{background:#e63946}
 .pin.ap{background:rgba(20,110,60,.9);color:#fff}
 .pin.ap .pin-no{background:#7dffa8;font-style:normal}
 @media (max-width:560px){#simBar .pa-card,#rideBar .pa-card{flex-direction:column;align-items:stretch}.pa-btns{justify-content:flex-end}}
@@ -460,14 +464,15 @@ function makeWorker(o){o=o||{};
   const g=new THREE.Group();
   const suit=o.suit||0x1f4e79,stripe=0xff9f1c,helmet=o.helmet||0xffd23f,skin=0xf1c7a1;
   const legs=[];
-  for(const sx of[-.42,.42]){const hip=new THREE.Group();hip.position.set(sx,1.55,0);g.add(hip);box(hip,.58,1.45,.62,o.office?0x2b3440:0x173a5c,0,-.72,0);box(hip,.66,.32,.86,0x2a2a2a,0,-1.38,.08);legs.push(hip);}
+  for(const sx of[-.42,.42]){const hip=new THREE.Group();hip.position.set(sx,1.55,0);g.add(hip);box(hip,.58,1.45,.62,o.female?0x3a3030:o.office?0x2b3440:0x173a5c,0,-.72,0);box(hip,.66,.32,.86,0x2a2a2a,0,-1.38,.08);legs.push(hip);}
   box(g,1.65,1.75,1.05,suit,0,2.42,0);
   if(!o.office){box(g,1.67,.16,1.07,stripe,0,2.05,0);box(g,1.67,.16,1.07,stripe,0,2.8,0);box(g,.9,.45,.12,0xeaf1f6,0,2.6,.55);}
   else box(g,.5,.9,.06,0xeaf1f6,0,2.75,.53);
   const arms=[];
   for(const sx of[-1.05,1.05]){const sh=new THREE.Group();sh.position.set(sx,3.1,0);g.add(sh);box(sh,.46,1.45,.5,suit,0,-.62,0);sph(sh,.27,skin,0,-1.42,0);arms.push(sh);}
   sph(g,.78,skin,0,3.95,0);
-  if(o.office)mesh(new THREE.SphereGeometry(.82,20,12,0,PI*2,0,PI/2.2),M(0x2b2118),g,0,4.0,-.06);
+  if(o.female){box(g,1.75,.9,1.15,o.skirt||o.suit||0x2b3440,0,1.45,0);const hc=o.hair||0x3a2418;mesh(new THREE.SphereGeometry(.86,20,12,0,PI*2,0,PI/1.75),M(hc),g,0,4.0,-.08);box(g,1.5,1.5,.5,hc,0,3.55,-.5);if(o.pony)sph(g,.42,hc,0,3.7,-1.05);}
+  else if(o.office)mesh(new THREE.SphereGeometry(.82,20,12,0,PI*2,0,PI/2.2),M(o.hair||0x2b2118),g,0,4.0,-.06);
   else{mesh(new THREE.SphereGeometry(.86,20,12,0,PI*2,0,PI/2),M(helmet,{rough:.4}),g,0,4.05,0);cyl(g,1.02,1.02,.1,helmet,0,4.05,.12,{rough:.4},20);}
   sph(g,.1,0x111111,-.27,3.98,.7);sph(g,.1,0x111111,.27,3.98,.7);
   g.userData={legs,arms,phase:0};
@@ -525,7 +530,7 @@ const ROADS=[
   [[-122,32],[-122,-27.5]],[[-122,-27.5],[-88,-27.5]],[[-88,-27.5],[-88,-105]],[[-88,-105],[-15,-105]],
   [[-15,-105],[-15,50]],[[-34,50],[30,50]],[[30,-110],[30,50]],
   [[30,-110],[80,-110]],[[80,-110],[80,-55]],[[-27.5,50],[-27.5,72]],
-  [[-122,32],[-122,115]],[[-122,115],[-158,115]]
+  [[-122,32],[-122,115]],[[-122,115],[-158,115]],[[-158,115],[-197,115]],[[-194,115],[-194,120]]
 ];
 const RW=7;
 const dashes=[];
@@ -715,6 +720,8 @@ const RG={G0:[-94+12*13/79,49],G1:[-94+12*20/79,56],open:false,s:0,col:null};
  for(const x of[-127.6,-116.4]){box(site,1.6,7,1.6,0x34495e,x,3.5,36);colBox(x,36,1.6,1.6);}
  box(site,12.8,1.8,.6,new THREE.MeshStandardMaterial({map:sign,roughness:.6}),-122,7.6,36);
  box(site,5,4,5,0xe2ddd3,-111,2,42);box(site,6,.4,6,0x34495e,-111,4.2,42);colBox(-111,42,5,5);
+ {const gl=0x9cc3dc;box(site,.08,1.4,3.6,gl,-113.55,2.6,42,{rough:.1,metal:.4});box(site,3.6,1.4,.08,gl,-111,2.6,39.45,{rough:.1,metal:.4});box(site,3.6,1.4,.08,gl,-111,2.6,44.55,{rough:.1,metal:.4});
+  box(site,.08,2.6,1.3,0x5d4a3a,-108.45,1.3,43);signBox(site,'경비실','SECURITY',-113.65,3.65,42,3,.7,'#14324d','#ffffff',-PI/2);}
  const fm=M(0x6f808c,{opacity:.85});
  for(let i=0;i<SITE.length;i++){const a=SITE[i],b=SITE[(i+1)%SITE.length];
    const segs=(a[1]===36&&b[1]===36)?[[a,[-115.6,36]],[[-128.4,36],b]]:(a[0]===-82&&b[0]===-94)?[[a,RG.G1],[RG.G0,b]]:[[a,b]];
@@ -735,6 +742,7 @@ let noiseAcc=0;
 
 /* 비상집결장소 */
 const LATE_LBL=[];
+LATE_LBL.push(['<span class="pin-no">🛡</span><span>경비실</span>',[-111,7.5,42],'pin fac',null,'--c:#b8c4cf']);
 const AP1={x0:-101.5,x1:-86.5,z0:-23,z1:-4.5},AP2={x0:-117,x1:-99,z0:46.5,z1:62.5};
 function apTex(no){return canvasTex(512,512,(g,w,h)=>{g.fillStyle='#1f9a52';g.fillRect(0,0,w,h);g.strokeStyle='#fff';g.lineWidth=18;g.strokeRect(24,24,w-48,h-48);
   g.fillStyle='#fff';g.textAlign='center';g.textBaseline='middle';
@@ -800,6 +808,62 @@ function carCol(c){const i=COL.indexOf(c.col);if(i>=0)COL.splice(i,1);const y=c.
 
 /* HRSG 연돌 연기 (평소) */
 const STACK_SMOKE=[];{const sg=new THREE.SphereGeometry(1,10,8);for(let i=0;i<16;i++){const m=new THREE.Mesh(sg,new THREE.MeshLambertMaterial({color:0xeef1f4,transparent:true,opacity:0,depthWrite:false}));m.castShadow=false;site.add(m);STACK_SMOKE.push({m,ph:i/16,jx:Math.random()*2-1,jz:Math.random()*2-1});}}
+/* 밀리토피아 골프연습장 (수요처 아파트 맞은편 · 서→동 타격 · 2층 · 그물 닭장) */
+const GOLF={x0:-201,x1:-124,z0:121,z1:171,bx:-187,golfers:[],balls:[]};
+{const {x0,x1,z0,z1,bx}=GOLF,zc=(z0+z1)/2,W=z1-z0,FL=bx+.5;
+ const turf=canvasTex(512,256,(c,w,h)=>{for(let i=0;i<8;i++){c.fillStyle=i%2?'#7cbf5c':'#72b553';c.fillRect(i*w/8,0,w/8,h);}});
+ const fld=mesh(new THREE.PlaneGeometry(x1-FL,W),new THREE.MeshStandardMaterial({map:turf,roughness:1}),site,(FL+x1)/2,.09,zc,false);fld.rotation.x=-PI/2;fld.receiveShadow=true;fadeReg(fld,.4);
+ for(const [d,lab,col] of[[22,'50','#e63946'],[42,'100','#ffc233'],[58,'150','#3a86ff']]){const x=FL+d;
+   const ring=mesh(new THREE.RingGeometry(2.6,3.4,28),new THREE.MeshBasicMaterial({color:0xffffff}),site,x,.12,zc+(d===42?-6:6),false);ring.rotation.x=-PI/2;
+   cyl(site,.07,.07,3,0xeeeeee,x,1.5,zc+(d===42?-6:6),{},6);box(site,1,.6,.04,col,x+.5,2.7,zc+(d===42?-6:6));
+   signBox(site,lab,'yd',x,1.6,z1-2,2.2,1.2,col,'#ffffff');}
+ const wall=0xd9d4c8;box(site,.6,10.8,W,wall,x0+.3,5.4,zc);for(const z of[z0+.3,z1-.3])box(site,14,10.8,.6,wall,x0+7,5.4,z);
+ box(site,14,.3,W,0x9a948a,x0+7,.15,zc).castShadow=false;box(site,14,.5,W,0xc8c2b6,x0+7,5.05,zc);box(site,15,.6,W+1,0x8a96a0,x0+7,10.9,zc);
+ for(let z=z0;z<=z1+.1;z+=W/8)box(site,.6,10.6,.6,0xbfc6cc,bx-.3,5.3,z);
+ box(site,.12,1.1,W,0xd0d6db,bx-.2,5.85,zc,{metal:.5});
+ const NB=9,sp=W/(NB+.6);
+ for(const fy of[.3,5.3])for(let k=0;k<NB;k++){const z=z0+sp*(k+.8);box(site,2.4,.08,2.6,0x2e8b57,bx-2.2,fy+.04,z).castShadow=false;
+   if(k)box(site,4,2.2,.08,0xcfd5d9,bx-3,fy+1.1,z-sp/2,{rough:.3,metal:.3});}
+ signBox(site,'밀리토피아 골프연습장','MILITOPIA GOLF RANGE',x0+7,13.4,zc,13,2.6,'#1f6b3a','#ffffff');
+ for(const x of[x0+3,x0+11])box(site,.25,2.2,.25,0x6b7782,x,12,zc);
+ // 북쪽 자동차 출입구
+ box(site,5.6,3.6,.12,0x1b2026,-194,1.8,z0-.05);box(site,7,.35,3,0x1f6b3a,-194,3.9,z0-1.4);for(const x of[-197.3,-190.7])box(site,.25,3.8,.25,0x6b7782,x,1.9,z0-2.8);
+ signBox(site,'자동차 출입구','ENTRANCE · PARKING',-194,4.7,z0-2.9,6.4,.9,'#1f6b3a','#ffffff');
+ box(site,.4,1.2,.4,0xffc233,-190.2,.6,119.6);box(site,.18,4.2,.18,0xe63946,-190.2,3.2,119.6);
+ // 그물 닭장 (기둥 + 옆면 + 천장)
+ const NH=26,net=canvasTex(128,128,(c,w,h)=>{c.clearRect(0,0,w,h);c.strokeStyle='rgba(40,58,46,.95)';c.lineWidth=2;for(let i=-h;i<w+h;i+=16){c.beginPath();c.moveTo(i,0);c.lineTo(i+h,h);c.stroke();c.beginPath();c.moveTo(i+h,0);c.lineTo(i,h);c.stroke();}});
+ const netMat=(rx,ry)=>{const t=net.clone();t.needsUpdate=true;t.wrapS=t.wrapT=THREE.RepeatWrapping;t.repeat.set(rx,ry);return new THREE.MeshBasicMaterial({map:t,transparent:true,alphaTest:.2,side:THREE.DoubleSide});};
+ const L=x1-bx;
+ for(const z of[z0,z1]){const m=mesh(new THREE.PlaneGeometry(L,NH),netMat(L/2.2,NH/2.2),site,(bx+x1)/2,NH/2,z,false);fadeReg(m,.15);}
+ {const m=mesh(new THREE.PlaneGeometry(W,NH),netMat(W/2.2,NH/2.2),site,x1,NH/2,zc,false);m.rotation.y=PI/2;fadeReg(m,.15);}
+ {const m=mesh(new THREE.PlaneGeometry(L,W),netMat(L/2.2,W/2.2),site,(bx+x1)/2,NH,zc,false);m.rotation.x=-PI/2;fadeReg(m,.15);}
+ {const m=mesh(new THREE.PlaneGeometry(W,NH-10.6),netMat(W/2.2,(NH-10.6)/2.2),site,bx,10.6+(NH-10.6)/2,zc,false);m.rotation.y=PI/2;}
+ const poles=[];for(let x=bx;x<=x1+.1;x+=L/6){poles.push([x,z0],[x,z1]);}for(let z=z0+W/5;z<z1-.1;z+=W/5)poles.push([x1,z]);
+ for(const [x,z] of poles){cyl(site,.38,.45,NH+1,0xe4e8eb,x,(NH+1)/2,z,{metal:.4},10);}
+ for(const z of[z0,z1])box(site,L,.15,.15,0x9aa6b0,(bx+x1)/2,NH,z);box(site,.15,.15,W,0x9aa6b0,x1,NH,zc);
+ colBox(x0+7,zc,14,W);colBox((bx+x1)/2,z0,L,.8);colBox(x1,zc,.8,W);colBox((bx+x1)/2,z1,L,.8);
+ // 골퍼 + 공
+ const PC=[0xffffff,0x1f6fb2,0xe63946,0xffc233,0x2e8b57,0xf4a6c6,0x222831,0x9b5de5];let sd=7;const r=()=>(sd=(sd*16807)%2147483647)/2147483647;
+ for(const fy of[.3,5.3])for(let k=0;k<NB;k++){if(r()<.22)continue;const f=r()<.35,z=z0+sp*(k+.8);
+   const w=makeWorker(f?{office:true,female:true,suit:PC[k%8],skirt:0xf2f2f2,pony:true}:{office:true,suit:PC[(k+3)%8]});w.scale.setScalar(.9);w.position.set(bx-2.6,fy,z-1.1);site.add(w);
+   cyl(w.userData.arms[1],.06,.06,2.6,0x9aa6b0,0,-2.6,0,{metal:.7},6);box(w.userData.arms[1],.25,.18,.55,0x2b2f33,0,-3.9,.2);
+   w.traverse(o=>{if(o.isMesh)fadeReg(o,.12);});
+   GOLF.golfers.push({w,t:r()*5,P:3.6+r()*2.4,fy,z,hit:false});}
+ const bg=new THREE.SphereGeometry(.28,8,6),bm=new THREE.MeshStandardMaterial({color:0xffffff,roughness:.4});
+ for(let i=0;i<36;i++){const m=new THREE.Mesh(bg,bm);m.visible=false;site.add(m);GOLF.balls.push({m,v:new THREE.Vector3(),life:0,on:false});}
+ LATE_LBL.push(['<span class="pin-no">⛳</span><span>밀리토피아 골프연습장</span>',[-160,30,zc],'pin fac',null,'--c:#2ecc71']);}
+function golfLaunch(G){const b=GOLF.balls.find(b=>!b.on);if(!b)return;b.on=true;b.life=0;b.m.visible=true;b.m.position.set(GOLF.bx-1.6,G.fy+.4,G.z);b.v.set(30+Math.random()*14,11+Math.random()*9,(Math.random()-.5)*5);}
+function updateGolf(dt){const ease=t=>t*t*(3-2*t);
+  for(const G of GOLF.golfers){G.t+=dt;const s=(G.t%G.P)/G.P;let th=0;
+    if(s<.35)th=Math.sin(G.t*2)*.08;else if(s<.6)th=-2.3*ease((s-.35)/.25);else if(s<.68)th=-2.3*(1-ease((s-.6)/.08));else if(s<.78)th=2.2*ease((s-.68)/.1);else th=2.2*(1-ease((s-.78)/.22));
+    if(s>=.68&&s<.78){if(!G.hit){G.hit=true;golfLaunch(G);}}else if(s<.6)G.hit=false;
+    const u=G.w.userData;for(const a of u.arms){a.rotation.z=th;a.rotation.x=-.35;}G.w.rotation.y=th*.18;}
+  for(const b of GOLF.balls){if(!b.on)continue;b.life+=dt;const p=b.m.position;b.v.y-=18*dt;p.addScaledVector(b.v,dt);
+    if(p.y>25.6){p.y=25.6;b.v.y=-Math.abs(b.v.y)*.3;}if(p.x>GOLF.x1-.6){p.x=GOLF.x1-.6;b.v.x=-b.v.x*.2;}
+    if(p.z<GOLF.z0+.6||p.z>GOLF.z1-.6){b.v.z=-b.v.z*.3;p.z=clamp(p.z,GOLF.z0+.6,GOLF.z1-.6);}
+    if(p.y<.3){p.y=.3;b.v.y=Math.abs(b.v.y)>2?-b.v.y*.35:0;b.v.x*=.7;b.v.z*=.7;}
+    if(b.life>7){b.on=false;b.m.visible=false;}}}
+
 let stackT=0;function updateStack(dt){stackT+=dt;const on=!state.flow;for(const s of STACK_SMOKE){s.m.visible=on;if(!on)continue;const f=(stackT*.07+s.ph)%1;
   s.m.position.set(-55+s.jx*.8+f*f*26,53+f*30,-76+s.jz*.8-f*6);s.m.scale.setScalar(1.4+f*5.5);s.m.material.opacity=.5*(1-f)*Math.min(1,f*8);}}
 
@@ -853,7 +917,12 @@ const FLAMES=[],SMOKE=[],SIMW=[];
  for(let i=0;i<6;i++)fl(-123+r()*10,16.6,-72+r()*18,1.4+r(),2.5+r()*3);
  const sg=new THREE.SphereGeometry(1,10,8);for(let i=0;i<22;i++){const m=new THREE.Mesh(sg,new THREE.MeshLambertMaterial({color:0x3b3f44,transparent:true,opacity:0,depthWrite:false}));simG.add(m);SMOKE.push({m,ph:i/22,x:-124+r()*12,z:-74+r()*22});}
  const SUITS=[0x2b3440,0x3a4a5c,0x5a4a3a,0x1f4e79,0x6b2d3a,0x2f5f4f,0x4a4a4a,0x7a6a55];
- for(let i=0;i<28;i++){const w=makeWorker({office:true,suit:SUITS[i%SUITS.length]});w.scale.setScalar(1.05);simG.add(w);SIMW.push(w);}}
+ const MEN=['대표님','정순영','서봉섭','이화준','신창진','한준민','오원진','안재균','최주영','이경환','손대호'],WOMEN=['조해선','심정연','한유진','양은빈','김미진','최은실'];
+ const FSK=[0x2b3440,0x6b2d3a,0x3a4a5c,0x8a6f5a,0x1f4e79,0x4a4a4a],HAIR=[0x3a2418,0x1c1410,0x5a3a22,0x2b1d14];
+ const add=(name,f,i)=>{const w=makeWorker(f?{office:true,female:true,suit:[0xf2efe8,0xdfe8f1,0xf4dfe4,0xe9e4d8][i%4],skirt:FSK[i%FSK.length],hair:HAIR[i%HAIR.length],pony:i%2===0}:{office:true,suit:name==='대표님'?0x1b2533:SUITS[i%SUITS.length],hair:name==='대표님'?0x4a4a4a:undefined});
+   w.scale.setScalar(f?1:1.05);w.userData.name=name;w.userData.female=f;simG.add(w);SIMW.push(w);};
+ MEN.forEach((n,i)=>add(n,false,i));WOMEN.forEach((n,i)=>add(n,true,i));for(let i=0;i<7;i++)add('',false,i+3);for(let i=0;i<4;i++)add('',true,i+2);}
+const SIMP=n=>SIMW.find(w=>w.userData.name===n);const CEO=SIMP('대표님'),JAE=SIMP('안재균'),KYH=SIMP('이경환');
 const glowM=new THREE.MeshBasicMaterial({color:0xff7a1a,transparent:true,opacity:0,depthWrite:false});
 box(simG,.25,1.7,33,glowM,-126.45,13.8,-62).castShadow=false;box(simG,11.2,1.7,.25,glowM,-119.5,13.8,-31.3).castShadow=false;
 const simLeader=makeWorker({suit:0xd35400,helmet:0xffffff});simLeader.scale.setScalar(1.1);simG.add(simLeader);
@@ -884,7 +953,7 @@ const simLabels=[];
 function inPoly(x,z,poly){let c=false;for(let i=0,j=poly.length-1;i<poly.length;j=i++){const xi=poly[i][0],zi=poly[i][1],xj=poly[j][0],zj=poly[j][1];if(((zi>z)!==(zj>z))&&(x<(xj-xi)*(z-zi)/(zj-zi)+xi))c=!c;}return c;}
 /* trees */
 {let seed=7;const rnd=()=>(seed=(seed*16807)%2147483647)/2147483647;const trees=[];
- const ok=(x,z)=>{if(distToRoad(x,z)<6.5)return false;if(x>-106&&x<-82&&z>-26&&z<0)return false;if(x>-182&&x<-96&&z>38&&z<92)return false;if(x>-100&&x<-84&&z>44&&z<62)return false;if(x>-66&&x<-32&&z>35&&z<63)return false;if(x>-86&&x<-62&&z>-100&&z<-56)return false;if(x>-82&&x<-64&&z>-60&&z<-40)return false;if(x>-14&&x<3&&z>-105&&z<3)return false;if(x>-38&&x<-14&&z>-75&&z<-65)return false;if(x>-108&&x<22&&z>58&&z<66)return false;if(x>-76&&x<-68&&z>36&&z<72)return false;for(const b of COL)if(x>b.x0-4&&x<b.x1+4&&z>b.z0-4&&z<b.z1+4)return false;for(const c of CIRC)if(Math.hypot(x-c.x,z-c.z)<c.r+4)return false;return true;};
+ const ok=(x,z)=>{if(distToRoad(x,z)<6.5)return false;if(x>-106&&x<-82&&z>-26&&z<0)return false;if(x>-182&&x<-96&&z>38&&z<92)return false;if(x>-100&&x<-84&&z>44&&z<62)return false;if(x>-66&&x<-32&&z>35&&z<63)return false;if(x>-206&&x<-114&&z>116&&z<177)return false;if(x>-86&&x<-62&&z>-100&&z<-56)return false;if(x>-82&&x<-64&&z>-60&&z<-40)return false;if(x>-14&&x<3&&z>-105&&z<3)return false;if(x>-38&&x<-14&&z>-75&&z<-65)return false;if(x>-108&&x<22&&z>58&&z<66)return false;if(x>-76&&x<-68&&z>36&&z<72)return false;for(const b of COL)if(x>b.x0-4&&x<b.x1+4&&z>b.z0-4&&z<b.z1+4)return false;for(const c of CIRC)if(Math.hypot(x-c.x,z-c.z)<c.r+4)return false;return true;};
  for(let i=0;i<900&&trees.length<120;i++){const x=-140+rnd()*290,z=-125+rnd()*260;const inside=inPoly(x,z,SITE);if((inside&&ok(x,z))||(!inside&&rnd()<.25&&ok(x,z)&&!(x>-205&&x<-112&&z>90&&z<155)))trees.push([x,z,.8+rnd()*.6]);}
  const tm=new THREE.InstancedMesh(new THREE.ConeGeometry(2.4,6,7),M(0x3f7f4a,{rough:1}),trees.length);const tr=new THREE.InstancedMesh(new THREE.CylinderGeometry(.35,.45,2.2,6),M(0x6b4f3a),trees.length);
  const d=new THREE.Object3D();trees.forEach(([x,z,s],i)=>{d.position.set(x,1.1*s,z);d.scale.setScalar(s);d.updateMatrix();tr.setMatrixAt(i,d.matrix);d.position.set(x,(2.2+3)*s,z);d.updateMatrix();tm.setMatrixAt(i,d.matrix);});
@@ -1044,7 +1113,9 @@ player.position.set(START[0],0,START[1]);player.rotation.y=PI;
 
 /* ================= state ================= */
 const state={mode:'boot',flow:false,overview:false,focusStep:-1,auto:null,near:null,interior:null,spot:0,courseWas:null,sim:null,simIn:false,ride:null};
-const busy=()=>!!(state.sim||state.ride||state.drive);let SIM_K=1;
+const busy=()=>!!(state.sim||state.ride||state.drive);let camSave=null;
+function saveCam(){camSave={yaw:camSGoal.yaw,pitch:camSGoal.pitch,dist:camSGoal.dist};}
+function restoreCam(){if(camSave){camSGoal.yaw=camSave.yaw;camSGoal.pitch=camSave.pitch;camSGoal.dist=camSave.dist;camSave=null;}else followCam();}let SIM_K=1;
 const camSCur=Orbit([-30,0,0],.35,.95,330),camSGoal=Orbit([-30,0,0],.35,.95,330);
 let activeScene=site,activeCam=camS;
 
@@ -2231,48 +2302,70 @@ function simMsg(eye,msg,btns){$('#simEye').textContent=eye;$('#simMsg').innerHTM
 $('#simBtns').addEventListener('click',e=>{const b=e.target.closest('[data-sim]');if(!b)return;if(b.dataset.sim==='evac2')simEvac2();else endSim();});
 function simBubbles(list){clearLabels(simLabels);list.forEach(([w,t,ok])=>{const L=makeLabel(simLabels,t,[0,0,0],'bubble'+(ok?' ok':''));L.w=w;});}
 function apPoint(A,m){return[rr(A.x0+m,A.x1-m),0,rr(A.z0+m,A.z1-m)];}
+const simNames=[];
 function startSim(){
-  if(state.mode!=='site'||busy())return;
+  if(state.mode!=='site'||busy())return;saveCam();
   if(state.fac)closeFac();if(state.flow)toggleFlow(false);if(state.overview)toggleOverview(false);
   state.auto=null;beacon.visible=false;hidePromoAsk();state.near=null;$('#prompt').hidden=true;
-  simG.visible=true;state.simIn=true;state.sim={t:0,phase:'fire',done1:false,done2:false};
-  SIMW.forEach(w=>{const u=w.userData;w.position.set(rr(-123,-100),12.18,rr(-82,-50));w.rotation.y=rr(0,PI*2);Object.assign(u,{path:null,pi:0,mode:'idle',delay:0,v:0,ph:rr(0,9),raise:Math.random()<.4,goal:null,tw:0});});
+  simG.visible=true;state.simIn=true;state.sim={t:0,phase:'fire',done1:false,done2:false,fell:false};
+  SIMW.forEach(w=>{const u=w.userData;w.position.set(rr(-123,-100),12.18,rr(-82,-50));w.rotation.set(0,rr(0,PI*2),0);w.rotation.order='YXZ';
+    Object.assign(u,{path:null,pi:0,mode:'idle',delay:0,v:0,ph:rr(0,9),raise:Math.random()<.4,goal:null,tw:0,role:null,rest:null,ft:0});
+    u.arms.forEach(a=>a.rotation.set(0,0,0));u.legs.forEach(l=>l.rotation.set(0,0,0));});
+  CEO.position.set(-101,12.18,-52);CEO.userData.raise=false;JAE.userData.role='J';KYH.userData.role='K';JAE.userData.raise=KYH.userData.raise=false;
   FLAMES.forEach(f=>{f.g.visible=false;});SMOKE.forEach(s=>s.m.material.opacity=0);
   simLeader.position.set(-108,0,61);simLeader.rotation.y=PI;
   siteLabels.forEach(l=>l.el.hidden=true);
-  simBubbles([[SIMW[0],'어? 이거 무슨 냄새야?'],[SIMW[5],'불이야!!'],[SIMW[11],'연기 난다!']]);
+  clearLabels(simNames);SIMW.forEach(w=>{const n=w.userData.name;if(!n)return;const L=makeLabel(simNames,n,[0,0,0],'nametag'+(n==='대표님'?' ceo':w.userData.female?' f':''));L.w=w;});
+  simBubbles([[SIMP('정순영'),'어? 이거 무슨 냄새야?'],[SIMP('조해선'),'불이야!!'],[SIMP('서봉섭'),'연기 난다!']]);
   camSGoal.t.set(-108,9,-54);camSGoal.dist=105;camSGoal.pitch=.45;camSGoal.yaw=-.5;
   simMsg('비상상황 시뮬레이션 · 행정동 4층','🔥 4층 사무실에서 화재 발생! 화재경보가 울립니다',[['end','중단']]);$('#simBar').hidden=false;
   Snd.init();Snd.siren(true);Snd.setDuck(.2);toast('🚨 화재 경보! 행정동 4층에서 불이 났어요',3);
 }
+function evac1Path(){const j=()=>rr(-.35,.35);return[[rr(-101,-99),12.18,rr(-49,-47)],[-94+j(),12.18,-46.4],...STAIR.map(q=>[q[0]+j(),q[1],q[2]]),[-100,0,-38],[-109+rr(-2,2),0,-33.5],[-109+rr(-2,2),0,-28.5],[rr(-105,-99),0,rr(-26.5,-25)],[rr(-98,-95),0,-21.5],apPoint(AP1,1.2)];}
+const STAIR_END=2+STAIR.length;
 function simEvac1(){const S=state.sim;S.phase='evac1';
-  const order=SIMW.map(w=>[w,Math.hypot(w.position.x+94,w.position.z+46)]).sort((a,b)=>a[1]-b[1]);
-  order.forEach(([w],i)=>{const u=w.userData,j=()=>rr(-.35,.35);
-    u.path=[[rr(-101,-99),12.18,rr(-49,-47)],[-94+j(),12.18,-46.4],...STAIR.map(q=>[q[0]+j(),q[1],q[2]]),[-100,0,-38],[-109+rr(-2,2),0,-33.5],[-109+rr(-2,2),0,-28.5],[rr(-105,-99),0,rr(-26.5,-25)],[rr(-98,-95),0,-21.5],apPoint(AP1,1.2)];
-    u.pi=0;u.delay=i*.15+rr(0,.12);u.v=rr(20,25);u.mode='run';u.next='panic';});
-  simBubbles([[order[0][0],'계단으로! 엘리베이터 타지 마!'],[order[6][0],'으아아 빨리빨리!'],[order[15][0],'코 막고 낮게!']]);
-  simMsg('비상상황 시뮬레이션 · 대피','🏃 비상계단으로 대피 중… 1차 비상집결장소로!',[['end','중단']]);}
+  const order=SIMW.filter(w=>w!==CEO&&w!==KYH).map(w=>[w,Math.hypot(w.position.x+94,w.position.z+46)]).sort((a,b)=>a[1]-b[1]).map(a=>a[0]);
+  order.unshift(CEO);const ji=order.indexOf(JAE);order.splice(ji+1,0,KYH);
+  order.forEach((w,i)=>{const u=w.userData;u.path=evac1Path();u.pi=0;u.delay=i*.15+rr(0,.08);u.v=rr(20,24);u.mode='run';u.next='panic';});
+  CEO.userData.delay=0;CEO.userData.v=27;JAE.userData.v=KYH.userData.v=22;KYH.userData.delay=JAE.userData.delay+.18;
+  simBubbles([[CEO,'다들 계단으로! 엘리베이터 타지 마!'],[SIMP('한유진'),'으아아 빨리빨리!'],[SIMP('오원진'),'코 막고 낮게!']]);
+  simMsg('비상상황 시뮬레이션 · 대피','🏃 대표님을 따라 비상계단으로 대피 중… 1차 비상집결장소로!',[['end','중단']]);}
 function simEvac2(){const S=state.sim;if(!S||S.phase!=='evac1')return;S.phase='evac2';state.simIn=false;
-  const cols=7;SIMW.forEach((w,i)=>{const u=w.userData,jx=rr(-2.6,2.6),slot=[-115+(i%cols)*2.5,0,49.5+((i/cols)|0)*2.4];
-    u.path=[[rr(-99,-93),0,rr(-26,-24)],[-118+jx,0,-27.5+rr(-2.4,2.4)],[-122+jx,0,26],[-122+jx*.7,0,38],[rr(-118,-112),0,rr(45.5,47.5)],slot];
-    u.pi=0;u.delay=rr(0,1.8);u.v=rr(12.5,16);u.mode='run';u.next='line';u.goal=null;});
-  simBubbles([[SIMW[3],'2차 집결장소로 뛰어!'],[SIMW[9],'우와아아~'],[SIMW[17],'정문 밖으로!']]);
+  const cols=7,list=SIMW.filter(w=>w!==JAE&&w!==KYH);list.sort((a,b)=>(b===CEO)-(a===CEO));
+  const route=jx=>[[rr(-99,-93),0,rr(-26,-24)],[-118+jx,0,-27.5+rr(-2.4,2.4)],[-122+jx,0,26],[-122+jx*.7,0,38],[rr(-118,-112),0,rr(45.5,47.5)]];
+  list.forEach((w,i)=>{const u=w.userData,slot=[-115+(i%cols)*2.5,0,49.5+((i/cols)|0)*2.4];
+    u.path=[...route(rr(-2.6,2.6)),slot];u.pi=0;u.delay=w===CEO?0:rr(.2,1.8);u.v=w===CEO?17.5:rr(12.5,16);u.mode='run';u.next='line';u.goal=null;});
+  const J=JAE.userData;J.path=[...route(1.5),[-100,0,49.5+3*2.4]];J.pi=0;J.delay=.6;J.v=4.6;J.mode='run';J.next='line';
+  simBubbles([[CEO,'2차 집결장소로! 나를 따라와!'],[SIMP('양은빈'),'우와아아~'],[KYH,'재균아 천천히, 내가 잡을게'],[JAE,'으… 다리야…']]);
   camSGoal.dist=78;camSGoal.pitch=.55;camSGoal.yaw=1.05;
   simMsg('비상상황 시뮬레이션 · 2차 대피','🏃‍♂️ 화재 확산! 도로를 따라 정문 밖 2차 비상집결장소로 대피 중',[['end','중단']]);}
-function endSim(){if(!state.sim)return;state.sim=null;state.simIn=false;simG.visible=false;fireL.intensity=0;clearLabels(simLabels);$('#simBar').hidden=true;
-  Snd.siren(false);Snd.setDuck(1);followCam();camSGoal.t.set(player.position.x,2,player.position.z);toast('비상상황 시뮬레이션을 마쳤어요',2.2);}
-function simWalker(w,dt,T){const u=w.userData;let sp=0;
-  if(u.delay>0){u.delay-=dt;if(state.sim.phase!=='evac2')w.rotation.y+=Math.sin(T*3+u.ph)*dt*4;}
-  else if(u.path){const tg=u.path[u.pi],p=w.position,dx=tg[0]-p.x,dy=tg[1]-p.y,dz=tg[2]-p.z,d=Math.hypot(dx,dy,dz),v=u.v*(Math.abs(dy)>.05?.72:1),st=v*dt;
-    if(d<=st){p.set(tg[0],tg[1],tg[2]);u.pi++;if(u.pi>=u.path.length){u.path=null;u.mode=u.next;u.tw=0;}}
-    else{p.x+=dx/d*st;p.y+=dy/d*st;p.z+=dz/d*st;if(Math.hypot(dx,dz)>.05)w.rotation.y=Math.atan2(dx,dz);}sp=v;}
+function endSim(){if(!state.sim)return;state.sim=null;state.simIn=false;simG.visible=false;fireL.intensity=0;clearLabels(simLabels);clearLabels(simNames);$('#simBar').hidden=true;
+  Snd.siren(false);Snd.setDuck(1);restoreCam();camSGoal.t.set(player.position.x,2,player.position.z);toast('비상상황 시뮬레이션을 마쳤어요',2.2);}
+function moveAlong(w,u,dt){const tg=u.path[u.pi],p=w.position,dx=tg[0]-p.x,dy=tg[1]-p.y,dz=tg[2]-p.z,d=Math.hypot(dx,dy,dz),v=u.v*(Math.abs(dy)>.05?.72:1),st=v*dt;
+  if(d<=st){p.set(tg[0],tg[1],tg[2]);u.pi++;if(u.pi>=u.path.length){u.path=null;u.mode=u.next;u.tw=0;}}
+  else{p.x+=dx/d*st;p.y+=dy/d*st;p.z+=dz/d*st;if(Math.hypot(dx,dz)>.05)w.rotation.y=Math.atan2(dx,dz);}return v;}
+function simWalker(w,dt,T){const u=w.userData,S=state.sim;let sp=0;
+  if(u.role==='K'&&u.mode==='pairK'){const J=JAE,y=J.rotation.y;w.position.set(J.position.x-Math.cos(y)*1.2,J.position.y,J.position.z+Math.sin(y)*1.2);w.rotation.y=y;
+    animWorker(w,dt,J.userData.sp||0);u.arms[1].rotation.z=1.25;u.arms[1].rotation.x=-.2;return;}
+  if(u.role==='J'&&u.mode==='fallen'){u.ft+=dt;const K=KYH.userData;
+    const down=u.ft<1.5||K.mode!=='help';w.rotation.x=lerp(w.rotation.x,down?1.45:0,Math.min(1,dt*(down?9:3)));animWorker(w,dt,0);
+    if(!down&&w.rotation.x<.08){w.rotation.x=0;u.mode='run';u.path=u.rest;u.pi=0;u.v=4.4;u.next='pairIdle';K.mode='pairK';
+      simBubbles([[KYH,'천천히 가자, 내 어깨 잡아'],[JAE,'고마워 경환아…'],[CEO,'다 1차 집결장소로!']]);}
+    return;}
+  if(u.role==='K'&&u.mode==='help'){animWorker(w,dt,0);const J=JAE.position;w.rotation.y=Math.atan2(J.x-w.position.x,J.z-w.position.z);u.arms[0].rotation.x=-1.2;u.arms[1].rotation.x=-1.2;return;}
+  if(u.delay>0){u.delay-=dt;if(S.phase!=='evac2')w.rotation.y+=Math.sin(T*3+u.ph)*dt*4;}
+  else if(u.path){sp=moveAlong(w,u,dt);
+    if(u.role==='J'&&S.phase==='evac1'&&!S.fell&&u.pi>=STAIR_END){S.fell=true;u.rest=u.path.slice(u.pi);u.path=null;u.mode='fallen';u.ft=0;
+      simBubbles([[JAE,'아악! 다리가…!'],[KYH,'재균아! 괜찮아?!']]);toast('😣 안재균 님이 1층에서 넘어졌어요',2.2);}
+    if(u.role==='K'&&S.phase==='evac1'&&S.fell&&JAE.userData.mode==='fallen'&&w.position.distanceTo(JAE.position)<3.2){u.path=null;u.mode='help';}}
   else if(u.mode==='idle'){w.rotation.y+=Math.sin(T*2.3+u.ph)*dt*3;}
   else if(u.mode==='panic'){u.tw-=dt;if(u.tw<=0){u.tw=rr(.4,1.6);if(Math.random()<.3)u.goal=null;else{const q=apPoint(AP1,1);u.goal=[q[0],q[2]];u.pv=rr(4,11);}}
     if(u.goal){const dx=u.goal[0]-w.position.x,dz=u.goal[1]-w.position.z,d=Math.hypot(dx,dz),st=u.pv*dt;if(d<=st){u.goal=null;}else{w.position.x+=dx/d*st;w.position.z+=dz/d*st;w.rotation.y=Math.atan2(dx,dz);sp=u.pv;}}
     else w.rotation.y+=dt*(Math.sin(T*1.7+u.ph)>0?5:-5);}
   else if(u.mode==='line'){let dr=-w.rotation.y;dr=Math.atan2(Math.sin(dr),Math.cos(dr));w.rotation.y+=dr*Math.min(1,dt*6);}
-  animWorker(w,dt,sp);
-  if(u.raise&&(u.mode==='panic'||(u.path&&state.sim.phase==='evac1'))){u.arms[0].rotation.x=-2.7+Math.sin(T*9+u.ph)*.5;u.arms[1].rotation.x=-2.7+Math.sin(T*9+u.ph+1.6)*.5;}
+  u.sp=sp;animWorker(w,dt,sp);
+  if(u.role==='J'&&(u.mode==='pairIdle'||u.path||u.mode==='line')&&S.fell){w.rotation.z=sp?Math.sin(T*7)*.13:0;u.legs[1].rotation.x=.12;u.arms[0].rotation.z=-1.25;u.arms[0].rotation.x=-.2;}
+  if(u.raise&&(u.mode==='panic'||(u.path&&S.phase==='evac1'))){u.arms[0].rotation.x=-2.7+Math.sin(T*9+u.ph)*.5;u.arms[1].rotation.x=-2.7+Math.sin(T*9+u.ph+1.6)*.5;}
   return sp;}
 function updateSim(dt,T){const S=state.sim;dt*=SIM_K;S.t+=dt;
   const grow=clamp(S.t/3.5,0,1);
@@ -2280,29 +2373,34 @@ function updateSim(dt,T){const S=state.sim;dt*=SIM_K;S.t+=dt;
   fireL.intensity=grow*(1.5+.4*Math.sin(T*17)+.25*Math.sin(T*29));glowM.opacity=grow*(.6+.25*Math.sin(T*11));
   for(const s of SMOKE){const f=(S.t*.11+s.ph)%1;s.m.position.set(s.x+f*16,16+f*36,s.z+f*5);s.m.scale.setScalar(1.6+f*6.5);s.m.material.opacity=grow*.5*(1-f)*Math.min(1,f*6);}
   if(S.phase==='fire'&&S.t>2.6)simEvac1();
-  let n=0,cx=0,cz=0,allPanic=true,allLine=true,out=0;
-  for(const w of SIMW){simWalker(w,dt,T);const u=w.userData;if(u.mode!=='panic')allPanic=false;if(u.mode!=='line')allLine=false;if(w.position.z>-31)out++;cx+=w.position.x;cz+=w.position.z;n++;}
+  let n=0,cx=0,cz=0,allPanic=true,allLine=true,out=0,othersIn=true;const Jm=JAE.userData.mode;
+  for(const w of SIMW){simWalker(w,dt,T);const u=w.userData,md=u.role==='K'?(u.mode==='pairK'?(Jm==='pairIdle'?'panic':Jm==='line'?'line':'x'):m0(u.mode)):u.role==='J'?m0(u.mode):u.mode;
+    if(md!=='panic')allPanic=false;if(md!=='line')allLine=false;if(!u.role&&u.mode!=='line')othersIn=false;if(w.position.z>-31)out++;cx+=w.position.x;cz+=w.position.z;n++;}
   cx/=n;cz/=n;animWorker(simLeader,dt,0);
   if(S.phase==='evac1'){
     if(out>2&&!S.cam1){S.cam1=true;camSGoal.t.set(-101,3,-30);camSGoal.dist=92;camSGoal.pitch=.6;}
     if(allPanic&&!S.done1){S.done1=true;
-      simBubbles([[SIMW[1],'어떡해!!'],[SIMW[4],'다 나온 거 맞아?'],[SIMW[8],'김 대리 어딨어?!'],[SIMW[13],'119 신고했어?'],[SIMW[19],'휴… 살았다'],[SIMW[24],'인원 확인해요!']]);
+      simBubbles([[SIMP('심정연'),'어떡해!!'],[CEO,'다 나온 거 맞아? 인원 확인해!'],[SIMP('최주영'),'손대호 님 어딨어?!'],[SIMP('김미진'),'119 신고했어요?'],[KYH,'여기 부상자 있어요!'],[JAE,'아이고 다리야…'],[SIMP('신창진'),'휴… 살았다']]);
       camSGoal.t.set(-94,2,-14);camSGoal.dist=58;camSGoal.pitch=.62;
-      simMsg('비상상황 시뮬레이션 · 1차 비상집결장소','😱 1차 집결장소에서 인원 파악 중… 다들 우왕좌왕! 불길이 커지고 있어요',[['evac2','2차 집결장소로 대피 ▶','danger'],['end','중단']]);}}
+      simMsg('비상상황 시뮬레이션 · 1차 비상집결장소','😱 1차 집결장소에서 인원 파악 중… 다들 우왕좌왕! 안재균 님 다리 부상 · 불길이 커지고 있어요',[['evac2','2차 집결장소로 대피 ▶','danger'],['end','중단']]);}}
   else if(S.phase==='evac2'){
-    if(!allLine)camSGoal.t.lerp(V([cx,2,cz]),Math.min(1,dt*3));
+    if(othersIn&&!S.wait){S.wait=true;simBubbles([[KYH,'조금만 더! 거의 다 왔어'],[JAE,'으… 미안해…'],[CEO,'천천히 와! 다 기다릴게']]);
+      simMsg('비상상황 시뮬레이션 · 2차 대피','🩹 이경환 님이 다리를 다친 안재균 님을 부축하며 마지막으로 도착 중…',[['end','중단']]);}
+    if(!allLine){if(S.wait)camSGoal.t.lerp(V([JAE.position.x,2,JAE.position.z]),Math.min(1,dt*2));else camSGoal.t.lerp(V([cx,2,cz]),Math.min(1,dt*3));}
     if(allLine&&!S.done2){S.done2=true;
-      simBubbles([[simLeader,'전원 이상 없음! ✅',true],[SIMW[2],'다행이다…',true],[SIMW[20],'훈련이라 다행!',true]]);
+      simBubbles([[simLeader,'전원 이상 없음! ✅',true],[CEO,'다친 사람 응급처치부터!',true],[JAE,'괜찮아요… ㅎㅎ',true],[SIMP('최은실'),'훈련이라 다행!',true]]);
       camSGoal.t.set(-108,2,55);camSGoal.dist=50;camSGoal.pitch=.5;camSGoal.yaw=.3;
-      simMsg('비상상황 시뮬레이션 · 2차 비상집결장소',`✅ 2차 비상집결장소 집결 완료 · ${SIMW.length}명 전원 확인`,[['end','시뮬레이션 종료','go']]);}}
-  for(const L of simLabels){L.pos.copy(L.w.position);L.pos.y+=L.w===simLeader?6.6:5.9;}}
+      simMsg('비상상황 시뮬레이션 · 2차 비상집결장소',`✅ 2차 비상집결장소 집결 완료 · ${SIMW.length}명 전원 확인 (부상 1명: 안재균)`,[['end','시뮬레이션 종료','go']]);}}
+  for(const L of simLabels){L.pos.copy(L.w.position);L.pos.y+=L.w===simLeader?6.6:6.5;}
+  for(const L of simNames){L.pos.copy(L.w.position);L.pos.y+=5.15;L.el.classList.toggle('hurt',L.w===JAE&&S.fell);}}
+function m0(m){return m==='pairIdle'?'panic':m==='fallen'?'x':m;}
 
 /* ================= 업무용 차량 운전 ================= */
 function drivable(x,z){if(distToRoad(x,z)<RW/2+.7)return true;if(x>LOT.x0&&x<LOT.x1&&z>LOT.z0&&z<LOT.z1)return true;if(x>-6.6&&x<.8&&z>-103&&z<1)return true;return false;}
 function carFits(c,x,z,y){const f=[Math.sin(y),Math.cos(y)],r=[-Math.cos(y),Math.sin(y)];
   for(const [a,b] of[[2.15,.9],[2.15,-.9],[-2.15,.9],[-2.15,-.9],[0,0],[2.15,0],[-2.15,0]]){const px=x+f[0]*a+r[0]*b,pz=z+f[1]*a+r[1]*b;if(!drivable(px,pz))return false;
     for(const k of COL)if(k!==c.col&&px>k.x0&&px<k.x1&&pz>k.z0&&pz<k.z1)return false;}return true;}
-function boardCar(c){if(state.mode!=='site'||busy())return;
+function boardCar(c){if(state.mode!=='site'||busy())return;saveCam();
   if(state.fac)closeFac();if(state.flow)toggleFlow(false);if(state.overview)toggleOverview(false);
   state.auto=null;beacon.visible=false;hidePromoAsk();state.near=null;$('#prompt').hidden=true;jmp.y=0;jmp.v=0;
   state.drive={c,base:null};c.v=0;{const i=COL.indexOf(c.col);if(i>=0)COL.splice(i,1);c.col=null;}if(c.cable)c.cable.visible=false;player.visible=false;$('#driveBar').hidden=false;
@@ -2313,7 +2411,7 @@ function exitDrive(){const D=state.drive;if(!D)return;const c=D.c,p=c.g.position
   if(!out){toast('여기서는 내릴 공간이 없어요',1.4);return;}
   state.drive=null;c.v=0;carCol(c);if(c.cable)c.cable.visible=Math.hypot(p.x-c.home[0],p.z-c.home[1])<.6&&Math.abs(y-c.home[2])<.2;
   player.visible=true;player.position.set(out[0],0,out[1]);player.rotation.y=y;$('#driveBar').hidden=true;Snd.coaster(null);
-  followCam();camSGoal.t.set(out[0],2,out[1]);}
+  restoreCam();camSGoal.t.set(out[0],2,out[1]);}
 function updateDrive(dt,T){const D=state.drive,c=D.c,g=c.g;
   let th=0,stv=0;if(state.mode==='site'){th=(keys.KeyW||keys.ArrowUp?1:0)-(keys.KeyS||keys.ArrowDown?1:0)-joyV.y;stv=(keys.KeyA||keys.ArrowLeft?1:0)-(keys.KeyD||keys.ArrowRight?1:0)-joyV.x;}
   th=clamp(th,-1,1);stv=clamp(stv,-1,1);
@@ -2329,7 +2427,7 @@ $('#driveExit').addEventListener('click',exitDrive);
 
 /* ================= 롤러코스터 ================= */
 const STATIONS_X=[...STATIONS,COASTER_ST,GATE_ST];
-function boardCoaster(){if(state.mode!=='site'||busy())return;
+function boardCoaster(){if(state.mode!=='site'||busy())return;saveCam();
   if(state.fac)closeFac();if(state.flow)toggleFlow(false);if(state.overview)toggleOverview(false);
   state.auto=null;beacon.visible=false;hidePromoAsk();state.near=null;$('#prompt').hidden=true;jmp.y=0;jmp.v=0;
   state.ride={s:CO.sStation,v:2,t:0,base:null};CO.cars[0].add(player);player.position.set(0,-.78,-.25);player.rotation.set(0,0,0);
@@ -2339,7 +2437,7 @@ function boardCoaster(){if(state.mode!=='site'||busy())return;
 function exitRide(){if(!state.ride)return;state.ride=null;site.add(player);
   const u=player.userData;u.legs.forEach(l=>l.rotation.x=0);u.arms.forEach(a=>a.rotation.x=0);
   player.position.set(COASTER_ST.door[0],0,COASTER_ST.door[1]);player.rotation.set(0,PI/2,0);placeCars(CO.sStation);
-  $('#rideBar').hidden=true;Snd.coaster(null);followCam();camSGoal.t.set(player.position.x,2,player.position.z);toast('롤러코스터에서 내렸어요',1.8);}
+  $('#rideBar').hidden=true;Snd.coaster(null);restoreCam();camSGoal.t.set(player.position.x,2,player.position.z);toast('롤러코스터에서 내렸어요',1.8);}
 function updateRide(dt,T){const R=state.ride;
   if(state.mode==='site'){
     const u=((R.s/CO.L)%1+1)%1,q=CO.curve.getPointAt(u),z=CO.zone(u);
@@ -2412,7 +2510,7 @@ function updateSite(dt,T){
   if(promoT>0){promoT-=dt;if(promoT<=0||state.flow||Math.hypot(player.position.x+122,player.position.z-38)>34)hidePromoAsk();}
   let near=null,nd2=1e9;if(state.mode==='site'&&!state.auto&&!busy())for(const st of [...STATIONS_X,...BIZ.map(c=>c.st)]){const d=Math.hypot(player.position.x-st.door[0],player.position.z-st.door[1]);if(d<7&&d<nd2){nd2=d;near=st;}}
   if(near!==state.near){state.near=near;const pr=$('#prompt');pr.hidden=!near;if(near){$('#enterName').textContent=near.name;$('#enterVerb').textContent=near.verb||'들어가기';$('#enterBtn').dataset.kind=near.car?'car':near.gate?'gate':'';$('#enterSub').textContent=near.sub;}}
-  if(state.sim)updateSim(dt,T);if(state.ride)updateRide(dt,T);if(state.drive)updateDrive(dt,T);updateGate(dt);updateStack(dt);
+  if(state.sim)updateSim(dt,T);if(state.ride)updateRide(dt,T);if(state.drive)updateDrive(dt,T);updateGate(dt);updateStack(dt);updateGolf(dt);
   if(state.mode==='boot'){camSGoal.yaw+=dt*.06;}
   else if((!state.flow||state.flowFollow)&&!state.overview&&!state.fac&&!busy()){camSGoal.t.set(player.position.x,2,player.position.z);}
   camLerp(camSCur,camSGoal,reduceMotion?1:1-Math.exp(-dt*4.5));camApply(camS,camSCur);
@@ -2455,7 +2553,7 @@ function frame(now){
   const dt=Math.min(.05,(now-last)/1000);last=now;T+=dt;
   if(toastT>0){toastT-=dt;if(toastT<=0)$('#toast').classList.add('hide');}
   if(state.mode==='interior'){updateInterior(dt,T);if(state.interior&&state.interior.walls)wallCull(state.interior);renderer.render(activeScene,activeCam);updateLabels(intLabels,activeCam);}
-  else{updateSite(dt,T);if(state.mode==='interior'){renderer.render(activeScene,activeCam);updateLabels(intLabels,activeCam);}else{renderer.render(site,camS);if(state.sim)updateLabels(simLabels,camS);else if(!state.ride)updateLabels(siteLabels,camS);if(state.flow)updateLabels(flowTags,camS);if(state.mode==='site')drawMinimap();}}
+  else{updateSite(dt,T);if(state.mode==='interior'){renderer.render(activeScene,activeCam);updateLabels(intLabels,activeCam);}else{renderer.render(site,camS);if(state.sim){updateLabels(simNames,camS);updateLabels(simLabels,camS);}else if(!state.ride)updateLabels(siteLabels,camS);if(state.flow)updateLabels(flowTags,camS);if(state.mode==='site')drawMinimap();}}
   requestAnimationFrame(frame);
 }
 
