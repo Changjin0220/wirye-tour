@@ -58,8 +58,8 @@ button:disabled{opacity:.45;cursor:default}
 .pin-desc{margin-top:2px;padding:1px 6px;border-radius:6px;background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.28);font-size:9.5px;font-weight:600;letter-spacing:0;cursor:pointer;color:inherit}
 .pin-desc:hover{background:var(--safety);color:var(--safety-ink);border-color:var(--safety)}
 .pin.fac .pin-desc{font-size:8.5px;padding:0 5px;margin-top:1px}
-#descCard{position:fixed;z-index:40;width:min(320px,calc(100vw - 24px));padding:14px 16px 14px;border-radius:14px;background:var(--panel);color:var(--ink);box-shadow:0 12px 34px rgba(0,0,0,.4);border:1px solid rgba(255,255,255,.12);font-size:13px;line-height:1.55}
-#descCard h4{margin:0 30px 6px 0;font-size:15px}#descCard small{display:block;margin:-4px 0 6px;opacity:.65;font-size:11px}
+#descCard{pointer-events:none;position:fixed;z-index:40;width:min(320px,calc(100vw - 24px));padding:14px 16px 14px;border-radius:14px;background:var(--panel);color:var(--ink);box-shadow:0 12px 34px rgba(0,0,0,.4);border:1px solid rgba(255,255,255,.12);font-size:13px;line-height:1.55}
+#descCard h4{margin:0 0 6px 0;font-size:15px}#descCard small{display:block;margin:-4px 0 6px;opacity:.65;font-size:11px}
 #descCard ul{margin:8px 0 0;padding-left:18px}#descCard li{margin:3px 0}
 #descCard .x{position:absolute;top:8px;right:8px;width:26px;height:26px;border-radius:50%;border:0;background:rgba(255,255,255,.1);color:inherit;cursor:pointer}
 .tag{padding:3px 8px;border-radius:4px;background:rgba(13,28,42,.82);color:var(--ink);font-size:12px;font-weight:500;border-left:3px solid var(--c,var(--muted))}
@@ -340,7 +340,7 @@ body.interior #sheet{top:calc(var(--gap) + env(safe-area-inset-top,0px))}
     </div>
   </div>
 
-  <div id="descCard" hidden role="dialog" aria-label="건물 설명"><button type="button" class="x" aria-label="닫기">✕</button><div id="descBody"></div></div>
+  <div id="descCard" hidden role="tooltip"><div id="descBody"></div></div>
   <div id="simBar" class="hud" hidden role="status" aria-live="polite">
     <div class="pa-card sim"><div><p class="eyebrow" id="simEye">비상상황 시뮬레이션</p><b id="simMsg"></b></div><div class="pa-btns" id="simBtns"></div></div>
   </div>
@@ -1173,7 +1173,7 @@ const doorRings=[];
 LATE_LBL.forEach(a=>makeLabel(siteLabels,...a));
 STATIONS.forEach((st,i)=>{
   st.idx=i;
-  st.pin=makeLabel(siteLabels,`<span class="pin-no"><span>${i+1}</span></span><span class="pin-txt"><span>${st.name}</span><span class="pin-desc" data-desc="st:${st.id}">설명</span></span>`,st.lp,'pin',()=>walkTo(st,true),`--c:${CAT[st.cat]}`);
+  st.pin=makeLabel(siteLabels,`<span class="pin-no"><span>${i+1}</span></span><span>${st.name}</span>`,st.lp,'pin',()=>walkTo(st,true),`--c:${CAT[st.cat]}`);st.pin.el.dataset.desc='st:'+st.id;
   const ring=mesh(new THREE.RingGeometry(2.6,3.4,36),new THREE.MeshBasicMaterial({color:new THREE.Color(CAT[st.cat]),transparent:true,opacity:.9,side:THREE.DoubleSide,depthWrite:false}),site,st.door[0],.22,st.door[1],false);
   ring.rotation.x=-PI/2;doorRings.push(ring);st.ring=ring;
 });
@@ -1304,11 +1304,11 @@ function showDesc(key,anchor){const [kind,id]=key.split(':');let h='';
   const r=anchor.getBoundingClientRect(),cw=card.offsetWidth,ch=card.offsetHeight;let x=r.left+r.width/2-cw/2,y=r.bottom+10;
   if(y+ch>innerHeight-10)y=r.top-ch-10;card.style.left=clamp(x,10,innerWidth-cw-10)+'px';card.style.top=clamp(y,10,innerHeight-ch-10)+'px';}
 function hideDesc(){$('#descCard').hidden=true;}
-labelLayer.addEventListener('click',e=>{const d=e.target.closest('.pin-desc');if(!d)return;e.stopPropagation();e.preventDefault();showDesc(d.dataset.desc,d);},true);
-$('#descCard .x').addEventListener('click',hideDesc);
-addEventListener('pointerdown',e=>{if(!$('#descCard').hidden&&!e.target.closest('#descCard')&&!e.target.closest('.pin-desc'))hideDesc();},true);
-addEventListener('keydown',e=>{if(e.code==='Escape'&&!$('#descCard').hidden)hideDesc();});
-Object.entries(FAC).forEach(([k,f])=>{f.pin=makeLabel(siteLabels,`<span class="pin-no">i</span><span class="pin-txt"><span>${f.name}</span><span class="pin-desc" data-desc="fac:${k}">설명</span></span>`,f.lp,'pin fac',()=>openFac(k),'--c:#b8c4cf');});
+let descOn=null;
+labelLayer.addEventListener('mouseover',e=>{const p=e.target.closest('[data-desc]');if(p&&p!==descOn){descOn=p;showDesc(p.dataset.desc,p);}});
+labelLayer.addEventListener('mouseout',e=>{if(descOn&&!(e.relatedTarget&&descOn.contains(e.relatedTarget))){descOn=null;hideDesc();}});
+addEventListener('pointerdown',()=>{descOn=null;hideDesc();},true);
+Object.entries(FAC).forEach(([k,f])=>{f.pin=makeLabel(siteLabels,`<span class="pin-no">i</span><span>${f.name}</span>`,f.lp,'pin fac',()=>openFac(k),'--c:#b8c4cf');f.pin.el.dataset.desc='fac:'+k;});
 function openFac(id){if(state.mode!=='site')return;if(state.flow)toggleFlow(false);if(state.overview)toggleOverview(false);state.auto=null;beacon.visible=false;state.fac=id;const f=FAC[id];
   camSGoal.t.set((f.b[0]+f.b[3])/2,0,(f.b[2]+f.b[5])/2);camSGoal.dist=Math.max(70,Math.min(camMem.dist,120));camSGoal.pitch=.8;renderFacSheet();setSheetMin(false);setSheet(true);}
 function closeFac(){if(!state.fac)return;state.fac=null;setSheet(false);followCam();}
@@ -1989,14 +1989,14 @@ INT.demand={title:'지역난방 기계실',eyebrow:'수요처 아파트 · 지�
     box(B,3,2.4,1.6,0x6b7a86,29,1.2,15);
     const w=makeWorker();w.position.set(-16,0,13);w.rotation.y=.6;B.add(w);
     /* labels */
-    lbl('1차 공급 115℃ (오른쪽 · 발전소에서)',[-40,8.4,-10],'#ff2a2a');lbl('1차 환수 35~55℃ (왼쪽 · 발전소로)',[-40,3.6,-14],'#ffc94a');lbl('주차단밸브',[-29,9,-12],'#93a9bb');
-    lbl('M 열량계',[-23,9.6,-10]);lbl('PDCV',[-15,10,-10]);
-    lbl('난방 열교환기',[3,9,-8]);lbl('급탕재열 열교환기',[3,9,1]);lbl('급탕예열 열교환기',[3,9,10]);
-    lbl('TCV (난방HX 후단)',[-1.5,5.2,-6.9],'#2f9cf0');lbl('TCV (재열HX 후단)',[-1.5,5.2,2.1],'#2f9cf0');lbl('50℃',[-7,3,-6.9],'#ff8a2a');lbl('55℃',[-7,3,2.1],'#ff6f3c');
-    lbl('난방 60℃ ↑',[12,14,-12.4],'#ff5a36');lbl('난방 환수 45℃',[13.5,4.6,-6.9],'#ffa040');lbl('DPV',[12.75,5.4,-11],'#93a9bb');lbl('난방 순환펌프',[9.5,4.6,-8.4],'#93a9bb');
+    lbl('1차 공급 115℃ (오른쪽 · 발전소에서)',[-40,8.4,-10],'#ff2a2a');lbl('1차 환수 35~55℃ (왼쪽 · 발전소로)',[-40,3.6,-14],'#ffc94a');
+    
+    
+    lbl('50℃',[-7,3,-6.9],'#ff8a2a');lbl('55℃',[-7,3,2.1],'#ff6f3c');
+    lbl('난방 60℃ ↑',[12,14,-12.4],'#ff5a36');lbl('난방 환수 45℃',[13.5,4.6,-6.9],'#ffa040');
     lbl('급탕 55℃ ↑',[15,11,-4],'#ff6f3c');lbl('환탕 35℃',[16.5,4,0],'#ffc94a');lbl('환탕 펌프',[13.3,4.4,6],'#93a9bb');
     lbl('시수 15℃',[27,4,11.1],'#4ea8de');lbl('35℃',[10,8,8.9],'#ffc94a');
-    lbl('온도조절기 TC',[22,8.6,-19],'#93a9bb');lbl('외기온도',[28,13,-19.6],'#93a9bb');
+    lbl('외기온도',[28,13,-19.6],'#93a9bb');
     tag(c,'지상 · 아파트',[20,3,6],'#93a9bb');tag(c,'계단',[26,-6,15],'#93a9bb');
   }};
 
@@ -2069,9 +2069,9 @@ INT.cooling={title:'지역냉방 기계실',eyebrow:'수요처 아파트 · 지�
     const N=160,mk=(col)=>{const m=new THREE.InstancedMesh(new THREE.SphereGeometry(.09,6,4),new THREE.MeshBasicMaterial({color:col}),N);m.frustumCulled=false;S.add(m);return m;};
     const dE=mk(0x9fe8ff),dA=mk(0xffd23f),seed=[];for(let i=0;i<N;i++)seed.push([(Math.random()-.5)*7,(Math.random()-.5)*10,Math.random()]);const ob=new THREE.Object3D();
     c.updates.push((dt,t)=>{for(const [m,x,y0,y1] of[[dE,-30,8.9,3.2],[dA,-12,8.9,4.4]]){for(let i=0;i<N;i++){const q=seed[i];ob.position.set(x+q[0]*.55,y0-((t*.8+q[2])%1)*(y0-y1),q[1]);ob.updateMatrix();m.setMatrixAt(i,ob.matrix);}m.instanceMatrix.needsUpdate=true;}});
-    tag(c,'① 증발기',[E[0]-2.6,E[1]+.6,6.6],'#3ddc84');tag(c,'② 흡수기',[A[0]-2.6,A[1]+.6,6.6],'#ffd23f');tag(c,'③ 재생기',[G[0]-2.6,G[1]+.6,6.6],'#ff4d4d');tag(c,'④ 응축기',[C[0]-2.6,C[1]+.6,6.6],'#3aa0ff');
+    
     tag(c,'수증기 →',[-21,21.6,0],'#eaf6ff');tag(c,'← 수증기',[-21,10.6,0],'#eaf6ff');tag(c,'약 6.8mmHg 진공',[-30,1.2,-7],'#93a9bb');
-    tag(c,'지역난방 95℃ →',[8,17,-9],'#ff4d4d');tag(c,'← 55℃ 발전소로',[8,17,9],'#ff9a5a');tag(c,'열교환기',[2.5,13,-4.6],'#93a9bb');tag(c,'용액 펌프',[-6,4.4,3],'#93a9bb');
+    tag(c,'지역난방 95℃ →',[8,17,-9],'#ff4d4d');tag(c,'← 55℃ 발전소로',[8,17,9],'#ff9a5a');
     tag(c,'진한 용액 80℃',[3,13.8,-3],'#ff8a3d');tag(c,'묽은 용액 34℃',[2,23.6,3],'#ffd23f');
     tag(c,'냉각탑 (옥상)',[-36,11,-18],'#3aa0ff');tag(c,'냉각수 31℃',[-24,3,-16],'#3aa0ff');tag(c,'36.5℃',[-36,19,-11],'#2f63b0');
     tag(c,'세대 팬코일 (실내 냉방)',[-38,10.6,15.5],'#3ddc84');tag(c,'냉수 8℃ →',[-34,7.6,8],'#3ddc84');tag(c,'← 13℃',[-38,4.6,0],'#6fd6a0');
