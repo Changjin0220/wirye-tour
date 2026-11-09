@@ -52,6 +52,16 @@ button:disabled{opacity:.45;cursor:default}
 .pin.fac::after{height:5px;bottom:-5px}
 .hs{pointer-events:auto;border:2px solid var(--ink);width:30px;height:30px;border-radius:50%;background:var(--safety);color:var(--safety-ink);font-family:var(--f-mono);font-weight:600;font-size:14px;display:grid;place-items:center;box-shadow:0 0 0 4px rgba(255,194,51,.25)}
 .hs.on{background:var(--ink);color:#10161c;box-shadow:0 0 0 6px rgba(255,194,51,.55)}
+.hs.nm{width:auto;height:auto;display:flex;align-items:center;gap:6px;padding:2px 10px 2px 2px;border-radius:999px;font-family:var(--f-body);font-size:12px;font-weight:700;white-space:nowrap}
+.hs.nm b{display:grid;place-items:center;width:22px;height:22px;border-radius:50%;background:rgba(16,22,28,.16);font-family:var(--f-mono);font-size:12px;font-weight:600}
+.pin-txt{display:flex;flex-direction:column;align-items:flex-start;line-height:1.15}
+.pin-desc{margin-top:2px;padding:1px 6px;border-radius:6px;background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.28);font-size:9.5px;font-weight:600;letter-spacing:0;cursor:pointer;color:inherit}
+.pin-desc:hover{background:var(--safety);color:var(--safety-ink);border-color:var(--safety)}
+.pin.fac .pin-desc{font-size:8.5px;padding:0 5px;margin-top:1px}
+#descCard{position:fixed;z-index:40;width:min(320px,calc(100vw - 24px));padding:14px 16px 14px;border-radius:14px;background:var(--panel);color:var(--ink);box-shadow:0 12px 34px rgba(0,0,0,.4);border:1px solid rgba(255,255,255,.12);font-size:13px;line-height:1.55}
+#descCard h4{margin:0 30px 6px 0;font-size:15px}#descCard small{display:block;margin:-4px 0 6px;opacity:.65;font-size:11px}
+#descCard ul{margin:8px 0 0;padding-left:18px}#descCard li{margin:3px 0}
+#descCard .x{position:absolute;top:8px;right:8px;width:26px;height:26px;border-radius:50%;border:0;background:rgba(255,255,255,.1);color:inherit;cursor:pointer}
 .tag{padding:3px 8px;border-radius:4px;background:rgba(13,28,42,.82);color:var(--ink);font-size:12px;font-weight:500;border-left:3px solid var(--c,var(--muted))}
 .stream-tag{font-family:var(--f-mono);font-size:11px}
 
@@ -330,6 +340,7 @@ body.interior #sheet{top:calc(var(--gap) + env(safe-area-inset-top,0px))}
     </div>
   </div>
 
+  <div id="descCard" hidden role="dialog" aria-label="건물 설명"><button type="button" class="x" aria-label="닫기">✕</button><div id="descBody"></div></div>
   <div id="simBar" class="hud" hidden role="status" aria-live="polite">
     <div class="pa-card sim"><div><p class="eyebrow" id="simEye">비상상황 시뮬레이션</p><b id="simMsg"></b></div><div class="pa-btns" id="simBtns"></div></div>
   </div>
@@ -1162,7 +1173,7 @@ const doorRings=[];
 LATE_LBL.forEach(a=>makeLabel(siteLabels,...a));
 STATIONS.forEach((st,i)=>{
   st.idx=i;
-  st.pin=makeLabel(siteLabels,`<span class="pin-no"><span>${i+1}</span></span><span>${st.name}</span>`,st.lp,'pin',()=>walkTo(st,true),`--c:${CAT[st.cat]}`);
+  st.pin=makeLabel(siteLabels,`<span class="pin-no"><span>${i+1}</span></span><span class="pin-txt"><span>${st.name}</span><span class="pin-desc" data-desc="st:${st.id}">설명</span></span>`,st.lp,'pin',()=>walkTo(st,true),`--c:${CAT[st.cat]}`);
   const ring=mesh(new THREE.RingGeometry(2.6,3.4,36),new THREE.MeshBasicMaterial({color:new THREE.Color(CAT[st.cat]),transparent:true,opacity:.9,side:THREE.DoubleSide,depthWrite:false}),site,st.door[0],.22,st.door[1],false);
   ring.rotation.x=-PI/2;doorRings.push(ring);st.ring=ring;
 });
@@ -1276,7 +1287,28 @@ const FAC={
     roles:['한겨울처럼 발전소 회수열과 축열조만으로 부족할 때 가동해요','만든 온수는 DH 설비동을 거쳐 지역난방으로 보내요','발전설비 정비·정지 때 예비 열원으로 지역난방을 이어가요','연소가스는 옆 연돌로 배출해요']},
 };
 const FACB=Object.fromEntries(Object.entries(FAC).map(([k,f])=>[k,new THREE.Box3(new THREE.Vector3(f.b[0],f.b[1],f.b[2]),new THREE.Vector3(f.b[3],f.b[4],f.b[5]))]));
-Object.entries(FAC).forEach(([k,f])=>{f.pin=makeLabel(siteLabels,`<span class="pin-no">i</span><span>${f.name}</span>`,f.lp,'pin fac',()=>openFac(k),'--c:#b8c4cf');});
+const ST_DESC={
+  admin:['발전소 운영의 두뇌예요. 3층 중앙제어실에서 발전·열생산 설비 전체를 24시간 감시·제어하고, 4층 사무실에서 경영지원·고객지원·사업운영 업무를 해요.',['중앙제어실: 발전기·보일러·지역난방 설비 원격 감시·제어','사무실: 경영지원 · 고객지원 · 사업운영','비상 시 대피 지휘와 인원 확인의 중심']],
+  gov:['한국가스공사 배관망에서 들어온 고압 천연가스를 발전소에서 쓸 압력으로 낮추고 계량하는 연료 공급의 관문이에요.',['고압 가스를 감압(정압)해 일정한 압력으로 공급','가스 사용량 계량','가스터빈·첨두부하보일러로 연료 공급']],
+  power:['가스터빈과 증기터빈으로 전기를 만드는 핵심 건물이에요.',['가스터빈: 천연가스를 태운 힘으로 발전','증기터빈: HRSG 증기로 한 번 더 발전 (복합발전)','증기 일부를 뽑아 지역난방 열원으로 공급']],
+  hrsg:['가스터빈에서 나온 약 630℃ 배기가스의 열을 회수해 증기를 만드는 배열회수보일러예요.',['버려질 배기열로 고온·고압 증기 생산','증기는 증기터빈 발전과 지역난방 열원으로 사용','탈질설비(SCR)로 배기가스 질소산화물 저감']],
+  tower:['증기터빈에서 일을 마친 증기를 물로 되돌리는 복수기의 냉각수를 식혀 주는 설비예요.',['데워진 냉각수를 위에서 뿌리고 팬으로 공기를 불어 냉각','식은 냉각수는 다시 복수기로 순환','열병합은 이 열의 상당 부분을 지역난방으로 활용']],
+  dh:['발전 과정의 열로 지역난방수를 데워 수요처로 보내는 곳이에요.',['열교환기로 추출 증기·배열의 열을 지역난방수에 전달','열수송 펌프로 115℃ 온수를 열수송관에 공급','축열조와 연계해 열 공급량 조절']],
+  storage:['남는 열을 뜨거운 물로 저장하는 거대한 보온병이에요.',['열 수요가 적을 때 온수를 저장','수요가 많을 때 꺼내 써서 열 공급 안정','순수탱크: 배관망 보충수(순수) 저장']],
+  trench:['발전소에서 만든 지역난방수를 수요처까지 보내는 이중보온관을 땅속에 묻는 공사 현장이에요.',['공급관·회수관 2열 매설','강관 · 보온재 · 외관(케이싱) 3중 구조','누수감지선으로 이상 여부 상시 감시']],
+  demand:['지역난방수를 받아 쓰는 아파트예요. 지하 기계실에서 열을 넘겨받아 난방과 온수에 써요.',['열교환기로 단지 난방수·급탕을 데움','열량계로 사용한 열량 계량','식은 물은 회수관으로 발전소에 되돌아감']]};
+function showDesc(key,anchor){const [kind,id]=key.split(':');let h='';
+  if(kind==='st'){const st=STATIONS.find(x=>x.id===id),d=ST_DESC[id];if(!st||!d)return;h=`<h4>${st.name}</h4><small>${st.sub}</small><p style="margin:0">${d[0]}</p><ul>${d[1].map(r=>`<li>${r}</li>`).join('')}</ul>`;}
+  else{const f=FAC[id];if(!f)return;h=`<h4>${f.name}</h4><small>${f.en||''}</small><p style="margin:0">${f.d}</p>${f.roles?`<ul>${f.roles.map(r=>`<li>${r}</li>`).join('')}</ul>`:''}${f.uncertain?'<small style="margin-top:8px">※ 일반적인 열병합발전소 기준 추정 설명이에요</small>':''}`;}
+  const card=$('#descCard');$('#descBody').innerHTML=h;card.hidden=false;
+  const r=anchor.getBoundingClientRect(),cw=card.offsetWidth,ch=card.offsetHeight;let x=r.left+r.width/2-cw/2,y=r.bottom+10;
+  if(y+ch>innerHeight-10)y=r.top-ch-10;card.style.left=clamp(x,10,innerWidth-cw-10)+'px';card.style.top=clamp(y,10,innerHeight-ch-10)+'px';}
+function hideDesc(){$('#descCard').hidden=true;}
+labelLayer.addEventListener('click',e=>{const d=e.target.closest('.pin-desc');if(!d)return;e.stopPropagation();e.preventDefault();showDesc(d.dataset.desc,d);},true);
+$('#descCard .x').addEventListener('click',hideDesc);
+addEventListener('pointerdown',e=>{if(!$('#descCard').hidden&&!e.target.closest('#descCard')&&!e.target.closest('.pin-desc'))hideDesc();},true);
+addEventListener('keydown',e=>{if(e.code==='Escape'&&!$('#descCard').hidden)hideDesc();});
+Object.entries(FAC).forEach(([k,f])=>{f.pin=makeLabel(siteLabels,`<span class="pin-no">i</span><span class="pin-txt"><span>${f.name}</span><span class="pin-desc" data-desc="fac:${k}">설명</span></span>`,f.lp,'pin fac',()=>openFac(k),'--c:#b8c4cf');});
 function openFac(id){if(state.mode!=='site')return;if(state.flow)toggleFlow(false);if(state.overview)toggleOverview(false);state.auto=null;beacon.visible=false;state.fac=id;const f=FAC[id];
   camSGoal.t.set((f.b[0]+f.b[3])/2,0,(f.b[2]+f.b[5])/2);camSGoal.dist=Math.max(70,Math.min(camMem.dist,120));camSGoal.pitch=.8;renderFacSheet();setSheetMin(false);setSheet(true);}
 function closeFac(){if(!state.fac)return;state.fac=null;setSheet(false);followCam();}
@@ -2386,9 +2418,10 @@ function openInterior(id,st){
   I.cur.t.copy(I.goal.t);I.cur.yaw=I.goal.yaw+.6;I.cur.pitch=Math.min(1.3,I.goal.pitch+.3);I.cur.dist=I.goal.dist*1.6;
   activeScene=I.S;activeCam=I.cam;Snd.scene(id);placeInterior(I);$('#joy').hidden=!isTouch;
   document.body.classList.add('interior');
+  hideDesc();
   $('#ibar').hidden=false;$('#ibTitle').textContent=`${st.idx+1}. ${st.name}${I.def.title!==st.name?' · '+I.def.title:''}`;$('#ibSub').textContent=I.def.eyebrow;
   $('#exitBtn').textContent=I.def.parent?`← ${INT[I.def.parent].short||INT[I.def.parent].title}로`:'← 부지로 나가기';
-  if(!I.def.noPins)I.def.spots.forEach((s,i)=>{const L=makeLabel(intLabels,`${i+1}`,s.p,'hs',()=>setSpot(i));L.off=4;L.i=i;if(s.dyn)I.c.spotL=L;});
+  if(!I.def.noPins)I.def.spots.forEach((s,i)=>{const L=makeLabel(intLabels,`<b>${i+1}</b><span>${s.t}</span>`,s.p,'hs nm',()=>setSpot(i));L.off=4;L.i=i;if(s.dyn)I.c.spotL=L;});
   (I.def.doors||[]).forEach(d=>makeLabel(intLabels,`${ORG[d.to].name} 들어가기 →`,d.p,'pin door',()=>openInterior(d.to,st)));
   I.c.tags.forEach(tg=>{const L=makeLabel(intLabels,tg.html,tg.p,'tag',null,`--c:${tg.color}`);if(tg.html==='온도약층')I.c.clL=L;});
   setSheetMin(false);renderIntSheet();setSheet(true);
