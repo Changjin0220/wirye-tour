@@ -912,13 +912,13 @@ const GOLF={x0:-201,x1:-124,z0:121,z1:171,bx:-187,golfers:[],balls:[]};
  signBox(site,'자동차 출입구','ENTRANCE · PARKING',-194,4.7,z0-2.9,6.4,.9,'#1f6b3a','#ffffff');
  box(site,.4,1.2,.4,0xffc233,-190.2,.6,119.6);box(site,.18,4.2,.18,0xe63946,-190.2,3.2,119.6);
  // 그물 닭장 (기둥 + 옆면 + 천장)
- const NH=26,net=canvasTex(128,128,(c,w,h)=>{c.clearRect(0,0,w,h);c.strokeStyle='rgba(236,242,238,.95)';c.lineWidth=1.5;for(let i=-h;i<w+h;i+=16){c.beginPath();c.moveTo(i,0);c.lineTo(i+h,h);c.stroke();c.beginPath();c.moveTo(i+h,0);c.lineTo(i,h);c.stroke();}});
- const netMat=(rx,ry)=>{const t=net.clone();t.needsUpdate=true;t.wrapS=t.wrapT=THREE.RepeatWrapping;t.repeat.set(rx,ry);return new THREE.MeshBasicMaterial({map:t,transparent:true,opacity:.6,depthWrite:false,side:THREE.DoubleSide});};
+ const NH=26,net=canvasTex(128,128,(c,w,h)=>{c.clearRect(0,0,w,h);c.strokeStyle='rgba(40,58,46,.95)';c.lineWidth=2;for(let i=-h;i<w+h;i+=16){c.beginPath();c.moveTo(i,0);c.lineTo(i+h,h);c.stroke();c.beginPath();c.moveTo(i+h,0);c.lineTo(i,h);c.stroke();}});
+ const netMat=(rx,ry)=>{const t=net.clone();t.generateMipmaps=false;t.minFilter=THREE.LinearFilter;t.needsUpdate=true;t.wrapS=t.wrapT=THREE.RepeatWrapping;t.repeat.set(rx,ry);return new THREE.MeshBasicMaterial({map:t,transparent:true,alphaTest:.2,side:THREE.DoubleSide});};
  const L=x1-bx;
- for(const z of[z0,z1]){const m=mesh(new THREE.PlaneGeometry(L,NH),netMat(L/7,NH/7),site,(bx+x1)/2,NH/2,z,false);fadeReg(m,.15);}
- {const m=mesh(new THREE.PlaneGeometry(W,NH),netMat(W/7,NH/7),site,x1,NH/2,zc,false);m.rotation.y=PI/2;fadeReg(m,.15);}
- {const m=mesh(new THREE.PlaneGeometry(L,W),netMat(L/7,W/7),site,(bx+x1)/2,NH,zc,false);m.rotation.x=-PI/2;fadeReg(m,.15);}
- {const m=mesh(new THREE.PlaneGeometry(W,NH-10.6),netMat(W/7,(NH-10.6)/7),site,bx,10.6+(NH-10.6)/2,zc,false);m.rotation.y=PI/2;}
+ for(const z of[z0,z1]){const m=mesh(new THREE.PlaneGeometry(L,NH),netMat(L/2.2,NH/2.2),site,(bx+x1)/2,NH/2,z,false);fadeReg(m,.15);}
+ {const m=mesh(new THREE.PlaneGeometry(W,NH),netMat(W/2.2,NH/2.2),site,x1,NH/2,zc,false);m.rotation.y=PI/2;fadeReg(m,.15);}
+ {const m=mesh(new THREE.PlaneGeometry(L,W),netMat(L/2.2,W/2.2),site,(bx+x1)/2,NH,zc,false);m.rotation.x=-PI/2;fadeReg(m,.15);}
+ {const m=mesh(new THREE.PlaneGeometry(W,NH-10.6),netMat(W/2.2,(NH-10.6)/2.2),site,bx,10.6+(NH-10.6)/2,zc,false);m.rotation.y=PI/2;}
  const poles=[];for(let x=bx;x<=x1+.1;x+=L/6){poles.push([x,z0],[x,z1]);}for(let z=z0+W/5;z<z1-.1;z+=W/5)poles.push([x1,z]);
  for(const [x,z] of poles){cyl(site,.38,.45,NH+1,0xe4e8eb,x,(NH+1)/2,z,{metal:.4},10);}
  for(const z of[z0,z1])box(site,L,.15,.15,0x9aa6b0,(bx+x1)/2,NH,z);box(site,.15,.15,W,0x9aa6b0,x1,NH,zc);
