@@ -912,8 +912,11 @@ const GOLF={x0:-201,x1:-124,z0:121,z1:171,bx:-187,golfers:[],balls:[]};
  signBox(site,'자동차 출입구','ENTRANCE · PARKING',-194,4.7,z0-2.9,6.4,.9,'#1f6b3a','#ffffff');
  box(site,.4,1.2,.4,0xffc233,-190.2,.6,119.6);box(site,.18,4.2,.18,0xe63946,-190.2,3.2,119.6);
  // 그물 닭장 (기둥 + 옆면 + 천장)
- const NH=26,net=canvasTex(128,128,(c,w,h)=>{c.clearRect(0,0,w,h);c.strokeStyle='rgba(40,58,46,.95)';c.lineWidth=2;for(let i=-h;i<w+h;i+=16){c.beginPath();c.moveTo(i,0);c.lineTo(i+h,h);c.stroke();c.beginPath();c.moveTo(i+h,0);c.lineTo(i,h);c.stroke();}});
- const netMat=(rx,ry)=>{const t=net.clone();t.generateMipmaps=false;t.minFilter=THREE.LinearFilter;t.needsUpdate=true;t.wrapS=t.wrapT=THREE.RepeatWrapping;t.repeat.set(rx,ry);return new THREE.MeshBasicMaterial({map:t,transparent:true,alphaTest:.2,side:THREE.DoubleSide});};
+ const NH=26,net=(()=>{const cv=document.createElement('canvas');cv.width=cv.height=128;const c=cv.getContext('2d');c.strokeStyle='#000';c.lineWidth=2;
+   for(let k=-128;k<256;k+=16){c.beginPath();c.moveTo(k,0);c.lineTo(k+128,128);c.stroke();c.beginPath();c.moveTo(k+128,0);c.lineTo(k,128);c.stroke();}
+   const a=c.getImageData(0,0,128,128).data,d=new Uint8Array(128*128*4);for(let q=0;q<128*128;q++){d[q*4]=40;d[q*4+1]=58;d[q*4+2]=46;d[q*4+3]=a[q*4+3];}
+   const t=new THREE.DataTexture(d,128,128,THREE.RGBAFormat);t.magFilter=THREE.LinearFilter;t.minFilter=THREE.LinearMipmapLinearFilter;t.generateMipmaps=true;t.needsUpdate=true;return t;})();
+ const netMat=(rx,ry)=>{const t=net.clone();t.needsUpdate=true;t.wrapS=t.wrapT=THREE.RepeatWrapping;t.repeat.set(rx,ry);return new THREE.MeshBasicMaterial({map:t,transparent:true,depthWrite:false,side:THREE.DoubleSide});};
  const L=x1-bx;
  for(const z of[z0,z1]){const m=mesh(new THREE.PlaneGeometry(L,NH),netMat(L/2.2,NH/2.2),site,(bx+x1)/2,NH/2,z,false);fadeReg(m,.15);}
  {const m=mesh(new THREE.PlaneGeometry(W,NH),netMat(W/2.2,NH/2.2),site,x1,NH/2,zc,false);m.rotation.y=PI/2;fadeReg(m,.15);}
