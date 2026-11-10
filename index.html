@@ -48,7 +48,9 @@ button:disabled{opacity:.45;cursor:default}
 .pin.door{background:var(--safety);color:var(--safety-ink);padding:6px 12px;font-size:14px}
 .pin.door::after{background:var(--safety)}
 .pin.fac{font-size:10px;font-weight:600;padding:2px 7px 2px 2px;gap:4px;background:rgba(13,28,42,.7)}
-.pin.facg{display:none!important}
+.pin.st,.pin.facg{gap:0;padding:4px 11px}.pin.st .pin-no,.pin.facg .pin-no{display:none}
+.pin.st{color:#3ddc84}
+.pin.facg{color:#c9d2da;padding:2px 8px;background:rgba(13,28,42,.62)}
 .pin.fac .pin-no{width:14px;height:14px;font-size:9px;font-style:italic}
 .pin.fac::after{height:5px;bottom:-5px}
 .hs{pointer-events:auto;border:2px solid var(--ink);width:30px;height:30px;border-radius:50%;background:var(--safety);color:var(--safety-ink);font-family:var(--f-mono);font-weight:600;font-size:14px;display:grid;place-items:center;box-shadow:0 0 0 4px rgba(255,194,51,.25)}
@@ -152,6 +154,9 @@ body.interior #sheet{top:calc(var(--gap) + env(safe-area-inset-top,0px))}
 .steps .n{width:22px;height:22px;border-radius:50%;display:grid;place-items:center;background:rgba(147,169,187,.2);font-family:var(--f-mono);font-size:11px}
 .steps li.on button{background:rgba(255,194,51,.14)}
 .steps li.on .n{background:var(--safety);color:var(--safety-ink)}
+.steps li.fl button{background:linear-gradient(90deg,color-mix(in srgb,var(--c) 38%,transparent),color-mix(in srgb,var(--c) 8%,transparent));box-shadow:inset 4px 0 0 var(--c);color:#fff;font-weight:700}
+.steps li.fl .n{background:var(--c);color:#10161c}
+.steps li.past .n{background:color-mix(in srgb,var(--c) 45%,#2a3440);color:#fff}
 .steps .sw{display:flex;gap:3px;margin-top:3px}
 .steps .sw i{width:16px;height:4px;border-radius:2px;background:var(--c)}
 .sh-nav{display:flex;gap:8px;padding:12px 18px;border-top:1px solid var(--line)}
@@ -907,13 +912,13 @@ const GOLF={x0:-201,x1:-124,z0:121,z1:171,bx:-187,golfers:[],balls:[]};
  signBox(site,'자동차 출입구','ENTRANCE · PARKING',-194,4.7,z0-2.9,6.4,.9,'#1f6b3a','#ffffff');
  box(site,.4,1.2,.4,0xffc233,-190.2,.6,119.6);box(site,.18,4.2,.18,0xe63946,-190.2,3.2,119.6);
  // 그물 닭장 (기둥 + 옆면 + 천장)
- const NH=26,net=canvasTex(128,128,(c,w,h)=>{c.clearRect(0,0,w,h);c.strokeStyle='rgba(40,58,46,.95)';c.lineWidth=2;for(let i=-h;i<w+h;i+=16){c.beginPath();c.moveTo(i,0);c.lineTo(i+h,h);c.stroke();c.beginPath();c.moveTo(i+h,0);c.lineTo(i,h);c.stroke();}});
- const netMat=(rx,ry)=>{const t=net.clone();t.needsUpdate=true;t.wrapS=t.wrapT=THREE.RepeatWrapping;t.repeat.set(rx,ry);return new THREE.MeshBasicMaterial({map:t,transparent:true,alphaTest:.2,side:THREE.DoubleSide});};
+ const NH=26,net=canvasTex(128,128,(c,w,h)=>{c.clearRect(0,0,w,h);c.strokeStyle='rgba(236,242,238,.95)';c.lineWidth=1.5;for(let i=-h;i<w+h;i+=16){c.beginPath();c.moveTo(i,0);c.lineTo(i+h,h);c.stroke();c.beginPath();c.moveTo(i+h,0);c.lineTo(i,h);c.stroke();}});
+ const netMat=(rx,ry)=>{const t=net.clone();t.needsUpdate=true;t.wrapS=t.wrapT=THREE.RepeatWrapping;t.repeat.set(rx,ry);return new THREE.MeshBasicMaterial({map:t,transparent:true,opacity:.6,depthWrite:false,side:THREE.DoubleSide});};
  const L=x1-bx;
- for(const z of[z0,z1]){const m=mesh(new THREE.PlaneGeometry(L,NH),netMat(L/2.2,NH/2.2),site,(bx+x1)/2,NH/2,z,false);fadeReg(m,.15);}
- {const m=mesh(new THREE.PlaneGeometry(W,NH),netMat(W/2.2,NH/2.2),site,x1,NH/2,zc,false);m.rotation.y=PI/2;fadeReg(m,.15);}
- {const m=mesh(new THREE.PlaneGeometry(L,W),netMat(L/2.2,W/2.2),site,(bx+x1)/2,NH,zc,false);m.rotation.x=-PI/2;fadeReg(m,.15);}
- {const m=mesh(new THREE.PlaneGeometry(W,NH-10.6),netMat(W/2.2,(NH-10.6)/2.2),site,bx,10.6+(NH-10.6)/2,zc,false);m.rotation.y=PI/2;}
+ for(const z of[z0,z1]){const m=mesh(new THREE.PlaneGeometry(L,NH),netMat(L/7,NH/7),site,(bx+x1)/2,NH/2,z,false);fadeReg(m,.15);}
+ {const m=mesh(new THREE.PlaneGeometry(W,NH),netMat(W/7,NH/7),site,x1,NH/2,zc,false);m.rotation.y=PI/2;fadeReg(m,.15);}
+ {const m=mesh(new THREE.PlaneGeometry(L,W),netMat(L/7,W/7),site,(bx+x1)/2,NH,zc,false);m.rotation.x=-PI/2;fadeReg(m,.15);}
+ {const m=mesh(new THREE.PlaneGeometry(W,NH-10.6),netMat(W/7,(NH-10.6)/7),site,bx,10.6+(NH-10.6)/2,zc,false);m.rotation.y=PI/2;}
  const poles=[];for(let x=bx;x<=x1+.1;x+=L/6){poles.push([x,z0],[x,z1]);}for(let z=z0+W/5;z<z1-.1;z+=W/5)poles.push([x1,z]);
  for(const [x,z] of poles){cyl(site,.38,.45,NH+1,0xe4e8eb,x,(NH+1)/2,z,{metal:.4},10);}
  for(const z of[z0,z1])box(site,L,.15,.15,0x9aa6b0,(bx+x1)/2,NH,z);box(site,.15,.15,W,0x9aa6b0,x1,NH,zc);
@@ -1174,7 +1179,7 @@ const doorRings=[];
 LATE_LBL.forEach(a=>makeLabel(siteLabels,...a));
 STATIONS.forEach((st,i)=>{
   st.idx=i;
-  st.pin=makeLabel(siteLabels,`<span class="pin-no"><span>${i+1}</span></span><span>${st.name}</span>`,st.lp,'pin',()=>walkTo(st,true),`--c:${CAT[st.cat]}`);st.pin.el.dataset.desc='st:'+st.id;
+  st.pin=makeLabel(siteLabels,`<span class="pin-no"><span>${i+1}</span></span><span>${st.name}</span>`,st.lp,'pin st',()=>walkTo(st,true),`--c:${CAT[st.cat]}`);st.pin.el.dataset.desc='st:'+st.id;
   const ring=mesh(new THREE.RingGeometry(2.6,3.4,36),new THREE.MeshBasicMaterial({color:new THREE.Color(CAT[st.cat]),transparent:true,opacity:.9,side:THREE.DoubleSide,depthWrite:false}),site,st.door[0],.22,st.door[1],false);
   ring.rotation.x=-PI/2;doorRings.push(ring);st.ring=ring;
 });
@@ -1331,8 +1336,7 @@ canvas.addEventListener('pointerup',e=>{if(!downXY||ptrs.size!==1||Math.hypot(e.
   if(best){if(kind==='st'){state.fac=null;walkTo(STATIONS.find(s=>s.id===best),true);}else openFac(best);}});
 canvas.addEventListener('pointermove',e=>{if(state.mode!=='site'||ptrs.size)return;const r=canvas.getBoundingClientRect();_ndc.set((e.clientX-r.left)/r.width*2-1,-(e.clientY-r.top)/r.height*2+1);_rc.setFromCamera(_ndc,camS);
   let best=null,bd=1e9;if(!state.flow&&!busy()){for(const [id,b] of PICKB)if(_rc.ray.intersectBox(b,_hp)){const d=_hp.distanceTo(_rc.ray.origin);if(d<bd){bd=d;best='st:'+id;}}for(const [id,b] of Object.entries(FACB))if(_rc.ray.intersectBox(b,_hp)){const d=_hp.distanceTo(_rc.ray.origin);if(d<bd){bd=d;best='fac:'+id;}}}
-  canvas.style.cursor=best?'pointer':'';if(best){if(best!==hovKey||!hovKey){hovKey=best;}const x=e.clientX,y=e.clientY;showDesc(best,{getBoundingClientRect:()=>({left:x,right:x,top:y-14,bottom:y+14,width:0,height:28})});}else if(hovKey){hovKey=null;hideDesc();}});
-let hovKey=null;canvas.addEventListener('pointerleave',()=>{if(hovKey){hovKey=null;hideDesc();}});
+  canvas.style.cursor=best?'pointer':'';});
 canvas.addEventListener('pointerup',ptrEnd);canvas.addEventListener('pointercancel',ptrEnd);
 canvas.addEventListener('wheel',e=>{e.preventDefault();const o=curOrbit();o.dist=clamp(o.dist*(1+e.deltaY*.0011),o.dmin||16,o.dmax||440);rememberCam();if(state.mode==='interior')state.interior.userDist=o.dist;},{passive:false});
 
@@ -1396,9 +1400,10 @@ function renderFlowSheet(){
   $('#shExtra').innerHTML=`<div class="modes" role="group" aria-label="보기 방식"><button type="button" data-play aria-pressed="${!!state.play}">▶ 순서대로 보기</button><button type="button" data-all aria-pressed="${!state.play&&state.focusStep<0}">전체 한번에</button></div>`+'<div class="legend">'+Object.values(STREAMS).map(s=>`<span style="--c:${hex(s.color)}"><i></i>${s.name}</span>`).join('')+'</div><p class="note">건물을 투명하게 해서 안의 설비가 보이게 했어요. 단계를 누르면 해당 흐름만 강조돼요.</p>';
   const i=state.focusStep;
   $('#shCard').innerHTML=i<0?`<h4>천연가스 한 줄기 → 전기 + 열</h4><p>정압기에서 들어온 천연가스가 발전동에서 전기로 바뀌고, HRSG가 배기열로 한 번 더 발전합니다. 남은 열은 냉각탑으로 내보내거나 DH 설비동으로 회수해 지역난방으로 보냅니다.</p>`:`<h4><span>${String(i+1).padStart(2,'0')}</span>${FLOW_STEPS[i].t}</h4><p>${FLOW_STEPS[i].d}</p>`;
-  $('#shList').innerHTML=FLOW_STEPS.map((s,k)=>`<li class="${k===i?'on':''}"><button type="button" data-k="${k}"><span class="n">${k+1}</span><span>${s.t}<span class="sw">${s.s.map(id=>`<i style="--c:${hex(STREAMS[id].color)}"></i>`).join('')}</span></span></button></li>`).join('');
+  $('#shList').innerHTML=FLOW_STEPS.map((s,k)=>`<li class="${k===i?'on fl':k<i?'past':''}" style="--c:${hex(STREAMS[s.s[0]].color)}"><button type="button" data-k="${k}"><span class="n">${k+1}</span><span>${s.t}<span class="sw">${s.s.map(id=>`<i style="--c:${hex(STREAMS[id].color)}"></i>`).join('')}</span></span></button></li>`).join('');
   $('#shPrev').disabled=i<=0;$('#shNext').textContent=i>=FLOW_STEPS.length-1?'전체 보기':'다음 →';
   $('#shClose').hidden=false;
+  const on=$('#shList li.on');if(on)on.scrollIntoView({block:'nearest'});
 }
 const PLAY_REV=3.4,PLAY_HOLD=3.6;
 function revealAll(){for(const s of Object.values(STREAMS)){s.reveal=1;applyReveal(s);}}
