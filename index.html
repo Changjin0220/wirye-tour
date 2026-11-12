@@ -2694,9 +2694,9 @@ function evac1Path(){const j=()=>rr(-.35,.35);return[[rr(-101,-99),12.18,rr(-49,
 const FALL_AT=2+STAIR.length+4;
 function simEvac1(){const S=state.sim;S.phase='evac1';if(guideWho==='ceo'){guideCb=null;$('#guide').hidden=true;}
   const order=SIMW.filter(w=>w!==CEO&&w!==KYH).map(w=>[w,Math.hypot(w.position.x+94,w.position.z+46)]).sort((a,b)=>a[1]-b[1]).map(a=>a[0]);
-  order.unshift(CEO);const ji=order.indexOf(JAE);order.splice(Math.max(1,ji),0,KYH);
+  order.unshift(CEO);order.splice(order.indexOf(JAE),1);order.push(KYH,JAE);
   order.forEach((w,i)=>{const u=w.userData;u.path=evac1Path();u.pi=0;u.delay=i*.15+rr(0,.08);u.v=rr(20,24);u.mode='run';u.next='panic';});
-  CEO.userData.delay=0;CEO.userData.v=36;JAE.userData.v=21;KYH.userData.v=23;KYH.userData.delay=Math.max(.15,JAE.userData.delay-.5);
+  CEO.userData.delay=0;CEO.userData.v=36;JAE.userData.v=21;KYH.userData.v=23;KYH.userData.delay=JAE.userData.delay-.6;
   simBubbles([[CEO,'다들 계단으로! 엘리베이터 타지 마!'],[SIMP('한유진'),'으아아 빨리빨리!'],[SIMP('오원진'),'코 막고 낮게!']]);
   simMsg('비상상황 시뮬레이션 · 대피','🏃 대표님을 따라 비상계단으로 대피 중… 1차 비상집결장소로!',[['end','중단']]);}
 function simEvac2(){const S=state.sim;if(!S||S.phase!=='evac1')return;S.phase='evac2';state.simIn=false;
@@ -2763,7 +2763,7 @@ function updateSim(dt,T){const S=state.sim;dt*=SIM_K;S.t+=dt;
       simBubbles([[simLeader,'전원 이상 없음! ✅',true],[CEO,'다친 사람 응급처치부터!',true],[JAE,'괜찮아요… ㅎㅎ',true]]);
       camSGoal.t.set(-108,2,56);camSGoal.dist=50;camSGoal.pitch=.5;camSGoal.yaw=.3;
       simMsg('비상상황 시뮬레이션 · 2차 비상집결장소',`✅ 2차 비상집결장소 집결 완료 · ${SIMW.length}명 전원 확인 (부상 1명: 안재균)`,[['end','시뮬레이션 종료','go']]);}}
-  const talking=new Set(simLabels.map(L=>L.w));for(const L of simLabels){L.pos.copy(L.w.position);L.pos.y+=L.w===simLeader?7.4:8.4;}
+  const talking=new Set(simLabels.map(L=>L.w));for(const L of simLabels){L.pos.copy(L.w.position);L.pos.y+=L.w===simLeader?7.4:L.w===KYH?10.8:8.4;}
   for(const L of simNames){L.pos.copy(L.w.position);L.pos.y+=5.15;L.el.classList.toggle('hurt',L.w===JAE&&S.fell);const tk=talking.has(L.w);if(L.tk!==tk){L.tk=tk;L.el.style.visibility=tk?'hidden':'';}}}
 function m0(m){return m==='pairIdle'?'panic':m==='fallen'?'x':m;}
 
