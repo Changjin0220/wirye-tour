@@ -205,7 +205,7 @@ body.interior #sheet{top:calc(var(--gap) + env(safe-area-inset-top,0px))}
 .st-logo img{display:block;width:min(400px,72vw);height:auto}
 #guide{position:fixed;left:max(16px,env(safe-area-inset-left,0px));bottom:calc(16px + env(safe-area-inset-bottom,0px));z-index:35;display:flex;align-items:flex-end;gap:12px;max-width:min(800px,calc(100vw - 32px));animation:gIn .35s ease-out}
 #guide[hidden]{display:none}
-#guide.center{left:50%;top:50%;bottom:auto;transform:translate(-50%,-50%);animation:none}
+#guide.center{left:50%;top:62%;bottom:auto;transform:translate(-50%,-50%);animation:none}
 body.sim-on #guide{bottom:calc(150px + env(safe-area-inset-bottom,0px))}
 @media (min-width:761px){body.sheet-open #guide{max-width:min(800px,calc(100vw - 480px))}}
 @keyframes gIn{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
@@ -1004,7 +1004,7 @@ const CO={};
    for(const x of[-.75,.75])for(const z of[-1.1,1.1])cylX(g,.22,.22,.3,0x30363c,x,.15,z);
    g.traverse(o=>{if(o.isMesh)o.castShadow=true;});site.add(g);return g;}
  CO.cars=[car(true),car(false)];CO.box=new THREE.Box3(new THREE.Vector3(-172,0,40),new THREE.Vector3(-125,20,82));
- let bu=0,bd=1e9;for(let i=0;i<600;i++){const q=curve.getPointAt(i/600);const dd=Math.hypot(q.x+131,q.z-58.5);if(dd<bd){bd=dd;bu=i/600;}}CO.sStation=bu*CO.L;
+ let bu=0,bd=1e9;for(let i=0;i<600;i++){const q=curve.getPointAt(i/600);const dd=Math.hypot(q.x+131,q.z-58.5);if(dd<bd){bd=dd;bu=i/600;}}CO.sStation=bu*CO.L;{let tu=0,ty=-1;for(let i=0;i<600;i++){const q=curve.getPointAt(i/600);if(q.y>ty){ty=q.y;tu=i/600;}}CO.sTop=tu*CO.L;}
  CO.zone=u=>{const q=curve.getPointAt(u);if(q.x>-135&&q.z>47&&q.z<74)return 'station';if(q.z<47.5&&q.x>-160&&q.x<-133)return 'lift';return null;};}
 function placeCars(sv){CO.cars.forEach((g,k)=>{const u=(((sv-k*3.35)/CO.L)%1+1)%1,q=CO.curve.getPointAt(u),t=CO.curve.getTangentAt(u);g.position.set(q.x,q.y+.05,q.z);g.lookAt(q.x+t.x,q.y+.05+t.y,q.z+t.z);});}
 placeCars(CO.sStation);
@@ -2802,7 +2802,7 @@ const STATIONS_X=[...STATIONS,COASTER_ST,GATE_ST,SCREEN_ST];
 function boardCoaster(){if(state.mode!=='site'||busy())return;saveCam();
   if(state.fac)closeFac();if(state.flow)toggleFlow(false);if(state.overview)toggleOverview(false);
   state.auto=null;beacon.visible=false;hidePromoAsk();state.near=null;$('#prompt').hidden=true;jmp.y=0;jmp.v=0;
-  state.ride={s:CO.sStation,v:2,t:0,base:null};CO.cars[0].add(player);player.position.set(0,-.78,-.25);player.rotation.set(0,0,0);
+  state.ride={s:CO.sTop,v:4.5,t:5,base:null};CO.cars[0].add(player);player.position.set(0,-.78,-.25);player.rotation.set(0,0,0);
   const u=player.userData;u.legs.forEach(l=>l.rotation.x=-1.45);u.arms.forEach(a=>a.rotation.x=-.9);
   siteLabels.forEach(l=>l.el.hidden=true);$('#rideBar').hidden=false;
   camSGoal.dist=17;camSGoal.pitch=.3;Snd.init();toast('출발합니다! 안전바를 꽉 잡으세요 🎢',2.4);}
