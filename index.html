@@ -1930,7 +1930,7 @@ INT.trench={noTags:true,title:'이중보온관 공사',eyebrow:'열수송관 매
   }};
 
 /* ---------- 수요처 아파트 · 지하 기계실 (초안) ---------- */
-INT.demand={title:'지역난방 기계실',eyebrow:'수요처 아파트 · 지하 1층 · 지역난방',outdoor:true,lift:'demand',liftSet:'demand',
+INT.demand={tagsBySpot:true,tagMap:{'지상 · 아파트':0,'계단':0,'외기온도':5},title:'지역난방 기계실',eyebrow:'수요처 아파트 · 지하 1층 · 지역난방',outdoor:true,lift:'demand',liftSet:'demand',
   note:'나래에너지서비스 기계실 P&ID를 바탕으로 보기 쉽게 단순화했어요. 표시 온도는 대표값이고 고객별로 다르게 운영될 수 있어요. 배관 색은 물 온도(빨강 뜨거움 → 노랑 → 파랑 차가움)를 나타내요.',
   specs:[['1차 공급','115℃'],['1차 환수','35~55℃'],['난방','60 / 45℃'],['급탕','55℃']],
   cam:{t:[-2,-8,0],yaw:.42,pitch:.42,dist:92,pmin:.02,dmax:170},
@@ -2013,7 +2013,7 @@ INT.demand={title:'지역난방 기계실',eyebrow:'수요처 아파트 · 지�
 
 
 /* ---------- 수요처 · 지역냉방 (흡수식 냉동기) ---------- */
-INT.cooling={title:'지역냉방 기계실',eyebrow:'수요처 아파트 · 지하 1층 · 지역냉방',lift:'cooling',liftSet:'demand',
+INT.cooling={tagsBySpot:true,tagMap:{'흡수기':11,'증발기':11,'지역난방 95℃ →':4,'← 55℃ 발전소로':4,'진한 용액 80℃':6,'묽은 용액 34℃':6},title:'지역냉방 기계실',eyebrow:'수요처 아파트 · 지하 1층 · 지역냉방',lift:'cooling',liftSet:'demand',
   note:'나래에너지서비스 지역냉방 자료(흡수식 냉동기 원리 · 2단 흡수식 냉동기 외형)를 바탕으로 보기 쉽게 단순화했어요. 온도·압력은 대표값이에요.',
   specs:[['구동 열원','지역난방수 95℃↑'],['냉수','13 → 8℃'],['냉매','물'],['흡수제','리튬브로마이드']],
   extra:'<div class="legend">'+[['#ff4d4d','지역난방 온수 (95℃ → 55℃)'],['#3aa0ff','냉각수 (31℃ → 36.5℃)'],['#3ddc84','냉수 (13℃ → 8℃)'],['#eaf6ff','수증기 (냉매)'],['#7fe0ff','물 (냉매)'],['#ffd23f','묽은 흡수액'],['#ff8a3d','진한 흡수액']].map(([c,t])=>`<span style="--c:${c}"><i></i>${t}</span>`).join('')+'</div>',
@@ -2434,7 +2434,9 @@ function openInterior(id,st){
   $('#exitBtn').textContent=I.def.parent?`← ${INT[I.def.parent].short||INT[I.def.parent].title}로`:'← 부지로 나가기';
   if(!I.def.noPins)I.def.spots.forEach((s,i)=>{const L=makeLabel(intLabels,`<b>${i+1}</b><span>${s.t}</span>`,s.p,'hs nm',()=>setSpot(i));L.off=4;L.i=i;if(s.dyn)I.c.spotL=L;});
   (I.def.doors||[]).forEach(d=>makeLabel(intLabels,`${ORG[d.to].name} 들어가기 →`,d.p,'pin door',()=>openInterior(d.to,st)));
-  if(!I.def.noTags)I.c.tags.forEach(tg=>{const L=makeLabel(intLabels,tg.html,tg.p,'tag',null,`--c:${tg.color}`);if(tg.html==='온도약층')I.c.clL=L;});
+  I.tagLs=[];
+  if(!I.def.noTags)I.c.tags.forEach(tg=>{const L=makeLabel(intLabels,tg.html,tg.p,'tag',null,`--c:${tg.color}`);if(tg.html==='온도약층')I.c.clL=L;
+    if(I.def.tagsBySpot){let b=0,bd=1e9;I.def.spots.forEach((sp,k)=>{const d=Math.hypot(sp.p[0]-tg.p[0],sp.p[1]-tg.p[1],sp.p[2]-tg.p[2]);if(d<bd){bd=d;b=k;}});const ov=I.def.tagMap&&I.def.tagMap[L.el.textContent.trim()];L.spotK=ov!=null?ov:b;L.el.style.display='none';I.tagLs.push(L);}});
   setSheetMin(false);renderIntSheet();setSheet(true);
   state.spot=-1;setSpot(0,true,true);
   if(!visited.has(st.id)){visited.add(st.id);saveVisited();renderCourse();}
@@ -2479,6 +2481,7 @@ $('#shExtra').addEventListener('click',e=>{const b=e.target.closest('button');if
 function setSpot(i,silent,noCam,fromProc){
   const I=state.interior;if(!I)return;const n=I.def.spots.length;
   if(i>=n){if(!silent)exitInterior();return;}i=clamp(i,0,n-1);state.spot=i;
+  if(I.tagLs&&I.tagLs.length){const sel=silent?-1:i;I.tagLs.forEach(L=>L.el.style.display=L.spotK===sel?'':'none');}
   const s=I.def.spots[i];
   if(!fromProc&&I.def.onSpot)I.def.onSpot(i,I);
   if(!noCam){const keep=!!I.c.proc;if(!keep){if(s.yaw!=null)I.goal.yaw=s.yaw;if(s.pitch!=null)I.goal.pitch=s.pitch;}I.goal.t.set(s.p[0],s.dyn&&I.c.f!=null?28*(1-I.c.f):s.p[1],s.p[2]);if(!fromProc)I.goal.dist=(s.dist||34)*(innerWidth<=760?1.4:1);}
