@@ -246,6 +246,7 @@ body.interior #sheet{top:calc(var(--gap) + env(safe-area-inset-top,0px))}
 .lbl.nametag.f{background:rgba(176,58,110,.85)}
 .lbl.nametag.ceo{background:#ffc233;color:#10161c;font-weight:800}
 .lbl.nametag.hurt{background:#e63946}
+.lbl.nametag.lead{background:#14324d;box-shadow:0 0 0 2px #ffc233}
 .pin.ap{background:rgba(20,110,60,.9);color:#fff}
 .pin.ap .pin-no{background:#7dffa8;font-style:normal}
 @media (max-width:560px){#simBar .pa-card,#rideBar .pa-card{flex-direction:column;align-items:stretch}.pa-btns{justify-content:flex-end}}
@@ -1167,7 +1168,7 @@ const FLOW_STEPS=[
 /* ================= stations / tour ================= */
 const CAT={hq:'#8fb3cf',fuel:'#f2b705',power:'#ff7a2f',heat:'#ff4d8d',net:'#2ec4b6'};
 const STATIONS=[
-  {id:'admin',name:'행정동',sub:'3F 중앙제어실 · 4F 사무실',cat:'hq',node:'NA',door:[-109,-29.4],lp:[-109,19,-58.5]},
+  {id:'admin',name:'행정동',sub:'3F CCR · 4F 사무실',cat:'hq',node:'NA',door:[-109,-29.4],lp:[-109,19,-58.5]},
   {id:'gov',name:'정압기',sub:'연료 공급의 관문',cat:'fuel',node:'N13',door:[-27.5,71],lp:[-25.5,12,93]},
   {id:'power',name:'발전동',sub:'가스터빈 · 발전기 · 증기터빈',cat:'power',node:'N14',door:[-17.5,2],lp:[-55,28,2]},
   {id:'hrsg',name:'HRSG',sub:'배열회수보일러',cat:'power',node:'N16',door:[-31.5,-70],lp:[-50,30,-62]},
@@ -1435,13 +1436,14 @@ function startPlay(){state.flowFollow=false;state.play={k:-1,t:0};for(const s of
 function playStep(k){const p=state.play;p.k=k;p.t=0;const seen=new Set();FLOW_STEPS.slice(0,k).forEach(st=>st.s.forEach(id=>seen.add(id)));p.fresh=FLOW_STEPS[k].s.filter(id=>!seen.has(id));
   state.focusStep=k;const st=FLOW_STEPS[k];camSGoal.t.set(st.f[0],0,st.f[2]);camSGoal.dist=innerWidth<760?250:185;camSGoal.pitch=.86;
   for(const [id,s] of Object.entries(STREAMS)){const on=st.s.includes(id);s.fade.forEach(([m,b])=>{m.opacity=on?b:b*.3;});}
-  renderFlowSheet();guideSay('jhj',`${k+1}단계 · ${st.t}  —  ${st.d}`,'닫기');}
-function updatePlay(dt){const p=state.play;if(!p)return;p.t+=dt;
+  renderFlowSheet();guideSay('jhj',`${k+1}단계 · ${st.t}  —  ${st.d}`,'닫기',null,'⏸ 일시정지',()=>{});}
+function updatePlay(dt){const p=state.play;if(!p||p.paused)return;p.t+=dt;
   const r=clamp(p.t/PLAY_REV,0,1),e=1-Math.pow(1-r,2);for(const id of p.fresh){const s=STREAMS[id];s.reveal=e;applyReveal(s);}
   if(p.t>PLAY_REV+PLAY_HOLD){if(p.k<FLOW_STEPS.length-1)playStep(p.k+1);else{state.play=null;focusStep(-1);toast('전체 흐름이에요. 단계를 누르거나 다시 순서대로 볼 수 있어요',3);}}}
 function focusStep(k){
   state.flowFollow=false;
   stopPlay();
+  if(k>=0&&FLOW_STEPS[k])setTimeout(()=>guideSay('jhj',`${k+1}단계 · ${FLOW_STEPS[k].t}  —  ${FLOW_STEPS[k].d}`,'닫기'),0);
   state.focusStep=k;
   if(k<0){highlightStreams(null);setOverviewCam();}
   else{const s=FLOW_STEPS[k];highlightStreams(s.s);camSGoal.t.set(s.f[0],0,s.f[2]);camSGoal.dist=innerWidth<760?230:165;camSGoal.pitch=.86;}
@@ -1522,17 +1524,27 @@ function drawWall(cv,t){const g=cv.getContext('2d'),W=cv.width,H=cv.height;g.fil
     g.fillStyle='#eaf1f6';g.font='600 70px "IBM Plex Mono",monospace';g.fillText(v,x,385);const w=g.measureText(v).width;g.fillStyle='#8aa2b6';g.font='500 28px "IBM Plex Mono",monospace';g.fillText(u,x+w+10,385);});
   g.fillStyle='#1c3346';g.fillRect(44,420,W-88,3);
 }
-INT.ccr={title:'3층 중앙제어실',short:'3층 제어실',eyebrow:'행정동 3F · 중앙제어실 CCR',lift:'ccr',specs:[['층','3F'],['역할','통합 감시·제어'],['연계','현장 계측']],
+INT.ccr={title:'3층 CCR',short:'3층 CCR',eyebrow:'행정동 3F · CCR (Central Control Room)',lift:'ccr',specs:[['층','3F'],['역할','통합 감시·제어'],['연계','현장 계측']],
   cam:{t:[0,5,-2],yaw:.42,pitch:.48,dist:58,dmax:110},
   spots:[
-    {t:'대형 상황판',d:'발전소 전체 운전 상태를 한 화면에 띄워 둡니다. 발전 출력, 열 공급량, 축열조 저장률 같은 값을 실시간으로 봅니다. 화면 속 숫자는 견학용 예시 값이에요.',p:[0,9,-21],dist:40},
+    {t:'대형 상황판',d:'가운데 화면에는 발전 출력·열 공급량·축열조 저장률 같은 전체 운전 현황이, 양옆 모니터들에는 정압기·발전동·HRSG·냉각탑·DH 설비동·축열조·수요처·공사 현장 화면이 떠요. 화면 속 숫자는 견학용 예시 값이에요.',p:[0,9,-21],dist:40},
     {t:'운전 콘솔',d:'운전원이 발전동·HRSG·DH 설비를 원격으로 감시하고 제어하는 자리입니다. 현장에 가지 않고도 밸브 개도, 펌프 운전, 출력을 조정합니다.',p:[0,4,-4],dist:30},
     {t:'현장 계측 연계',d:'발전동은 현장 계측기 위주로 온도·압력·유량 데이터를 모으고, 그 데이터가 이곳 중앙제어실(CCR)로 모여 통합 관리됩니다.',p:[-28,5,-10],dist:30},
     {t:'교대 근무 공간',d:'제어실은 24시간 교대로 운영됩니다. 오른쪽은 운전 일지 작성과 교대 인수인계를 하는 공간이에요.',p:[22,3,10],dist:34},
   ],
   build(c){const S=c.S;room(c,66,46,17);
     const cv=document.createElement('canvas');cv.width=1600;cv.height=460;const tex=new THREE.CanvasTexture(cv);drawWall(cv,0);
-    box(S,46,14,.5,0x1a232c,0,9,-22.4);mesh(new THREE.PlaneGeometry(44.4,12.8),new THREE.MeshBasicMaterial({map:tex}),S,0,9,-22.1,false);
+    box(S,50,14.6,.5,0x10171e,0,9,-22.4);mesh(new THREE.PlaneGeometry(19.4,5.6),new THREE.MeshBasicMaterial({map:tex}),S,0,9.6,-22.1,false);
+    const MON=[['gov','정압기'],['power','발전동'],['hrsg','HRSG'],['tower','냉각탑'],['dh','DH 설비동'],['storage','축열조'],['demand','수요처 기계실'],['trench','이중보온관 공사']];
+    const mons=[];MON.forEach(([id,nm],i)=>{const col=i%4,row=(i/4)|0,x=col<2?-21.3+col*5.9:15.4+(col-2)*5.9,y=row?6.3:12.2;
+      box(S,5.7,3.4,.2,0x050a0f,x,y,-22.05);const ph=canvasTex(320,180,(g,w,h)=>{g.fillStyle='#0a1622';g.fillRect(0,0,w,h);g.fillStyle='#3a5a74';g.font='600 22px sans-serif';g.textAlign='center';g.fillText('신호 연결 중…',w/2,h/2+8);});
+      const m=new THREE.MeshBasicMaterial({map:ph});mesh(new THREE.PlaneGeometry(5.4,3.04),m,S,x,y,-21.92,false);
+      const nb=canvasTex(320,40,(g,w,h)=>{g.fillStyle='#14324d';g.fillRect(0,0,w,h);g.fillStyle='#3ddc84';g.beginPath();g.arc(16,20,6,0,PI*2);g.fill();g.fillStyle='#fff';g.font='700 22px "IBM Plex Sans KR",sans-serif';g.fillText(nm,30,28);});
+      mesh(new THREE.PlaneGeometry(5.4,.62),new THREE.MeshBasicMaterial({map:nb}),S,x,y-1.88,-21.92,false);mons.push({id,m});});
+    {let mi=0,wait=.3;const rc=new THREE.PerspectiveCamera(42,16/9,.3,1500);
+      c.updates.push(dt=>{if(mi>=mons.length)return;wait-=dt;if(wait>0)return;wait=.15;const M=mons[mi++];
+        try{const I=getInterior(M.id),d=I.def.cam,o=Orbit(d.t,d.yaw,d.pitch,d.dist);camApply(rc,o);const rt=new THREE.WebGLRenderTarget(512,288);
+          renderer.setRenderTarget(rt);renderer.render(I.S,rc);renderer.setRenderTarget(null);M.m.map=rt.texture;M.m.needsUpdate=true;}catch(e){}});}
     let acc=0;c.updates.push((dt,t)=>{acc+=dt;if(acc>.25){acc=0;drawWall(cv,t);tex.needsUpdate=true;}});
     const scr=[0x2b7bbf,0x2e9e8f,0x3a6fb0];
     for(let i=0;i<5;i++){const a=(i-2)*.3;const g=new THREE.Group();g.position.set(Math.sin(a)*20,0,12-Math.cos(a)*20);g.rotation.y=-a;S.add(g);
@@ -1543,13 +1555,14 @@ INT.ccr={title:'3층 중앙제어실',short:'3층 제어실',eyebrow:'행정동 
     for(let z=-18;z<=4;z+=4.4){box(S,2.4,8,3.6,0x2f3d4a,-31,4,z);for(let y=1.5;y<8;y+=1.2)box(S,.1,.15,2.6,(y*3|0)%2?0x3ddc84:0xffc233,-29.75,y,z,{emissive:(y*3|0)%2?0x3ddc84:0xffc233,ei:.6});}
     for(let r=0;r<2;r++)for(let k=0;k<3;k++){const x=16+k*6,z=6+r*8;box(S,5,2.4,3,0xd8dde1,x,1.2,z);box(S,5.2,2.2,.2,0x8798a5,x,3.3,z-1.6);box(S,1.6,1,.1,0x2b7bbf,x,3,z-.7);}
     const w2=makeWorker({office:true,suit:0x6c7a89});w2.scale.setScalar(.92);w2.position.set(22,0,17);w2.rotation.y=PI*.9;S.add(w2);
-    signBox(S,'3F 중앙제어실','CENTRAL CONTROL ROOM',-20,13,-22.3,8,2,'#14324d','#ffffff');
+    signBox(S,'3F CCR','CENTRAL CONTROL ROOM',-20,13,-22.3,8,2,'#14324d','#ffffff');
   }};
 
 /* ---------- 행정동 4F · 사무실 ---------- */
 const ORG={
   room_ceo:{name:'대표이사실',color:'#c9a45c',ceo:true,intro:'회사 경영을 총괄하는 대표이사의 집무 공간이에요. (예시 문구)',teams:[]},
-  room_mgmt:{real:true,name:'경영지원실',color:'#8fb3cf',intro:'회사 운영을 뒷받침하는 부서예요. 경영지원팀과 기획재무팀으로 구성돼 있어요.',teams:[['경영지원팀','<b>팀장</b> 우상직<br><b>Senior Manager</b> 한정훈<br><b>Manager</b> 양은빈 · 이동준 · 심정연 · 조해선 · 박찬웅'],['기획재무팀','<b>팀장</b> 이세한<br><b>Manager</b> 정순영 · 최은실 · 한유진 · 서봉섭 · 이화준 · 김미진']]},
+  room_mgmt:{real:true,name:'경영지원실',color:'#8fb3cf',intro:'회사 운영을 뒷받침하는 부서예요. 경영지원팀과 기획재무팀으로 구성돼 있어요.',teams:[['경영지원팀','<b>팀장</b> 우상직<br><b>Senior Manager</b> 한정훈<br><b>Manager</b> 양은빈 · 이동준 · 심정연 · 조해선 · 박찬웅'],['기획재무팀','<b>팀장</b> 이세한<br><b>Manager</b> 정순영 · 최은실 · 한유진 · 서봉섭 · 이화준 · 김미진']],
+    members:[{lead:['우상직',0],m:[['한정훈',0],['양은빈',1],['이동준',0],['심정연',1],['조해선',1],['박찬웅',0]]},{lead:['이세한',0],m:[['정순영',0],['최은실',1],['한유진',1],['서봉섭',0],['이화준',0],['김미진',1]]}]},
   room_cs:{name:'고객지원실',color:'#2ec4b6',intro:'열을 쓰는 고객과 가장 가까이 만나는 부서예요. (예시 문구)',teams:[['고객 상담','열 사용 문의와 민원 응대 (예시)'],['요금·검침','열량 검침과 요금 청구 (예시)'],['사용자 설비','수요처 기계실 점검 지원 (예시)']]},
   room_ops:{name:'사업운영실',color:'#ffc233',intro:'발전과 열 공급 사업을 계획하고 운영하는 부서예요. (예시 문구)',teams:[['사업 기획','사업 계획과 수요 분석 (예시)'],['운영 관리','발전·열공급 운영 지원 (예시)'],['안전·환경','안전보건과 환경 관리 (예시)']]},
 };
@@ -1561,6 +1574,20 @@ function deskIsland(S,x,z,cols,people,seed){const scr=[0x2b7bbf,0x2e9e8f,0x3a6fb
     box(S,1.5,.95,.08,0x111a22,dx,3.1,dz-s*.6);const sc=mesh(new THREE.PlaneGeometry(1.36,.8),new THREE.MeshBasicMaterial({color:scr[k%3]}),S,dx,3.1,dz-s*.55,false);if(s<0)sc.rotation.y=PI;
     box(S,1.3,.9,1.3,0x2b3a47,dx,1.1,dz+s*1.7);box(S,1.3,1.6,.25,0x2b3a47,dx,2.1,dz+s*2.35);
     if(people&&(i+k)%3!==2){const w=makeWorker({office:true,suit:suits[k%4]});w.scale.setScalar(.85);w.position.set(dx,0,dz+s*1.45);w.rotation.y=s>0?PI:0;S.add(w);}k++;}}
+function namedIsland(c,x,z,cols,people,lead){const S=c.S,scr=[0x2b7bbf,0x2e9e8f,0x3a6fb0],suits=[0x34495e,0x6c7a89,0x9db4c8,0x4d5d6c];c.names=c.names||[];let k=0;
+  const person=(nm,f,px,pz,ry,i)=>{const w=makeWorker(f?{office:true,female:true,suit:[0xf2efe8,0xdfe8f1,0xf4dfe4][i%3],skirt:[0x2b3440,0x6b2d3a,0x3a4a5c][i%3],hair:0x2b1d14,pony:i%2===0}:{office:true,suit:suits[i%4]});
+    w.scale.setScalar(.85);w.position.set(px,0,pz);w.rotation.y=ry;S.add(w);c.names.push([nm,[px,5.1,pz],f?'f':'']);};
+  box(S,cols*3.3,1.1,.1,0x9fb3c3,x,3,z);
+  for(let i=0;i<cols;i++)for(const s of[-1,1]){const dx=x+(i-(cols-1)/2)*3.3,dz=z+s*1.05;
+    box(S,3.1,.12,1.9,0xe9e6df,dx,2.35,dz);box(S,.1,2.3,1.7,0xb9b4aa,dx-1.5,1.15,dz);box(S,.1,2.3,1.7,0xb9b4aa,dx+1.5,1.15,dz);
+    box(S,1.5,.95,.08,0x111a22,dx,3.1,dz-s*.6);const sc=mesh(new THREE.PlaneGeometry(1.36,.8),new THREE.MeshBasicMaterial({color:scr[k%3]}),S,dx,3.1,dz-s*.55,false);if(s<0)sc.rotation.y=PI;
+    box(S,1.3,.9,1.3,0x2b3a47,dx,1.1,dz+s*1.7);box(S,1.3,1.6,.25,0x2b3a47,dx,2.1,dz+s*2.35);
+    if(people[k])person(people[k][0],people[k][1],dx,dz+s*1.45,s>0?PI:0,k);k++;}
+  if(lead){const lx=x+cols*1.65+4.2,lz=z;box(S,2.2,.14,4,0x8a6a4a,lx,2.45,lz);box(S,2,2.3,.1,0x6b4a2f,lx,1.2,lz-1.9);box(S,2,2.3,.1,0x6b4a2f,lx,1.2,lz+1.9);
+    box(S,.08,1,1.6,0x111a22,lx-.6,3.15,lz);const sc=mesh(new THREE.PlaneGeometry(1.4,.8),new THREE.MeshBasicMaterial({color:0x2b7bbf}),S,lx-.56,3.15,lz,false);sc.rotation.y=-PI/2;
+    box(S,1.4,1,1.4,0x1d2329,lx+1.8,1.1,lz);box(S,.3,2,1.4,0x1d2329,lx+2.5,2.3,lz);
+    signBox(S,'팀장','',lx,3.5,lz+2.05,1.4,.45,'#ffc233','#10161c');
+    person(lead[0],lead[1],lx+1.5,lz,-PI/2,7);c.names[c.names.length-1][2]+=' lead';}}
 function ceoSet(S,x,z,person){const wood=0x6b4a2f,dark=0x3d2a1c;
   box(S,10,.35,4.2,wood,x,2.5,z);box(S,.4,2.3,3.8,dark,x-4.6,1.15,z);box(S,.4,2.3,3.8,dark,x+4.6,1.15,z);box(S,9.2,1.6,.2,dark,x,1.6,z-1.9);
   box(S,1.6,1,.08,0x111a22,x-2,3.2,z-1.2);box(S,1.4,.08,.9,0xe9e6df,x+1.5,2.72,z);
@@ -1589,7 +1616,11 @@ INT.office={title:'4층 사무실',short:'4층 복도',eyebrow:'행정동 4F · 
       box(S,5,.4,.3,0x8a96a0,cx,9.4,4);
       signBox(S,ORG[k].name,'NARAE ENERGY SERVICE',cx,10.8,4.2,6,1.5,'#14324d','#ffffff');
       box(S,.2,1.5,.2,ORG[k].color,cx-3.1,10.8,4.2);
-      if(ORG[k].ceo){ceoSet(S,cx,-12,true);continue;}
+      if(ORG[k].ceo){ceoSet(S,cx,-12,true);
+        {const sx=cx+8,sz=9;box(S,4.4,.14,2,0xe9e6df,sx,2.4,sz);box(S,4.4,2.3,.12,0xcfc6b8,sx,1.2,sz+.95);box(S,1.5,.95,.08,0x111a22,sx,3.1,sz-.4);box(S,1.3,.9,1.3,0x2b3a47,sx,1.1,sz-1.7);
+         signBox(S,'비서실','SECRETARY',sx,3.1,sz+1.05,2.4,.55,'#14324d','#ffffff');const w=makeWorker({office:true,female:true,suit:0xf2efe8,skirt:0x2b3440,hair:0x2b1d14});w.scale.setScalar(.85);w.position.set(sx,0,sz-1.45);S.add(w);
+         c.names=c.names||[];c.names.push(['박정선 (비서)',[sx,5.1,sz-1.45],'f']);}
+        continue;}
       deskIsland(S,cx-5,-9,3,true,k.length);deskIsland(S,cx+6,-18,2,true,k.length+2);plant(S,cx+10,-23);}
     for(const z of[8,17]){box(S,.25,8,4.2,0xb8c2ca,67.7,4,z,{metal:.6,rough:.3});box(S,.2,1,1.2,0x111a22,67.6,8.8,z);}
     signBox(S,'4F','',67.6,10.6,12.5,2,1,'#14324d','#ffc233',-PI/2);
@@ -1603,8 +1634,8 @@ function officeRoom(key){const o=ORG[key];const n=o.teams.length;const xs=o.team
     build(c){const S=c.S;room(c,60,40,12);
       for(let z=-14;z<=14;z+=7)box(S,.2,6,5.2,0x9fd3ef,-29.6,6.5,z,{emissive:0x9fd3ef,ei:.25});
       box(S,22,5.2,.3,0x14324d,0,8.5,-19.6);signBox(S,o.name,'NARAE ENERGY SERVICE',0,8.5,-19.4,16,4,'#14324d','#ffffff');box(S,22,.4,.32,o.color,0,5.6,-19.6);
-      o.teams.forEach((tm,i)=>{deskIsland(S,xs[i],0,3,true,i*3);
-        cyl(S,.08,.08,5,0x8a96a0,xs[i]+5.4,2.5,1.6,{},8);signBox(S,tm[0],o.name,xs[i]+5.4,5.6,1.6,4.4,1.1,'#ffffff','#14324d');});
+      o.teams.forEach((tm,i)=>{if(o.members)namedIsland(c,xs[i]-3,0,3,o.members[i].m,o.members[i].lead);else deskIsland(S,xs[i],0,3,true,i*3);
+        const px=o.members?xs[i]-3:xs[i]+5.4,pz=o.members?-4.6:1.6;cyl(S,.08,.08,5,0x8a96a0,px,2.5,pz,{},8);signBox(S,tm[0],o.name,px,5.6,pz,4.4,1.1,'#ffffff','#14324d');});
       box(S,8,.2,4,0xe9e6df,18,2.4,13);for(const [dx,dz] of[[-3,-2.6],[0,-2.6],[3,-2.6],[-3,2.6],[0,2.6],[3,2.6]])box(S,1.2,.9,1.2,0x2b3a47,18+dx,1.1,13+dz);for(const dx of[-3.4,3.4])box(S,.2,2.3,.2,0x8a96a0,18+dx,1.15,13);
       box(S,.2,4.5,9,0xf4f6f7,-29.4,4.5,8);
       box(S,6,2.4,3,0xcfc6b8,-18,1.2,14);box(S,1.5,.95,.08,0x111a22,-18,3,13.2);
@@ -2418,9 +2449,9 @@ function wallCull(I){const cp=I.cam.position,t=I.cur.t;
 function hideSiteUI(){$('#promoAsk').hidden=true;siteLabels.forEach(l=>l.el.hidden=true);flowTags.forEach(l=>l.el.style.visibility='hidden');document.querySelectorAll('.site-ui').forEach(e=>e.hidden=true);$('#prompt').hidden=true;$('#joy').hidden=true;state.near=null;}
 function showSiteUI(){siteLabels.forEach(l=>l.el.hidden=false);document.querySelectorAll('.site-ui').forEach(e=>e.hidden=false);$('#joy').hidden=!isTouch;}
 const PICKS={
-  admin:{eye:'행정동 · 엘리베이터',title:'몇 층으로 갈까요?',opts:[['office','4F','사무실','대표이사실 · 경영지원실 · 고객지원실 · 사업운영실'],['ccr','3F','중앙제어실','발전소 통합 감시·제어'],['emergency','SOS','비상상황 시뮬레이션하기','4층 화재 발생 → 1차·2차 비상집결장소로 대피']]},
+  admin:{eye:'행정동 · 엘리베이터',title:'몇 층으로 갈까요?',opts:[['office','4F','사무실','대표이사실 · 경영지원실 · 고객지원실 · 사업운영실'],['ccr','3F','CCR','발전소 통합 감시·제어'],['emergency','SOS','비상상황 시뮬레이션하기','4층 화재 발생 → 1차·2차 비상집결장소로 대피']]},
   demand:{eye:'수요처 아파트 · 지하 기계실',title:'무엇을 볼까요?',opts:[['demand','난방','지역난방','115℃ 온수로 난방과 온수(급탕)를 만들어요'],['cooling','냉방','지역냉방','온수의 열로 냉수를 만드는 흡수식 냉동기']]}};
-const LIFTS={admin:{label:'엘리베이터',items:[['office','4F','사무실'],['ccr','3F','제어실']]},demand:{label:'보기',items:[['demand','난방','지역난방'],['cooling','냉방','지역냉방']]}};
+const LIFTS={admin:{label:'엘리베이터',items:[['office','4F','사무실'],['ccr','3F','CCR']]},demand:{label:'보기',items:[['demand','난방','지역난방'],['cooling','냉방','지역냉방']]}};
 function enterStation(st){
   if(st.coaster){boardCoaster();return;}
   if(st.gate){toggleGate();return;}
@@ -2455,6 +2486,7 @@ function openInterior(id,st){
   if(!I.def.noPins)I.def.spots.forEach((s,i)=>{const L=makeLabel(intLabels,`<b>${i+1}</b><span>${s.t}</span>`,s.p,'hs nm',()=>setSpot(i));L.off=4;L.i=i;if(s.dyn)I.c.spotL=L;});
   (I.def.doors||[]).forEach(d=>makeLabel(intLabels,`${ORG[d.to].name} 들어가기 →`,d.p,'pin door',()=>openInterior(d.to,st)));
   I.tagLs=[];
+  if(I.c.names)I.c.names.forEach(([n,p,cl])=>makeLabel(intLabels,n,p,'nametag '+(cl||'')));
   if(!I.def.noTags)I.c.tags.forEach(tg=>{const L=makeLabel(intLabels,tg.html,tg.p,'tag',null,`--c:${tg.color}`);if(tg.html==='온도약층')I.c.clL=L;
     if(I.def.tagsBySpot){let b=0,bd=1e9;I.def.spots.forEach((sp,k)=>{const d=Math.hypot(sp.p[0]-tg.p[0],sp.p[1]-tg.p[1],sp.p[2]-tg.p[2]);if(d<bd){bd=d;b=k;}});const ov=I.def.tagMap&&I.def.tagMap[L.el.textContent.trim()];L.spotK=ov!=null?ov:b;L.el.style.display='none';I.tagLs.push(L);}});
   setSheetMin(false);renderIntSheet();setSheet(true);
@@ -2880,11 +2912,15 @@ function guideSay(who,msg,btn,cb,btn2,cb2){const b2=$('#gBtn2');b2.hidden=!btn2;
   $('#gMsg').textContent=msg;$('#gMsg').classList.toggle('long',msg.length>110);$('#gBtn').textContent=btn||'확인';guideCb=cb||null;const g=$('#guide');g.hidden=true;void g.offsetWidth;g.hidden=false;}
 function guideHide(){$('#guide').hidden=true;const cb=guideCb;guideCb=null;if(cb)cb();}
 $('#gBtn').addEventListener('click',guideHide);
-$('#gBtn2').addEventListener('click',()=>{$('#guide').hidden=true;guideCb=null;const cb=guideCb2;guideCb2=null;if(cb)cb();});
-const INTRO={ccr:'3층 중앙제어실이에요. 발전기·보일러·지역난방 설비 전체를 이곳에서 24시간 감시하고 제어해요.',office:'4층 사무실이에요. 경영지원실·고객지원실·사업운영실과 대표이사실이 있어요. 번호를 눌러 둘러보세요.',
+$('#gBtn2').addEventListener('click',()=>{if(guideWho==='jhj'&&state.play){state.play.paused=!state.play.paused;$('#gBtn2').textContent=state.play.paused?'▶ 계속':'⏸ 일시정지';return;}$('#guide').hidden=true;guideCb=null;const cb=guideCb2;guideCb2=null;if(cb)cb();});
+function guideDismiss(){if($('#guide').hidden)return;if(guideWho==='jhj'&&state.play&&state.play.paused)return;guideHide();}
+addEventListener('pointerdown',e=>{if(e.target.closest('#guide'))return;guideDismiss();},true);
+addEventListener('keydown',e=>{if(/^(Key[WASD]|Arrow)/.test(e.code)&&!(guideWho==='jhj'))guideDismiss();});
+const INTRO={ccr:'3층 CCR(Central Control Room)이에요. 발전소의 두뇌로, 운전원들이 24시간 교대로 가스터빈·HRSG·증기터빈과 지역난방 설비를 원격으로 감시·제어해요. 전력과 열 수요에 맞춰 출력을 조절하고, 이상 경보가 뜨면 즉시 대응해요. 정면 상황판에는 각 설비 화면이 함께 떠요.',office:'4층 사무실이에요. 경영지원실·고객지원실·사업운영실과 대표이사실이 있어요. 번호를 눌러 둘러보세요.',
   cooling:'지역냉방 기계실이에요. 지역난방 온수의 열로 흡수식 냉동기를 돌려 여름철 냉방용 찬물을 만들어요.'};
 const INTRO_SKIP=new Set(['trench_build','tiein_cut','tiein_hot']);
-function guideIntro(id,st){if(INTRO_SKIP.has(id)||id.startsWith('room_'))return;let m=INTRO[id];if(!m){const d=ST_DESC[id]||ST_DESC[st&&st.id];if(!d)return;const nm=(STATIONS.find(x=>x.id===id)||st||{}).name||'';m=`${nm}에 오신 걸 환영합니다. ${d[0]}`;}guideSay(id==='office'||id==='ccr'?'lsh':'pkb',m,'둘러보기');}
+const introSeen=new Set();
+function guideIntro(id,st){if(INTRO_SKIP.has(id)||id.startsWith('room_'))return;if(id==='office'&&introSeen.has(id))return;introSeen.add(id);let m=INTRO[id];if(!m){const d=ST_DESC[id]||ST_DESC[st&&st.id];if(!d)return;const nm=(STATIONS.find(x=>x.id===id)||st||{}).name||'';m=`${nm}에 오신 걸 환영합니다. ${d[0]}`;}guideSay(id==='office'||id==='ccr'?'lsh':'pkb',m,'둘러보기');}
 function startTour(){
   $('#start').remove();state.mode='site';Snd.init();Snd.scene('site');
   document.querySelectorAll('.site-ui').forEach(e=>e.hidden=false);$('#joy').hidden=!isTouch;
