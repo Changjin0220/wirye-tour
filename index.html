@@ -2685,10 +2685,11 @@ function startSim(){
   camSGoal.t.set(-108,9,-54);camSGoal.dist=105;camSGoal.pitch=.45;camSGoal.yaw=-.5;
   simMsg('비상상황 시뮬레이션 · 행정동 4층','🔥 4층 사무실에서 화재 발생! 화재경보가 울립니다',[['end','중단']]);$('#simBar').hidden=false;
   Snd.init();Snd.siren(true);Snd.setDuck(.2);toast('🚨 화재 경보! 행정동 4층에서 불이 났어요',3);
+  guideSay('ceo','불이야!! 1차 비상집결장소로 대피!!','대피!');
 }
 function evac1Path(){const j=()=>rr(-.35,.35);return[[rr(-101,-99),12.18,rr(-49,-47)],[-94+j(),12.18,-46.4],...STAIR.map(q=>[q[0]+j(),q[1],q[2]]),[-100,0,-38],[-109+rr(-2,2),0,-33.5],[-109+rr(-2,2),0,-28.5],[rr(-105,-99),0,rr(-26.5,-25)],[rr(-98,-95),0,-21.5],apPoint(AP1,1.2)];}
 const FALL_AT=2+STAIR.length+4;
-function simEvac1(){const S=state.sim;S.phase='evac1';
+function simEvac1(){const S=state.sim;S.phase='evac1';if(guideWho==='ceo'){guideCb=null;$('#guide').hidden=true;}
   const order=SIMW.filter(w=>w!==CEO&&w!==KYH).map(w=>[w,Math.hypot(w.position.x+94,w.position.z+46)]).sort((a,b)=>a[1]-b[1]).map(a=>a[0]);
   order.unshift(CEO);const ji=order.indexOf(JAE);order.splice(Math.max(1,ji),0,KYH);
   order.forEach((w,i)=>{const u=w.userData;u.path=evac1Path();u.pi=0;u.delay=i*.15+rr(0,.08);u.v=rr(20,24);u.mode='run';u.next='panic';});
@@ -2699,12 +2700,12 @@ function simEvac2(){const S=state.sim;if(!S||S.phase!=='evac1')return;S.phase='e
   const cols=7,list=SIMW.filter(w=>w!==JAE&&w!==KYH);list.sort((a,b)=>(b===CEO)-(a===CEO));
   const route=jx=>[[rr(-99,-95),0,rr(-26,-24)],[-122+jx,0,-27.5+rr(-2,2)],[-122+jx,0,26],[-122+jx*.7,0,49],[rr(-118,-112),0,rr(50.5,52)]];
   list.forEach((w,i)=>{const u=w.userData,slot=[-115+(i%cols)*2.5,0,51.8+((i/cols)|0)*2.1];
-    u.path=[...route(rr(-2.6,2.6)),slot];u.pi=0;u.delay=w===CEO?0:rr(.5,1.8);u.v=w===CEO?24:rr(12.5,15.5);u.mode='run';u.next='line';u.goal=null;});
-  const J=JAE.userData;J.path=[...route(1.5),[-100,0,51.8+3*2.1]];J.pi=0;J.delay=.6;J.v=6.6;J.mode='run';J.next='line';
+    u.slot=slot;u.path=[...route(rr(-2.6,2.6)),slot];u.pi=0;u.delay=w===CEO?0:rr(.5,1.8);u.v=w===CEO?24:rr(12.5,15.5);u.mode='run';u.next='line';u.goal=null;});
+  const J=JAE.userData;J.path=[...route(1.5),[-100,0,51.8+3*2.1]];J.pi=0;J.delay=.6;J.v=9.5;J.mode='run';J.next='line';
   simBubbles([[CEO,'2차 집결장소로! 나를 따라와!'],[SIMP('양은빈'),'우와아아~'],[KYH,'재균아 천천히, 내가 잡을게'],[JAE,'으… 다리야…']]);
   camSGoal.dist=78;camSGoal.pitch=.55;camSGoal.yaw=1.05;
   simMsg('비상상황 시뮬레이션 · 2차 대피','🏃‍♂️ 화재 확산! 도로를 따라 정문 밖 2차 비상집결장소로 대피 중',[['end','중단']]);}
-function endSim(){if(!state.sim)return;$('#alertBanner').hidden=true;state.sim=null;state.simIn=false;simG.visible=false;fireL.intensity=0;clearLabels(simLabels);clearLabels(simNames);$('#simBar').hidden=true;
+function endSim(){if(!state.sim)return;if(guideWho==='ceo'){guideCb=null;$('#guide').hidden=true;}$('#alertBanner').hidden=true;state.sim=null;state.simIn=false;simG.visible=false;fireL.intensity=0;clearLabels(simLabels);clearLabels(simNames);$('#simBar').hidden=true;
   Snd.siren(false);Snd.setDuck(1);restoreCam();camSGoal.t.set(player.position.x,2,player.position.z);toast('비상상황 시뮬레이션을 마쳤어요',2.2);}
 function moveAlong(w,u,dt){const tg=u.path[u.pi],p=w.position,dx=tg[0]-p.x,dy=tg[1]-p.y,dz=tg[2]-p.z,d=Math.hypot(dx,dy,dz),v=u.v*(Math.abs(dy)>.05?.72:1),st=v*dt;
   if(d<=st){p.set(tg[0],tg[1],tg[2]);u.pi++;if(u.pi>=u.path.length){u.path=null;u.mode=u.next;u.tw=0;}}
@@ -2714,7 +2715,7 @@ function simWalker(w,dt,T){const u=w.userData,S=state.sim;let sp=0;
     animWorker(w,dt,J.userData.sp||0);u.arms[1].rotation.z=1.25;u.arms[1].rotation.x=-.2;return;}
   if(u.role==='J'&&u.mode==='fallen'){u.ft+=dt;const K=KYH.userData;
     const down=u.ft<1.5||K.mode!=='help';w.rotation.x=lerp(w.rotation.x,down?1.45:0,Math.min(1,dt*(down?9:3)));animWorker(w,dt,0);
-    if(!down&&w.rotation.x<.08){w.rotation.x=0;u.mode='run';u.path=u.rest;u.pi=0;u.v=4.4;u.next='pairIdle';K.mode='pairK';
+    if(!down&&w.rotation.x<.08){w.rotation.x=0;u.mode='run';u.path=u.rest;u.pi=0;u.v=7;u.next='pairIdle';K.mode='pairK';
       simBubbles([[KYH,'천천히 가자, 내 어깨 잡아'],[JAE,'고마워 경환아…'],[CEO,'다 1차 집결장소로!']]);}
     return;}
   if(u.role==='K'&&u.mode==='help'){animWorker(w,dt,0);const J=JAE.position;w.rotation.y=Math.atan2(J.x-w.position.x,J.z-w.position.z);u.arms[0].rotation.x=-1.2;u.arms[1].rotation.x=-1.2;return;}
@@ -2729,6 +2730,7 @@ function simWalker(w,dt,T){const u=w.userData,S=state.sim;let sp=0;
   else if(u.mode==='panic'){u.tw-=dt;if(u.tw<=0){u.tw=rr(.4,1.6);if(Math.random()<.3)u.goal=null;else{const q=apPoint(AP1,1);u.goal=[q[0],q[2]];u.pv=rr(4,11);}}
     if(u.goal){const dx=u.goal[0]-w.position.x,dz=u.goal[1]-w.position.z,d=Math.hypot(dx,dz),st=u.pv*dt;if(d<=st){u.goal=null;}else{w.position.x+=dx/d*st;w.position.z+=dz/d*st;w.rotation.y=Math.atan2(dx,dz);sp=u.pv;}}
     else w.rotation.y+=dt*(Math.sin(T*1.7+u.ph)>0?5:-5);}
+  else if(u.mode==='shout'){const J=JAE.position;w.rotation.y=Math.atan2(J.x-w.position.x,J.z-w.position.z);u.arms[1].rotation.x=-2.8+Math.sin(T*10)*.4;}
   else if(u.mode==='line'){let dr=-w.rotation.y;dr=Math.atan2(Math.sin(dr),Math.cos(dr));w.rotation.y+=dr*Math.min(1,dt*6);}
   u.sp=sp;animWorker(w,dt,sp);
   if(u.role==='J'&&(u.mode==='pairIdle'||u.path||u.mode==='line')&&S.fell){w.rotation.z=sp?Math.sin(T*7)*.13:0;u.legs[1].rotation.x=.12;u.arms[0].rotation.z=-1.25;u.arms[0].rotation.x=-.2;}
@@ -2751,8 +2753,14 @@ function updateSim(dt,T){const S=state.sim;dt*=SIM_K;S.t+=dt;
       camSGoal.t.set(-94,2,-14);camSGoal.dist=58;camSGoal.pitch=.62;
       simMsg('비상상황 시뮬레이션 · 1차 비상집결장소','😱 1차 집결장소에서 인원 파악 중… 다들 우왕좌왕! 안재균 님 다리 부상 · 불길이 커지고 있어요',[['evac2','2차 집결장소로 대피 ▶','danger'],['end','중단']]);}}
   else if(S.phase==='evac2'){
-    if(othersIn&&!S.wait){S.wait=true;simBubbles([[KYH,'조금만 더! 거의 다 왔어'],[JAE,'으… 미안해…'],[CEO,'천천히 와! 다 기다릴게']]);
-      simMsg('비상상황 시뮬레이션 · 2차 대피','🩹 이경환 님이 다리를 다친 안재균 님을 부축하며 마지막으로 도착 중…',[['end','중단']]);}
+    if(othersIn&&!S.wait){S.wait=true;const C=CEO.userData;C.path=[[-114,0,50],[-120.5,0,48.6]];C.pi=0;C.v=14;C.mode='run';C.next='shout';
+      simBubbles([[KYH,'조금만 더! 거의 다 왔어'],[JAE,'으… 미안해…']]);
+      simMsg('비상상황 시뮬레이션 · 2차 대피','🩹 이경환 님이 다리를 다친 안재균 님을 부축하며 오는 중…',[['end','중단']]);}
+    if(S.wait&&!S.shouted&&CEO.userData.mode==='shout'){S.shouted=true;S.shoutT=S.t;
+      simBubbles([[CEO,'뭐해!! 빨리 와!!'],[KYH,'네!! 먼저 갑니다!'],[JAE,'겨, 경환아…?! 같이 가…']]);
+      const K=KYH.userData,J=JAE.userData;K.mode='run';K.path=[...(J.path?J.path.slice(J.pi,-1):[]),[-102.5,0,51.8+3*2.1]];K.pi=0;K.v=17;K.next='line';K.arms[1].rotation.z=0;
+      simMsg('비상상황 시뮬레이션 · 2차 대피','📢 대표님 호통에 이경환 님이 먼저 뛰어가고… 안재균 님 혼자 절뚝절뚝 마지막 도착 중',[['end','중단']]);}
+    if(S.shouted&&CEO.userData.mode==='shout'&&S.t-S.shoutT>2.6){const C=CEO.userData;C.path=[[-114,0,50],C.slot];C.pi=0;C.v=9;C.mode='run';C.next='line';}
     if(!allLine){if(S.wait)camSGoal.t.lerp(V([JAE.position.x,2,JAE.position.z]),Math.min(1,dt*2));else camSGoal.t.lerp(V([cx,2,cz]),Math.min(1,dt*3));}
     if(allLine&&!S.done2){S.done2=true;
       simBubbles([[simLeader,'전원 이상 없음! ✅',true],[CEO,'다친 사람 응급처치부터!',true],[JAE,'괜찮아요… ㅎㅎ',true]]);
