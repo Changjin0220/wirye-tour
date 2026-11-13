@@ -894,13 +894,41 @@ function staffLookup(raw){let k=String(raw||'').replace(/[\s.·,!?~]/g,'').repla
 const GUARD_WHO={face:GUARD_FACE,name:'정문 경비원'};
 function setBarrier(on){const i=COL.indexOf(GUARD.col);if(on&&i<0)COL.push(GUARD.col);else if(!on&&i>=0)COL.splice(i,1);}
 const HELM=(()=>{const g=new THREE.Group();mesh(new THREE.SphereGeometry(.86,20,12,0,PI*2,0,PI/2),M(0xffd23f,{rough:.4}),g,0,0,0);cyl(g,1.02,1.02,.1,0xffd23f,0,0,.12,{rough:.4},20);g.scale.setScalar(1.25);g.visible=false;site.add(g);return g;})();
+/* 경비원 길찾기: 걸을 수 있는 칸 격자 + 목표까지 거리장(BFS) — 건물을 돌아서 쫓아옴 */
+const NAV={x0:-203,z0:-128,cs:1.5,nx:237,nz:190,walk:null,dist:null,q:null};
+function navBuild(){const N=NAV,n=N.nx*N.nz;if(!N.walk){N.walk=new Uint8Array(n);N.dist=new Int32Array(n);N.q=new Int32Array(n);}
+  for(let j=0;j<N.nz;j++)for(let i=0;i<N.nx;i++)N.walk[j*N.nx+i]=walkable(N.x0+(i+.5)*N.cs,N.z0+(j+.5)*N.cs)?1:0;}
+function navCell(x,z){const N=NAV,i=Math.floor((x-N.x0)/N.cs),j=Math.floor((z-N.z0)/N.cs);return(i<0||j<0||i>=N.nx||j>=N.nz)?-1:j*N.nx+i;}
+function navOk(x,z){const c=navCell(x,z);return c>=0&&NAV.walk[c]===1;}
+function navNear(c,pred){const N=NAV;if(c<0)return -1;if(pred(c))return c;const ci=c%N.nx,cj=(c/N.nx)|0;
+  for(let r=1;r<=6;r++)for(let dj=-r;dj<=r;dj++)for(let di=-r;di<=r;di++){if(Math.max(Math.abs(di),Math.abs(dj))!==r)continue;const i=ci+di,j=cj+dj;if(i<0||j<0||i>=N.nx||j>=N.nz)continue;const k=j*N.nx+i;if(pred(k))return k;}return -1;}
+function navFlow(x,z){const N=NAV,W=N.walk,D=N.dist,Q=N.q,nx=N.nx;D.fill(-1);const s0=navNear(navCell(x,z),k=>W[k]===1);if(s0<0)return;
+  let h=0,t=0;D[s0]=0;Q[t++]=s0;
+  while(h<t){const c=Q[h++],i=c%nx,j=(c/nx)|0,d=D[c]+1;
+    for(let k=0;k<8;k++){const di=k<4?[1,-1,0,0][k]:[1,1,-1,-1][k-4],dj=k<4?[0,0,1,-1][k]:[1,-1,1,-1][k-4],a=i+di,b=j+dj;if(a<0||b<0||a>=nx||b>=N.nz)continue;
+      const n=b*nx+a;if(W[n]!==1||D[n]>=0)continue;if(k>=4&&(W[j*nx+a]!==1||W[b*nx+i]!==1))continue;D[n]=d;Q[t++]=n;}}}
+function navAim(x,z){const N=NAV,D=N.dist,nx=N.nx;let c=navNear(navCell(x,z),k=>D[k]>=0);if(c<0)return null;
+  const ctr=k=>[N.x0+(k%nx+.5)*N.cs,N.z0+(((k/nx)|0)+.5)*N.cs];let pick=null;
+  for(let s=0;s<6;s++){const i=c%nx,j=(c/nx)|0;let best=c;for(let dj=-1;dj<=1;dj++)for(let di=-1;di<=1;di++){const a=i+di,b=j+dj;if(a<0||b<0||a>=nx||b>=N.nz)continue;const n=b*nx+a;if(D[n]>=0&&D[n]<D[best])best=n;}if(best===c)break;c=best;
+    const q=ctr(c);if(!pick||navLos(x,z,q[0],q[1])&&walkLine(x,z,q[0],q[1]))pick=q;}
+  return pick||ctr(c);}
+function walkLine(x0,z0,x1,z1){const d=Math.hypot(x1-x0,z1-z0),n=Math.max(1,Math.ceil(d/.6));for(let k=1;k<=n;k++){const t=k/n;if(!walkable(x0+(x1-x0)*t,z0+(z1-z0)*t))return false;}return true;}
+function navLos(x0,z0,x1,z1){const d=Math.hypot(x1-x0,z1-z0),n=Math.ceil(d/.75);for(let k=1;k<n;k++){const t=k/n;if(!navOk(x0+(x1-x0)*t,z0+(z1-z0)*t))return false;}return true;}
+function navWant(w,tx,tz){if(navLos(w.x,w.z,tx,tz))return Math.atan2(tx-w.x,tz-w.z);const a=navAim(w.x,w.z);return a?Math.atan2(a[0]-w.x,a[1]-w.z):Math.atan2(tx-w.x,tz-w.z);}
+function navStep(w,hd,st,want){const sx=Math.sin(hd)*st,sz=Math.cos(hd)*st;
+  if(!walkable(w.x,w.z)){w.x+=Math.sin(want)*st;w.z+=Math.cos(want)*st;return want;}
+  if(walkable(w.x+sx,w.z+sz)){w.x+=sx;w.z+=sz;return hd;}
+  if(Math.abs(sx)>.01&&walkable(w.x+sx,w.z)){w.x+=sx;return hd;}
+  if(Math.abs(sz)>.01&&walkable(w.x,w.z+sz)){w.z+=sz;return hd;}
+  const wx=Math.sin(want)*st,wz=Math.cos(want)*st;if(walkable(w.x+wx,w.z+wz)){w.x+=wx;w.z+=wz;return want;}
+  for(const a of[want+.8,want-.8,want+1.6,want-1.6]){const ax=Math.sin(a)*st,az=Math.cos(a)*st;if(walkable(w.x+ax,w.z+az)){w.x+=ax;w.z+=az;return a;}}return want;}
 function guardFreeze(){hidePromoAsk();if(state.flow)toggleFlow(false);if(state.fac)closeFac();if(state.overview)toggleOverview(false);}
 function guardStart(){const G=GUARD;G.on=true;G.mode='gate';G.chase=false;guardFreeze();
   if(state.auto){G.resume=state.auto;state.auto=null;beacon.visible=false;}
   G.w.visible=true;G.w.position.set(GUARD_OUT[0][0],0,GUARD_OUT[0][1]);G.path=GUARD_OUT.slice(1);G.pi=0;G.sp=15;G.done=()=>guardAsk('잠깐만요! 발전소는 출입 확인 후에 들어가실 수 있어요. 오늘 만나실 담당자 성함을 알려주세요.');
   toast('🚧 경비실에서 경비원이 뛰어나와요',2.2);}
 /* 후문 등으로 몰래 들어오면 경비원이 쫓아옴 (캐릭터와 같은 속도) */
-function chaseStart(){const G=GUARD;G.chase=true;G.mode='chase';G.out=0;G.path=null;G.done=null;G.sp=24;G.fall=0;G.sharp=false;G.hd=null;G.pv=null;G.pa=null;G.slow=0;G.cd=0;G.w.rotation.order='YXZ';
+function chaseStart(){const G=GUARD;G.chase=true;G.mode='chase';G.out=0;G.path=null;G.done=null;G.sp=24;G.fall=0;G.sharp=false;G.hd=null;G.pv=null;G.pa=null;G.slow=0;G.cd=0;G.nav=null;G.ft=0;navBuild();G.w.rotation.order='YXZ';
   if(!G.w.visible){G.w.visible=true;G.w.position.set(GUARD_OUT[0][0],0,GUARD_OUT[0][1]);}
   toast('🚨 경비원: 거기 서세요! 출입 확인 안 하셨죠?!',2.8);}
 function chaseCaught(){const G=GUARD;G.chase=false;G.fall=0;G.w.rotation.x=0;G.w.position.y=0;G.on=true;guardFreeze();state.auto=null;beacon.visible=false;G.resume=null;
@@ -916,8 +944,9 @@ function guardSubmit(){const G=GUARD,raw=$('#gIn').value.trim();$('#gIn').hidden
   const msg=G.mode==='chase'?`${who} 찾아오셨군요! 확인됐습니다. 다음부턴 꼭 정문으로 오세요. 안에서는 안전모 필수예요, 이거 쓰세요!`
     :`${who} 찾아오셨군요! 확인됐습니다. 차단기 올려드릴게요. 안에서는 안전모 필수예요, 이거 쓰세요!`;
   guideSay(GUARD_WHO,msg,'안전모 받기',guardPass);guideSticky=true;}
-function guardBack(){const G=GUARD,w=G.w.position;G.pi=0;G.sp=8;G.done=()=>{G.w.visible=false;};
-  G.path=Math.hypot(w.x+119.4,w.z-47.4)<3?GUARD_OUT.slice(0,-1).reverse():[[-100.4,45.6],[-100.4,43.4]];}
+function guardBack(){const G=GUARD,w=G.w.position;G.pi=0;G.sp=8;G.done=()=>{G.w.visible=false;};G.w.rotation.x=0;G.w.position.y=0;
+  if(Math.hypot(w.x+119.4,w.z-47.4)<3){G.path=GUARD_OUT.slice(0,-1).reverse();G.nav=null;}
+  else{G.path=null;navBuild();navFlow(-100.4,45.6);G.nav={x:-100.4,z:45.6};}}
 function guardDone(){const G=GUARD;G.on=false;setHelmet(true);
   toast(G.mode==='gate'?'⛑️ 안전모 착용! 차단기가 올라갔어요. 내부 투어 시작!':'⛑️ 안전모 착용! 이제 건물에 들어갈 수 있어요',2.6);guardBack();
   if(G.resume){state.auto=G.resume;G.resume=null;beacon.visible=true;}}
@@ -948,18 +977,24 @@ function updateGuard(dt){const G=GUARD,p=player.position,w=G.w;
     else{
       if(d<(state.drive?4.6:2.2)){chaseCaught();return;}
       if(!G.pv)G.pv={x:0,z:0,lx:tx,lz:tz};const pv=G.pv,ik=Math.min(1,dt*8);pv.x+=((tx-pv.lx)/Math.max(dt,1e-3)-pv.x)*ik;pv.z+=((tz-pv.lz)/Math.max(dt,1e-3)-pv.z)*ik;pv.lx=tx;pv.lz=tz;
-      const ld=clamp(d/24,0,.8),want=Math.atan2(tx+pv.x*ld-w.position.x,tz+pv.z*ld-w.position.z);if(G.hd==null)G.hd=want;
+      G.ft-=dt;if(G.ft<=0){G.ft=.25;navFlow(tx,tz);}
+      const ld=clamp(d/24,0,.8),px=tx+pv.x*ld,pz=tz+pv.z*ld,los=navLos(w.position.x,w.position.z,tx,tz);
+      const want=los?(navOk(px,pz)&&navLos(w.position.x,w.position.z,px,pz)?Math.atan2(px-w.position.x,pz-w.position.z):Math.atan2(dx,dz)):navWant(w.position,tx,tz);if(G.hd==null)G.hd=want;
       let df=Math.atan2(Math.sin(want-G.hd),Math.cos(want-G.hd));
-      if(Math.abs(df)>1.2&&!G.sharp&&d<26){G.sharp=true;if(Math.random()<(Math.abs(df)>2.3?.4:.22)){G.fall=1.9;toast('🤕 경비아저씨가 급하게 방향을 틀다 넘어졌어요!',2);}}
+      if(los&&Math.abs(df)>1.2&&!G.sharp&&d<26){G.sharp=true;if(Math.random()<(Math.abs(df)>2.3?.4:.22)){G.fall=1.9;toast('🤕 경비아저씨가 급하게 방향을 틀다 넘어졌어요!',2);}}
       if(Math.abs(df)<.8)G.sharp=false;
       G.cd=Math.max(0,(G.cd||0)-dt);G.slow=Math.max(0,(G.slow||0)-dt);G.pt=(G.pt||0)+dt;
       if(G.pt>.15){G.pt=0;const ps=Math.hypot(pv.x,pv.z);if(ps>10){const pa=Math.atan2(pv.x,pv.z);
         if(G.pa!=null&&G.cd<=0&&d<22&&Math.abs(Math.atan2(Math.sin(pa-G.pa),Math.cos(pa-G.pa)))>.9){G.slow=.4;G.cd=.35;if(G.fall<=0&&Math.random()<.15){G.fall=1.9;toast('🤕 경비아저씨가 헛디뎌서 넘어졌어요!',2);}}
         G.pa=pa;}else G.pa=null;}
-      if(G.fall<=0){const TR=d<10?1.8:2.8;G.hd+=clamp(df,-TR*dt,TR*dt);df=Math.atan2(Math.sin(want-G.hd),Math.cos(want-G.hd));
+      if(G.fall<=0){const TR=los?(d<10?1.8:2.8):5;G.hd+=clamp(df,-TR*dt,TR*dt);df=Math.atan2(Math.sin(want-G.hd),Math.cos(want-G.hd));
         const v=G.sp*Math.max(.35,.55+.45*Math.cos(df))*(G.slow>0?.45:1),st=Math.min(d,v*dt);
-        w.position.x+=Math.sin(G.hd)*st;w.position.z+=Math.cos(G.hd)*st;w.rotation.y=G.hd;animWorker(w,dt,v);}}
+        G.hd=navStep(w.position,G.hd,st,want);w.rotation.y=G.hd;animWorker(w,dt,v);}}
     if(!inside){G.out+=dt;if(G.out>2.5){G.chase=false;G.fall=0;w.rotation.x=0;w.position.y=0;toast('경비원이 쫓아오다 경비실로 돌아갔어요',2);guardBack();}}else G.out=0;
+    return;}
+  if(G.nav){const n=G.nav,d=Math.hypot(n.x-w.position.x,n.z-w.position.z);
+    if(d<1.2){G.nav=null;G.path=[[-100.4,43.4]];G.pi=0;}
+    else{const want=navWant(w.position,n.x,n.z);navStep(w.position,want,Math.min(d,G.sp*dt),want);w.rotation.y=want;animWorker(w,dt,G.sp);}
     return;}
   if(G.path){const t=G.path[G.pi],dx=t[0]-w.position.x,dz=t[1]-w.position.z,d=Math.hypot(dx,dz),st=G.sp*dt;
     if(d<=st){w.position.x=t[0];w.position.z=t[1];G.pi++;if(G.pi>=G.path.length){G.path=null;const cb=G.done;G.done=null;if(cb)cb();}}
