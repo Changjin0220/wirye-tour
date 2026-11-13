@@ -885,7 +885,7 @@ const GUARD_FACE=(()=>{const cv=document.createElement('canvas');cv.width=cv.hei
   g.fillStyle='#ffc233';g.beginPath();g.arc(80,48,8,0,PI*2);g.fill();
   g.fillStyle='#222';g.beginPath();g.arc(66,94,4.5,0,PI*2);g.arc(94,94,4.5,0,PI*2);g.fill();g.strokeStyle='#8a4a3a';g.lineWidth=3.5;g.beginPath();g.arc(80,104,13,.2*PI,.8*PI);g.stroke();
   return cv.toDataURL();})();
-let STAFF=null;function getStaff(){if(STAFF)return STAFF;const m=new Map();m.set('대표',{t:'대표님',ceo:true});m.set('대표이사',{t:'대표님',ceo:true});
+let STAFF=null;function getStaff(){if(STAFF)return STAFF;const m=new Map();m.set('대표',{t:'대표님',ceo:true});m.set('대표이사',{t:'대표님',ceo:true});m.set('김명윤',{n:'김명윤',t:'대표님',ceo:true});
   for(const n of['박기범','장혁재','이성한'])m.set(n,{n,t:'실장님'});
   for(const k of Object.keys(ORG))(ORG[k].members||[]).forEach(M=>{m.set(M.lead[0],{n:M.lead[0],t:'팀장님'});M.m.forEach(([n])=>{if(!m.has(n))m.set(n,{n,t:'님'});});});
   if(!m.has('박정선'))m.set('박정선',{n:'박정선',t:'님'});return STAFF=m;}
@@ -900,10 +900,10 @@ function guardStart(){const G=GUARD;G.on=true;G.mode='gate';G.chase=false;guardF
   G.w.visible=true;G.w.position.set(GUARD_OUT[0][0],0,GUARD_OUT[0][1]);G.path=GUARD_OUT.slice(1);G.pi=0;G.sp=15;G.done=()=>guardAsk('잠깐만요! 발전소는 출입 확인 후에 들어가실 수 있어요. 오늘 만나실 담당자 성함을 알려주세요.');
   toast('🚧 경비실에서 경비원이 뛰어나와요',2.2);}
 /* 후문 등으로 몰래 들어오면 경비원이 쫓아옴 (캐릭터와 같은 속도) */
-function chaseStart(){const G=GUARD;G.chase=true;G.mode='chase';G.out=0;G.path=null;G.done=null;G.sp=24;
+function chaseStart(){const G=GUARD;G.chase=true;G.mode='chase';G.out=0;G.path=null;G.done=null;G.sp=24;G.fall=0;G.sharp=false;G.hd=null;G.pv=null;G.pa=null;G.slow=0;G.cd=0;G.w.rotation.order='YXZ';
   if(!G.w.visible){G.w.visible=true;G.w.position.set(GUARD_OUT[0][0],0,GUARD_OUT[0][1]);}
   toast('🚨 경비원: 거기 서세요! 출입 확인 안 하셨죠?!',2.8);}
-function chaseCaught(){const G=GUARD;G.chase=false;G.on=true;guardFreeze();state.auto=null;beacon.visible=false;G.resume=null;
+function chaseCaught(){const G=GUARD;G.chase=false;G.fall=0;G.w.rotation.x=0;G.w.position.y=0;G.on=true;guardFreeze();state.auto=null;beacon.visible=false;G.resume=null;
   if(state.drive){const c=state.drive.c,g=c.g,y=g.rotation.y;c.v=0;G.w.position.set(g.position.x+Math.cos(y)*2.7,0,g.position.z-Math.sin(y)*2.7);
     guardAsk('(똑똑) 창문 좀 내려 주세요! 출입 확인도 없이 차를 몰고 계시네요. 만나실 담당자 성함을 알려주세요.');}
   else{player.rotation.y=Math.atan2(G.w.position.x-player.position.x,G.w.position.z-player.position.z);guardAsk('헉헉… 잡았다! 출입 확인 안 하고 들어오셨죠? 만나실 담당자 성함을 알려주세요.');}}
@@ -912,7 +912,7 @@ function guardSubmit(){const G=GUARD,raw=$('#gIn').value.trim();$('#gIn').hidden
   if(!raw){guardAsk('담당자 성함을 입력해 주셔야 들어가실 수 있어요.');return;}
   const r=staffLookup(raw);
   if(!r){guardAsk(`'${raw}' 님은 행정동 직원 명단에 없네요. 만나실 분 성함을 다시 한번 확인해 주세요.`);return;}
-  const who=r.ceo?'대표님':r.n+' '+r.t;
+  const who=r.ceo?(r.n?r.n+' 대표님':'대표님'):r.n+' '+r.t;
   const msg=G.mode==='chase'?`${who} 찾아오셨군요! 확인됐습니다. 다음부턴 꼭 정문으로 오세요. 안에서는 안전모 필수예요, 이거 쓰세요!`
     :`${who} 찾아오셨군요! 확인됐습니다. 차단기 올려드릴게요. 안에서는 안전모 필수예요, 이거 쓰세요!`;
   guideSay(GUARD_WHO,msg,'안전모 받기',guardPass);guideSticky=true;}
@@ -943,9 +943,23 @@ function updateGuard(dt){const G=GUARD,p=player.position,w=G.w;
     if(!live){animWorker(w,dt,0);return;}
     const tx=state.drive?state.drive.c.g.position.x:p.x,tz=state.drive?state.drive.c.g.position.z:p.z;
     const dx=tx-w.position.x,dz=tz-w.position.z,d=Math.hypot(dx,dz);
-    if(d<(state.drive?4.6:2.8)){chaseCaught();return;}
-    const st=Math.min(d,G.sp*dt);w.position.x+=dx/d*st;w.position.z+=dz/d*st;w.rotation.y=Math.atan2(dx,dz);animWorker(w,dt,G.sp);
-    if(!inside){G.out+=dt;if(G.out>2.5){G.chase=false;toast('경비원이 쫓아오다 경비실로 돌아갔어요',2);guardBack();}}else G.out=0;
+    if(G.fall>0){G.fall-=dt;const f=G.fall,k=f>1.5?(1.9-f)/.4:f>.45?1:f/.45;w.rotation.x=Math.min(1,k)*1.45;w.position.y=Math.min(1,k)*.5;animWorker(w,dt,0);
+      if(G.fall<=0){w.rotation.x=0;w.position.y=0;G.hd=w.rotation.y;}}
+    else{
+      if(d<(state.drive?4.6:2.2)){chaseCaught();return;}
+      if(!G.pv)G.pv={x:0,z:0,lx:tx,lz:tz};const pv=G.pv,ik=Math.min(1,dt*8);pv.x+=((tx-pv.lx)/Math.max(dt,1e-3)-pv.x)*ik;pv.z+=((tz-pv.lz)/Math.max(dt,1e-3)-pv.z)*ik;pv.lx=tx;pv.lz=tz;
+      const ld=clamp(d/24,0,.8),want=Math.atan2(tx+pv.x*ld-w.position.x,tz+pv.z*ld-w.position.z);if(G.hd==null)G.hd=want;
+      let df=Math.atan2(Math.sin(want-G.hd),Math.cos(want-G.hd));
+      if(Math.abs(df)>1.2&&!G.sharp&&d<26){G.sharp=true;if(Math.random()<(Math.abs(df)>2.3?.4:.22)){G.fall=1.9;toast('🤕 경비아저씨가 급하게 방향을 틀다 넘어졌어요!',2);}}
+      if(Math.abs(df)<.8)G.sharp=false;
+      G.cd=Math.max(0,(G.cd||0)-dt);G.slow=Math.max(0,(G.slow||0)-dt);G.pt=(G.pt||0)+dt;
+      if(G.pt>.15){G.pt=0;const ps=Math.hypot(pv.x,pv.z);if(ps>10){const pa=Math.atan2(pv.x,pv.z);
+        if(G.pa!=null&&G.cd<=0&&d<22&&Math.abs(Math.atan2(Math.sin(pa-G.pa),Math.cos(pa-G.pa)))>.9){G.slow=.4;G.cd=.35;if(G.fall<=0&&Math.random()<.15){G.fall=1.9;toast('🤕 경비아저씨가 헛디뎌서 넘어졌어요!',2);}}
+        G.pa=pa;}else G.pa=null;}
+      if(G.fall<=0){const TR=d<10?1.8:2.8;G.hd+=clamp(df,-TR*dt,TR*dt);df=Math.atan2(Math.sin(want-G.hd),Math.cos(want-G.hd));
+        const v=G.sp*Math.max(.35,.55+.45*Math.cos(df))*(G.slow>0?.45:1),st=Math.min(d,v*dt);
+        w.position.x+=Math.sin(G.hd)*st;w.position.z+=Math.cos(G.hd)*st;w.rotation.y=G.hd;animWorker(w,dt,v);}}
+    if(!inside){G.out+=dt;if(G.out>2.5){G.chase=false;G.fall=0;w.rotation.x=0;w.position.y=0;toast('경비원이 쫓아오다 경비실로 돌아갔어요',2);guardBack();}}else G.out=0;
     return;}
   if(G.path){const t=G.path[G.pi],dx=t[0]-w.position.x,dz=t[1]-w.position.z,d=Math.hypot(dx,dz),st=G.sp*dt;
     if(d<=st){w.position.x=t[0];w.position.z=t[1];G.pi++;if(G.pi>=G.path.length){G.path=null;const cb=G.done;G.done=null;if(cb)cb();}}
@@ -964,7 +978,7 @@ function updateGuard(dt){const G=GUARD,p=player.position,w=G.w;
  for(const tx of[1.6,3.2]){box(g,.8,1.1,.5,0x7a4b2a,tx,.75,0,{rough:.7});box(g,.9,.1,.6,0x5a3418,tx,1.33,0,{rough:.7});box(g,.4,.16,.04,0xffffff,tx,1.05,.26);box(g,.04,.8,.04,0x5a3418,tx-.3,.75,.26);}
  colBox(-114.8,114.6,2.2,9.4);}
 const WLU_ST={id:'wlu',name:'WLU · TP 판넬',sub:'누수감지 · 전기방식 측정',door:[-118.2,114.6],lp:[-114.8,8,114.6]};
-LATE_LBL.push(['<span class="pin-no">📟</span><span>WLU · TP 판넬</span>',[-114.8,8.2,114.6],'pin fac',()=>{if(state.mode!=='site'||busy())return;player.position.set(WLU_ST.door[0],0,WLU_ST.door[1]);enterStation(WLU_ST);},'--c:#3ddc84']);
+LATE_LBL.push(['<span class="pin-no"><span>W</span></span><span>WLU · TP 판넬</span>',[-114.8,8.2,114.6],'pin st',()=>{if(state.mode!=='site'||busy())return;player.position.set(WLU_ST.door[0],0,WLU_ST.door[1]);enterStation(WLU_ST);},'--c:#2ec4b6']);
 
 /* 냉각수 펌프동 서측 흡연장소 (건물과 도로 사이) */
 {const g=new THREE.Group();g.position.set(-8,0,38.5);site.add(g);const wd=0x8a5a36,wdD=0x5b3a26;
@@ -2974,8 +2988,8 @@ function exitDrive(){const D=state.drive;if(!D)return;const c=D.c,p=c.g.position
 function updateDrive(dt,T){const D=state.drive,c=D.c,g=c.g;
   let th=0,stv=0;if(GUARD.on)c.v=0;if(state.mode==='site'&&!GUARD.on){th=(keys.KeyW||keys.ArrowUp?1:0)-(keys.KeyS||keys.ArrowDown?1:0)-joyV.y;stv=(keys.KeyA||keys.ArrowLeft?1:0)-(keys.KeyD||keys.ArrowRight?1:0)-joyV.x;}
   th=clamp(th,-1,1);stv=clamp(stv,-1,1);
-  if(th*c.v<0)c.v+=th*26*dt;else c.v+=th*(c.v>=0?7:5)*dt;
-  if(!th)c.v*=Math.max(0,1-dt*1.2);if(Math.abs(c.v)<.05&&!th)c.v=0;c.v=clamp(c.v,-4,12);
+  if(th*c.v<0)c.v+=th*26*dt;else c.v+=th*(c.v>=0?9:5)*dt;
+  if(!th)c.v*=Math.max(0,1-dt*1.2);if(Math.abs(c.v)<.05&&!th)c.v=0;c.v=clamp(c.v,-5,26);
   const ny=g.rotation.y+stv*1.5*dt*clamp(c.v/5,-1,1);const nx=g.position.x+Math.sin(ny)*c.v*dt,nz=g.position.z+Math.cos(ny)*c.v*dt;
   if(carFits(c,nx,nz,ny)){g.position.x=nx;g.position.z=nz;g.rotation.y=ny;}
   else if(carFits(c,g.position.x,g.position.z,ny)){g.rotation.y=ny;c.v*=.3;}else{if(Math.abs(c.v)>6)toast('쿵! 도로 밖으로는 못 가요',1);c.v=0;}
