@@ -931,7 +931,7 @@ function guardStart(){const G=GUARD;G.on=true;G.mode='gate';G.chase=false;guardF
 function chaseStart(){const G=GUARD;G.chase=true;G.mode='chase';G.out=0;G.path=null;G.done=null;G.sp=24;G.fall=0;G.sharp=false;G.hd=null;G.pv=null;G.pa=null;G.slow=0;G.cd=0;G.nav=null;G.ft=0;navBuild();G.w.rotation.order='YXZ';
   if(!G.w.visible){G.w.visible=true;G.w.position.set(GUARD_OUT[0][0],0,GUARD_OUT[0][1]);}
   toast('🚨 경비원: 거기 서세요! 출입 확인 안 하셨죠?!',2.8);}
-function chaseCaught(){const G=GUARD;G.chase=false;G.fall=0;G.w.rotation.x=0;G.w.position.y=0;G.on=true;guardFreeze();state.auto=null;beacon.visible=false;G.resume=null;
+function chaseCaught(){unhide(true);const G=GUARD;G.chase=false;G.fall=0;G.w.rotation.x=0;G.w.position.y=0;G.on=true;guardFreeze();state.auto=null;beacon.visible=false;G.resume=null;
   if(state.drive){const c=state.drive.c,g=c.g,y=g.rotation.y;c.v=0;G.w.position.set(g.position.x+Math.cos(y)*2.7,0,g.position.z-Math.sin(y)*2.7);
     guardAsk('(똑똑) 창문 좀 내려 주세요! 출입 확인도 없이 차를 몰고 계시네요. 만나실 담당자 성함을 알려주세요.');}
   else{player.rotation.y=Math.atan2(G.w.position.x-player.position.x,G.w.position.z-player.position.z);guardAsk('헉헉… 잡았다! 출입 확인 안 하고 들어오셨죠? 만나실 담당자 성함을 알려주세요.');}}
@@ -963,19 +963,22 @@ function updateGuard(dt){const G=GUARD,p=player.position,w=G.w;
   if(G.cool&&(p.z>56.5||Math.abs(p.x+122)>8))G.cool=false;
   const live=state.mode==='site'&&!state.sim&&!state.ride,inside=inPoly(p.x,p.z,SITE);
   if(!G.pass&&!G.on&&!G.chase&&!G.cool&&state.mode==='site'&&!busy()&&!inside&&p.x>-128&&p.x<-116&&p.z>48&&p.z<54)guardStart();
-  if(!G.pass&&!G.on&&!G.chase&&live&&inside)chaseStart();
+  if(state.hide){const H=state.hide;H.t+=dt;if(!H.seen&&G.chase&&H.t>3){G.chase=false;G.fall=0;w.rotation.x=0;w.position.y=0;toast('😮‍💨 경비아저씨가 못 찾고 경비실로 돌아가요',2.4);guardBack();}}
+  if(!G.pass&&!G.on&&!G.chase&&live&&inside&&!state.hide)chaseStart();
   if(G.hand){const h=G.hand;h.t+=dt/1.1;const k=Math.min(1,h.t),a=w.position;
     HELM.position.set(lerp(a.x,p.x,k),lerp(3.6,4.05*1.25+jmp.y*1.4,k)+Math.sin(k*PI)*2.4,lerp(a.z,p.z,k));HELM.rotation.set(0,player.rotation.y+(1-k)*PI*2,0);
     animWorker(w,dt,0);w.rotation.y=Math.atan2(p.x-a.x,p.z-a.z);player.rotation.y=Math.atan2(a.x-p.x,a.z-p.z);
     if(k>=1){HELM.visible=false;G.hand=null;guardDone();}return;}
   if(G.chase){
     if(!live){animWorker(w,dt,0);return;}
-    const tx=state.drive?state.drive.c.g.position.x:p.x,tz=state.drive?state.drive.c.g.position.z:p.z;
+    const ghost=!!(state.hide&&!state.hide.seen&&G.ghost);
+    const tx=ghost?G.ghost[0]:state.drive?state.drive.c.g.position.x:p.x,tz=ghost?G.ghost[1]:state.drive?state.drive.c.g.position.z:p.z;
     const dx=tx-w.position.x,dz=tz-w.position.z,d=Math.hypot(dx,dz);
     if(G.fall>0){G.fall-=dt;const f=G.fall,k=f>1.5?(1.9-f)/.4:f>.45?1:f/.45;w.rotation.x=Math.min(1,k)*1.45;w.position.y=Math.min(1,k)*.5;animWorker(w,dt,0);
       if(G.fall<=0){w.rotation.x=0;w.position.y=0;G.hd=w.rotation.y;}}
     else{
-      if(d<(state.drive?4.6:2.2)){chaseCaught();return;}
+      if(!ghost&&d<(state.drive?4.6:2.2)){chaseCaught();return;}
+      if(ghost&&d<1.8){G.lk=(G.lk||0)+dt;w.rotation.y=(G.hd||0)+Math.sin(G.lk*2.6)*1.1;animWorker(w,dt,0);}else{
       if(!G.pv)G.pv={x:0,z:0,lx:tx,lz:tz};const pv=G.pv,ik=Math.min(1,dt*8);pv.x+=((tx-pv.lx)/Math.max(dt,1e-3)-pv.x)*ik;pv.z+=((tz-pv.lz)/Math.max(dt,1e-3)-pv.z)*ik;pv.lx=tx;pv.lz=tz;
       G.ft-=dt;if(G.ft<=0){G.ft=.25;navFlow(tx,tz);}
       const ld=clamp(d/24,0,.8),px=tx+pv.x*ld,pz=tz+pv.z*ld,los=navLos(w.position.x,w.position.z,tx,tz);
@@ -989,7 +992,7 @@ function updateGuard(dt){const G=GUARD,p=player.position,w=G.w;
         G.pa=pa;}else G.pa=null;}
       if(G.fall<=0){const TR=los?(d<10?1.8:2.8):5;G.hd+=clamp(df,-TR*dt,TR*dt);df=Math.atan2(Math.sin(want-G.hd),Math.cos(want-G.hd));
         const v=G.sp*Math.max(.35,.55+.45*Math.cos(df))*(G.slow>0?.45:1),st=Math.min(d,v*dt);
-        G.hd=navStep(w.position,G.hd,st,want);w.rotation.y=G.hd;animWorker(w,dt,v);}}
+        G.hd=navStep(w.position,G.hd,st,want);w.rotation.y=G.hd;animWorker(w,dt,v);}}}
     if(!inside){G.out+=dt;if(G.out>2.5){G.chase=false;G.fall=0;w.rotation.x=0;w.position.y=0;toast('경비원이 쫓아오다 경비실로 돌아갔어요',2);guardBack();}}else G.out=0;
     return;}
   if(G.nav){const n=G.nav,d=Math.hypot(n.x-w.position.x,n.z-w.position.z);
@@ -1001,6 +1004,36 @@ function updateGuard(dt){const G=GUARD,p=player.position,w=G.w;
     else{w.position.x+=dx/d*st;w.position.z+=dz/d*st;w.rotation.y=Math.atan2(dx,dz);}
     animWorker(w,dt,G.path?G.sp:0);}
   else if(w.visible){animWorker(w,dt,0);if(G.on)w.rotation.y=Math.atan2((state.drive?state.drive.c.g.position.x:p.x)-w.position.x,(state.drive?state.drive.c.g.position.z:p.z)-w.position.z);}}
+
+/* 숨기: 쫓길 때 나무 뒤·차 뒤·흡연부스에 숨기 (E) */
+const UNHIDE_ST={id:'unhide',name:'숨는 중…',sub:'움직이거나 E를 누르면 나와요',verb:'나오기',door:[0,0],unhide:true};
+let HIDES=null;const HFX={cur:null,kick:0,lbl:null};
+function hideSpots(){if(HIDES)return HIDES;HIDES=[];
+  (TREE.list||[]).forEach(([x,z,sc],i)=>{if(inPoly(x,z,SITE))HIDES.push({kind:'tree',i,x,z,sc,r:3.6,name:'나무 뒤',ly:7.4*sc});});
+  HIDES.push({kind:'booth',x:-8,z:38.5,r:4.6,name:'흡연부스',ly:5});
+  BIZ.forEach(c=>HIDES.push({kind:'car',c,r:3.4,name:'차 뒤',ly:4}));
+  HIDES.forEach(h=>h.st={id:'hide',name:h.name,sub:'경비아저씨 몰래 숨어요',verb:'숨기',door:[0,0],hide:h});return HIDES;}
+function hidePos(h){if(h.kind==='car'){const g=h.c.g,y=g.rotation.y;return[g.position.x-Math.sin(y)*3.3,g.position.z-Math.cos(y)*3.3];}return[h.x,h.z];}
+function hideNear(){if(!GUARD.chase||state.hide||state.drive||state.mode!=='site')return null;const p=player.position;let best=null,bd=1e9;
+  for(const h of hideSpots()){const q=hidePos(h),d=Math.hypot(p.x-q[0],p.z-q[1]);if(d<h.r&&d<bd){bd=d;best=h;}}return best;}
+function doHide(h){const G=GUARD,p=player.position,w=G.w.position,d=Math.hypot(w.x-p.x,w.z-p.z);let [hx,hz]=hidePos(h);
+  if(h.kind==='tree'){const ux=hx-w.x,uz=hz-w.z,L=Math.hypot(ux,uz)||1;hx+=ux/L*1.6*h.sc;hz+=uz/L*1.6*h.sc;}else if(h.kind==='booth'){hx=-6.6;hz=38.5;}
+  p.set(hx,0,hz);player.rotation.y=Math.atan2(w.x-hx,w.z-hz);player.scale.set(1.25,.8,1.25);jmp.y=0;jmp.v=0;
+  const seen=d<10;state.hide={h,t:0,seen};state.auto=null;beacon.visible=false;HFX.kick=.6;
+  if(seen)toast('😱 들켰다! 아저씨가 바로 앞에서 봤어요',2.2);
+  else{const ux=p.x-w.x,uz=p.z-w.z,L=Math.hypot(ux,uz)||1;let gx=p.x+ux/L*9,gz=p.z+uz/L*9;for(let k=0;k<6&&!navOk(gx,gz);k++){gx=(gx+p.x)/2;gz=(gz+p.z)/2;}G.ghost=[gx,gz];G.lk=0;
+    toast('🫣 쉿… 숨었어요. 3초만 버티면 아저씨가 돌아가요',2.4);}}
+function unhide(quiet){if(!state.hide)return;state.hide=null;player.scale.setScalar(1.25);if(!quiet)toast('숨기 해제!',1.2);}
+function hideFx(h,a,T){if(h.kind==='tree'){const D=TREE.d,[x,z,sc]=TREE.list[h.i],sw=Math.sin(T*11)*a;
+    D.rotation.set(0,0,sw*.09);D.position.set(x+sw*.3*sc,(2.2+3)*sc,z);D.scale.set(sc*(1+.05*Math.abs(a)),sc*(1-.06*Math.abs(sw)),sc*(1+.05*Math.abs(a)));D.updateMatrix();TREE.tm.setMatrixAt(h.i,D.matrix);TREE.tm.instanceMatrix.needsUpdate=true;D.rotation.set(0,0,0);}
+  else if(h.kind==='car'){const g=h.c.g;g.position.y=a*.14*Math.abs(Math.sin(T*9));g.rotation.z=a*.035*Math.sin(T*9);}
+  else{const g=HIDEX.booth,k=a*.035*Math.sin(T*10);g.scale.set(1+k,1-Math.abs(k),1+k);}}
+function updateHideFx(dt,T){if(!HFX.lbl){HFX.lbl=makeLabel(siteLabels,'<span class="pin-no"><span>E</span></span><span>숨기</span>',[0,0,0],'pin st',()=>{if(state.near&&state.near.hide)enterStation(state.near);},'--c:#ffc233');HFX.lbl.el.style.display='none';}
+  const nh=state.near&&state.near.hide?state.near.hide:state.hide?state.hide.h:null;
+  if(HFX.cur&&HFX.cur!==nh){hideFx(HFX.cur,0,T);HFX.cur=null;}
+  HFX.kick=Math.max(0,HFX.kick-dt);
+  if(nh){HFX.cur=nh;hideFx(nh,state.hide?HFX.kick/.6:.45,T);}
+  if(state.near&&state.near.hide){const q=hidePos(state.near.hide);HFX.lbl.pos.set(q[0],state.near.hide.ly,q[1]);HFX.lbl.el.style.display='';}else HFX.lbl.el.style.display='none';}
 
 /* WLU · TP 판넬 (이중보온관 공사 남쪽 도로 꺾이는 곳) */
 {const g=new THREE.Group();g.position.set(-114.8,0,114.6);g.rotation.y=-PI/2;site.add(g);
@@ -1016,7 +1049,8 @@ const WLU_ST={id:'wlu',name:'WLU · TP 판넬',sub:'누수감지 · 전기방식
 LATE_LBL.push(['<span class="pin-no"><span>W</span></span><span>WLU · TP 판넬</span>',[-114.8,8.2,114.6],'pin st',()=>{if(state.mode!=='site'||busy())return;player.position.set(WLU_ST.door[0],0,WLU_ST.door[1]);enterStation(WLU_ST);},'--c:#2ec4b6']);
 
 /* 냉각수 펌프동 서측 흡연장소 (건물과 도로 사이) */
-{const g=new THREE.Group();g.position.set(-8,0,38.5);site.add(g);const wd=0x8a5a36,wdD=0x5b3a26;
+const HIDEX={};
+{const g=new THREE.Group();g.position.set(-8,0,38.5);site.add(g);HIDEX.booth=g;const wd=0x8a5a36,wdD=0x5b3a26;
  box(g,5,.16,6.4,0xb5b0a6,0,.08,0,{rough:.9}).castShadow=false;
  for(const dx of[-2.1,2.1])for(const dz of[-2.8,2.8])box(g,.26,3.3,.26,wd,dx,1.75,dz);
  box(g,5.4,.22,6.9,wdD,0,3.5,0);box(g,5.1,.1,6.6,0x9cc3dc,0,3.65,0,{opacity:.45,rough:.1});
@@ -1220,12 +1254,13 @@ const simLabels=[];
 
 function inPoly(x,z,poly){let c=false;for(let i=0,j=poly.length-1;i<poly.length;j=i++){const xi=poly[i][0],zi=poly[i][1],xj=poly[j][0],zj=poly[j][1];if(((zi>z)!==(zj>z))&&(x<(xj-xi)*(z-zi)/(zj-zi)+xi))c=!c;}return c;}
 /* trees */
+const TREE={};
 {let seed=7;const rnd=()=>(seed=(seed*16807)%2147483647)/2147483647;const trees=[];
  const ok=(x,z)=>{if(distToRoad(x,z)<6.5)return false;if(x>-119&&x<-83&&z>-26&&z<48)return false;if(x>-86&&x<-20&&z>-121&&z<-107)return false;if(x>-86&&x<-79&&z>-59&&z<-37)return false;if(x>-106&&x<-82&&z>-26&&z<0)return false;if(x>-182&&x<-96&&z>38&&z<92)return false;if(x>-100&&x<-84&&z>44&&z<62)return false;if(x>-66&&x<-32&&z>35&&z<63)return false;if(x>-206&&x<-114&&z>116&&z<177)return false;if(x>-86&&x<-62&&z>-100&&z<-56)return false;if(x>-82&&x<-64&&z>-60&&z<-40)return false;if(x>-14&&x<3&&z>-105&&z<3)return false;if(x>-38&&x<-14&&z>-75&&z<-65)return false;if(x>-108&&x<22&&z>58&&z<66)return false;if(x>-76&&x<-68&&z>36&&z<72)return false;for(const b of COL)if(x>b.x0-4&&x<b.x1+4&&z>b.z0-4&&z<b.z1+4)return false;for(const c of CIRC)if(Math.hypot(x-c.x,z-c.z)<c.r+4)return false;return true;};
  for(let i=0;i<900&&trees.length<120;i++){const x=-140+rnd()*290,z=-125+rnd()*260;const inside=inPoly(x,z,SITE);if((inside&&ok(x,z))||(!inside&&rnd()<.25&&ok(x,z)&&!(x>-205&&x<-112&&z>90&&z<155)))trees.push([x,z,.8+rnd()*.6]);}
  const tm=new THREE.InstancedMesh(new THREE.ConeGeometry(2.4,6,7),M(0x3f7f4a,{rough:1}),trees.length);const tr=new THREE.InstancedMesh(new THREE.CylinderGeometry(.35,.45,2.2,6),M(0x6b4f3a),trees.length);
  const d=new THREE.Object3D();trees.forEach(([x,z,s],i)=>{d.position.set(x,1.1*s,z);d.scale.setScalar(s);d.updateMatrix();tr.setMatrixAt(i,d.matrix);d.position.set(x,(2.2+3)*s,z);d.updateMatrix();tm.setMatrixAt(i,d.matrix);});
- tm.castShadow=true;tr.castShadow=true;site.add(tm,tr);fadeReg(tm,.12);fadeReg(tr,.12);}
+ tm.castShadow=true;tr.castShadow=true;site.add(tm,tr);Object.assign(TREE,{list:trees,tm,tr,d});fadeReg(tm,.12);fadeReg(tr,.12);}
 /* distant city blocks */
 {let seed=3;const rnd=()=>(seed=(seed*16807)%2147483647)/2147483647;const m=M(0xc9ccd0,{rough:1});
  for(let i=0;i<46;i++){const a=rnd()*PI*2,r=300+rnd()*260;const x=Math.cos(a)*r-20,z=Math.sin(a)*r;const h=14+rnd()*50;const b=box(site,16+rnd()*14,h,14+rnd()*10,m,x,h/2,z);b.castShadow=false;}}
@@ -2374,7 +2409,7 @@ const PROC_STEPS=[
   ['경고테이프','모래 위 각 배관 바로 위에 경고테이프를 깔아요. 공급관 위는 주황색, 회수관 위는 노란색이에요. 나중에 이곳을 팔 때 아래에 열수송관이 있다는 걸 알려줘요.',4,[0,-2,0],30],
   ['되메우기','파낸 흙으로 다시 메우고 다져서 원래 지면으로 복구해요.',6,[0,-1,0],48],
 ];
-INT.wlu={title:'WLU · TP 판넬',eyebrow:'열수송관 감시 · 누수감지 / 전기방식',outdoor:true,specs:[['WLU','누수감지'],['TP','전기방식 측정'],['방식 기준','−0.85 V 이하']],
+INT.wlu={title:'WLU · TP 판넬',eyebrow:'열수송관 감시 · 누수감지 / 전기방식',outdoor:true,specs:[['WLU','누수감지'],['TP','전기방식 측정'],['절연 레벨','0·11·12 정상']],
   cam:{t:[-4,2,1],yaw:.18,pitch:.42,dist:30,dmin:6,dmax:90},
   spots:[
     {t:'WLU 판넬',d:'WLU는 누수감지 현장 단말기를 넣어 둔 사람 키만 한 판넬이에요. 이중보온관 속에 함께 묻힌 감지선을 여기에 연결해서 배관이 새는지 24시간 지켜봐요.',p:[-8,3.6,0],dist:17},
@@ -2382,7 +2417,7 @@ INT.wlu={title:'WLU · TP 판넬',eyebrow:'열수송관 감시 · 누수감지 /
     {t:'감지선 · 이중보온관 단면',d:'이중보온관은 강관, 보온재(PUR), 외관(HDPE) 세 겹이에요. 보온재 속에 구리 감지선 2가닥이 관을 따라 끝까지 이어지고, 이 선이 WLU 단자대에 물려요.',p:[-18,1.6,3],dist:12,yaw:.35,pitch:.35},
     {t:'TP 판넬',d:'TP(Test Point)는 땅속 강관이 녹슬지 않게 하는 전기방식이 잘 되고 있는지 확인하는 측정함이에요. 땅 위로 세워진 작은 갈색 판넬로, 앞문을 열면 단자함이 나와요.',p:[4.2,1.2,.6],dist:11,pitch:.3},
     {t:'TP 단자함',d:'배관선(P), 기준전극선(R), 양극선(A)이 두 가닥씩, 빨강·검정 선 6가닥이 단자에 꽂혀 있어요. 오른쪽 단자함이 평소 모습이에요.',p:[6.5,1.4,.4],dist:6.5,yaw:.05,pitch:.18},
-    {t:'전위 측정 · 멀티미터',d:'측정할 두 선을 단자에서 빼서 멀티미터에 물려요. 빨강(+)은 배관선, 검정(COM)은 기준전극선이에요. 표시값이 −0.85 V보다 낮으면(예: −1.05 V) 배관이 부식으로부터 잘 보호되고 있다는 뜻이에요.',p:[2.3,.9,2],dist:7.5,yaw:-.2,pitch:.45},
+    {t:'전위 측정 · 멀티미터',d:'측정할 두 선을 단자에서 빼서 멀티미터에 물려 재요. 이중보온관은 절연 레벨이 0~12까지 측정되는데, 0·11·12는 이상 없음으로 보고 10 이하로 떨어지면 문제가 있다고 판단해요. 이상이 나오면 정밀진단으로 결함 위치를 특정하고, 보수 계획을 세워 보수를 시행해요.',p:[2.3,.9,2],dist:7.5,yaw:-.2,pitch:.45},
   ],
   build(c){const S=c.S;yard(c,48,26,-5,1);
     /* WLU 판넬 (문 열림) */
@@ -2436,7 +2471,7 @@ INT.wlu={title:'WLU · TP 판넬',eyebrow:'열수송관 감시 · 누수감지 /
     const mcv=document.createElement('canvas');mcv.width=256;mcv.height=128;const mtex=new THREE.CanvasTexture(mcv);
     const mp=mesh(new THREE.PlaneGeometry(.8,.4),new THREE.MeshBasicMaterial({map:mtex}),S,MX,.33,MZ-.35,false);mp.rotation.x=-PI/2;
     const drawM=v=>{const g=mcv.getContext('2d');g.fillStyle='#b9c8a8';g.fillRect(0,0,256,128);g.fillStyle='#111';g.font='700 64px "IBM Plex Mono",monospace';g.textAlign='right';g.fillText(v.toFixed(3),206,84);g.font='700 30px "IBM Plex Mono",monospace';g.fillText('V',244,84);g.font='600 18px sans-serif';g.textAlign='left';g.fillText('DC',10,22);mtex.needsUpdate=true;};drawM(-1.052);
-    let acc=0;c.updates.push(dt=>{acc+=dt;if(acc>.6){acc=0;drawM(-1.04-Math.random()*.025);}});
+    {const g=mcv.getContext('2d');g.fillStyle='#b9c8a8';g.fillRect(0,0,256,128);g.fillStyle='#111';g.font='700 70px "IBM Plex Mono",monospace';g.textAlign='right';g.fillText('12',200,90);g.font='700 22px "IBM Plex Sans KR",sans-serif';g.textAlign='left';g.fillText('절연',10,30);g.fillText('LV',10,60);g.fillStyle='#1f6f3f';g.fillText('정상',206,118);mtex.needsUpdate=true;}
     for(const [jx,cl,ex] of[[-.25,0xd62828,1.65],[.25,0x222222,2.35]]){cyl(S,.07,.07,.12,cl,MX+jx,.32,MZ+.6,{},8);pipe(S,[[MX+jx,.38,MZ+.6],[MX+jx*.6,.8,MZ+.1],[ex,1.0,1.65]],.035,cl);}
     const w=makeWorker();w.position.set(-1.2,0,4);w.rotation.y=2.1;S.add(w);
     tag(c,'WLU 판넬',[-8,7.4,0],'#3ddc84');tag(c,'감지선 (구리선 2가닥)',[-17,3.2,3],'#d98c3a');tag(c,'외관 HDPE',[-20.5,3,3],'#93a9bb');tag(c,'보온재 PUR',[-15,3,3],'#f2d16b');tag(c,'강관',[-22.6,2.3,3],'#c0c6cb');
@@ -2706,6 +2741,8 @@ const PICKS={
   demand:{eye:'수요처 아파트 · 지하 기계실',title:'무엇을 볼까요?',opts:[['demand','난방','지역난방','115℃ 온수로 난방과 온수(급탕)를 만들어요'],['cooling','냉방','지역냉방','온수의 열로 냉수를 만드는 흡수식 냉동기']]}};
 const LIFTS={admin:{label:'엘리베이터',items:[['office','4F','사무실'],['ccr','3F','CCR']]},demand:{label:'보기',items:[['demand','난방','지역난방'],['cooling','냉방','지역냉방']]}};
 function enterStation(st){
+  if(st.hide){doHide(st.hide);return;}
+  if(st.unhide){unhide();return;}
   if(st.coaster){boardCoaster();return;}
   if(st.gate){toggleGate();return;}
   if(st.screen){openPromo('promo');return;}
@@ -3101,6 +3138,7 @@ function updateSite(dt,T){
   const mag=Math.hypot(ix,iz);if(mag>1){ix/=mag;iz/=mag;}
   let speed=0;const SPD=24;
   if(mag>.08){
+    if(state.hide)unhide();
     if(state.auto){state.auto=null;beacon.visible=false;}
     if(state.overview)toggleOverview(false);if(state.flow)state.flowFollow=true;if(state.fac)closeFac();
     const y=camSCur.yaw;const fx=-Math.sin(y),fz=-Math.cos(y),rx=Math.cos(y),rz=-Math.sin(y);
@@ -3118,8 +3156,9 @@ function updateSite(dt,T){
   if(state.mode==='site'&&!busy()&&!promoAsked&&Math.hypot(player.position.x+122,player.position.z-50)<14)showPromoAsk();
   if(promoT>0){promoT-=dt;if(promoT<=0||state.flow||Math.hypot(player.position.x+122,player.position.z-38)>34)hidePromoAsk();}
   let near=null,nd2=1e9;if(state.mode==='site'&&!state.auto&&!busy()&&!GUARD.on)for(const st of [...STATIONS_X,...BIZ.map(c=>c.st)]){const d=Math.hypot(player.position.x-st.door[0],player.position.z-st.door[1]);if(d<7&&d<nd2){nd2=d;near=st;}}
+  if(state.mode==='site'&&!GUARD.on&&!busy()){const hs=hideNear();if(hs)near=hs.st;if(state.hide)near=UNHIDE_ST;}
   if(near!==state.near){state.near=near;const pr=$('#prompt');pr.hidden=!near;if(near){$('#enterName').textContent=near.name;$('#enterVerb').textContent=near.verb||'들어가기';$('#enterBtn').dataset.kind=near.car?'car':near.gate?'gate':'';$('#enterSub').textContent=near.sub;}}
-  if(state.sim)updateSim(dt,T);if(state.ride)updateRide(dt,T);if(state.drive)updateDrive(dt,T);updateGate(dt);updateGuard(dt);updateStack(dt);updateGolf(dt);
+  if(state.sim)updateSim(dt,T);if(state.ride)updateRide(dt,T);if(state.drive)updateDrive(dt,T);updateGate(dt);updateGuard(dt);updateHideFx(dt,T);updateStack(dt);updateGolf(dt);
   if(state.mode==='boot'){camSGoal.yaw+=dt*.06;}
   else if((!state.flow||state.flowFollow)&&!state.overview&&!state.fac&&!busy()){camSGoal.t.set(player.position.x,2,player.position.z);}
   camLerp(camSCur,camSGoal,reduceMotion?1:1-Math.exp(-dt*4.5));camApply(camS,camSCur);
