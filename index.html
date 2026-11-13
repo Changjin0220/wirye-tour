@@ -509,7 +509,7 @@ function signBox(p,text,sub,x,y,z,w,h,bg,fg,ry){const tm=new THREE.MeshBasicMate
 function makeWorker(o){o=o||{};
   const g=new THREE.Group();
   const suit=o.suit||0x1f4e79,stripe=0xff9f1c,helmet=o.helmet||0xffd23f,skin=0xf1c7a1;
-  const legs=[];
+  const legs=[];let hg=null;
   for(const sx of[-.42,.42]){const hip=new THREE.Group();hip.position.set(sx,1.55,0);g.add(hip);box(hip,.58,1.45,.62,o.female?0x3a3030:o.office?0x2b3440:0x173a5c,0,-.72,0);box(hip,.66,.32,.86,0x2a2a2a,0,-1.38,.08);legs.push(hip);}
   box(g,1.65,1.75,1.05,suit,0,2.42,0);
   if(!o.office){box(g,1.67,.16,1.07,stripe,0,2.05,0);box(g,1.67,.16,1.07,stripe,0,2.8,0);box(g,.9,.45,.12,0xeaf1f6,0,2.6,.55);}
@@ -519,9 +519,9 @@ function makeWorker(o){o=o||{};
   sph(g,.78,skin,0,3.95,0);
   if(o.female){box(g,1.75,.9,1.15,o.skirt||o.suit||0x2b3440,0,1.45,0);const hc=o.hair||0x3a2418;mesh(new THREE.SphereGeometry(.86,20,12,0,PI*2,0,PI/1.75),M(hc),g,0,4.0,-.08);box(g,1.5,1.5,.5,hc,0,3.55,-.5);if(o.pony)sph(g,.42,hc,0,3.7,-1.05);}
   else if(o.office)mesh(new THREE.SphereGeometry(.82,20,12,0,PI*2,0,PI/2.2),M(o.hair||0x2b2118),g,0,4.0,-.06);
-  else{mesh(new THREE.SphereGeometry(.86,20,12,0,PI*2,0,PI/2),M(helmet,{rough:.4}),g,0,4.05,0);cyl(g,1.02,1.02,.1,helmet,0,4.05,.12,{rough:.4},20);}
+  else{hg=new THREE.Group();g.add(hg);mesh(new THREE.SphereGeometry(.86,20,12,0,PI*2,0,PI/2),M(helmet,{rough:.4}),hg,0,4.05,0);cyl(hg,1.02,1.02,.1,helmet,0,4.05,.12,{rough:.4},20);}
   sph(g,.1,0x111111,-.27,3.98,.7);sph(g,.1,0x111111,.27,3.98,.7);
-  g.userData={legs,arms,phase:0};
+  g.userData={legs,arms,phase:0,helmet:hg};
   return g;
 }
 function animWorker(w,dt,speed){const u=w.userData;u.phase+=dt*speed*.55;const s=speed>.5?Math.sin(u.phase)*.75:0;
@@ -850,9 +850,9 @@ apZone(AP1,1,AP1.z0+.6,0);apZone(AP2,2,AP2.z1-.6,0);
  signBox(G,'후문','REAR GATE',.12,1.9,len/2,2,.5,'#14324d','#ffffff',PI/2);
  RG.place=()=>{const o=RG.s;G.position.set(ax-uz*.45+ux*o,0,az+ux*.45+uz*o);};RG.place();
  RG.setCol=on=>{const i=COL.indexOf(RG.col);if(on&&i<0){if(!RG.col)RG.col={x0:Math.min(ax,bx)-.5,x1:Math.max(ax,bx)+.5,z0:az,z1:bz};COL.push(RG.col);}else if(!on&&i>=0)COL.splice(i,1);};RG.setCol(true);}
-/* 정문 안쪽 좌측 홍보 전광판 (누르면 홍보영상) */
+/* 롤러코스터 남쪽 홍보 전광판 (누르면 홍보영상) */
 const PSCR={};
-{const g=new THREE.Group();g.position.set(-128.2,0,22);g.rotation.y=PI/2-.35;site.add(g);PSCR.g=g;
+{const g=new THREE.Group();g.position.set(-138,0,88);g.rotation.y=.45;site.add(g);PSCR.g=g;
  const tex=canvasTex(1024,576,(c,w,h)=>{const gr=c.createLinearGradient(0,0,w,h);gr.addColorStop(0,'#0b2a4a');gr.addColorStop(1,'#14527a');c.fillStyle=gr;c.fillRect(0,0,w,h);
    c.strokeStyle='rgba(255,255,255,.08)';for(let x=0;x<w;x+=8){c.beginPath();c.moveTo(x,0);c.lineTo(x,h);c.stroke();}
    c.fillStyle='#ffc233';c.font='700 34px "IBM Plex Sans KR","Malgun Gothic",sans-serif';c.fillText('NARAE ENERGY SERVICE',64,92);
@@ -865,9 +865,9 @@ const PSCR={};
  for(const x of[-4.5,4.5]){box(g,.7,Y-H/2,.7,0x6b7782,x,(Y-H/2)/2,-.2,{metal:.5});}
  box(g,W*.6,.5,1.6,0x9aa6b0,0,.25,-.2);
  g.updateMatrixWorld(true);PSCR.box=new THREE.Box3().setFromObject(scr).expandByScalar(.4);
- colBox(-128.2,22,4,9);}
-const SCREEN_ST={id:'pscreen',name:'홍보 전광판',sub:'나래에너지서비스 홍보영상',verb:'영상 보기',door:[-124.2,23],screen:true};
-LATE_LBL.push(['<span class="pin-no">▶</span><span>홍보 전광판</span>',[-128.2,14,22],'pin fac',()=>{if(state.mode==='site'&&!busy())openPromo('promo');},'--c:#ffc233']);
+ colBox(-138,88,12,5);}
+const SCREEN_ST={id:'pscreen',name:'홍보 전광판',sub:'나래에너지서비스 홍보영상',verb:'영상 보기',door:[-134.5,97.5],screen:true};
+LATE_LBL.push(['<span class="pin-no">▶</span><span>홍보 전광판</span>',[-138,14,88],'pin fac',()=>{if(state.mode==='site'&&!busy())openPromo('promo');},'--c:#ffc233']);
 /* 정문 차단기 + 경비원 (담당자 이름 확인 후 통과) */
 const GUARD={on:false,pass:false,cool:false,path:null,pi:0,sp:15,armA:0,resume:null,done:null};
 {const ag=new THREE.Group();ag.position.set(-116.4,1.25,49.2);site.add(ag);GUARD.arm=ag;
@@ -893,31 +893,65 @@ function staffLookup(raw){let k=String(raw||'').replace(/[\s.·,!?~]/g,'').repla
   k=k.replace(/(대표이사|대표|실장|팀장|비서|매니저|책임|선임|대리|과장|차장|부장|사원)$/,'');return getStaff().get(k)||null;}
 const GUARD_WHO={face:GUARD_FACE,name:'정문 경비원'};
 function setBarrier(on){const i=COL.indexOf(GUARD.col);if(on&&i<0)COL.push(GUARD.col);else if(!on&&i>=0)COL.splice(i,1);}
-function guardStart(){const G=GUARD;G.on=true;hidePromoAsk();if(state.flow)toggleFlow(false);if(state.fac)closeFac();
+const HELM=(()=>{const g=new THREE.Group();mesh(new THREE.SphereGeometry(.86,20,12,0,PI*2,0,PI/2),M(0xffd23f,{rough:.4}),g,0,0,0);cyl(g,1.02,1.02,.1,0xffd23f,0,0,.12,{rough:.4},20);g.scale.setScalar(1.25);g.visible=false;site.add(g);return g;})();
+function guardFreeze(){hidePromoAsk();if(state.flow)toggleFlow(false);if(state.fac)closeFac();if(state.overview)toggleOverview(false);}
+function guardStart(){const G=GUARD;G.on=true;G.mode='gate';G.chase=false;guardFreeze();
   if(state.auto){G.resume=state.auto;state.auto=null;beacon.visible=false;}
   G.w.visible=true;G.w.position.set(GUARD_OUT[0][0],0,GUARD_OUT[0][1]);G.path=GUARD_OUT.slice(1);G.pi=0;G.sp=15;G.done=()=>guardAsk('잠깐만요! 발전소는 출입 확인 후에 들어가실 수 있어요. 오늘 만나실 담당자 성함을 알려주세요.');
   toast('🚧 경비실에서 경비원이 뛰어나와요',2.2);}
+/* 후문 등으로 몰래 들어오면 경비원이 쫓아옴 (캐릭터와 같은 속도) */
+function chaseStart(){const G=GUARD;G.chase=true;G.mode='chase';G.out=0;G.path=null;G.done=null;G.sp=24;
+  if(!G.w.visible){G.w.visible=true;G.w.position.set(GUARD_OUT[0][0],0,GUARD_OUT[0][1]);}
+  toast('🚨 경비원: 거기 서세요! 출입 확인 안 하셨죠?!',2.8);}
+function chaseCaught(){const G=GUARD;G.chase=false;G.on=true;guardFreeze();state.auto=null;beacon.visible=false;G.resume=null;
+  if(state.drive){const c=state.drive.c,g=c.g,y=g.rotation.y;c.v=0;G.w.position.set(g.position.x+Math.cos(y)*2.7,0,g.position.z-Math.sin(y)*2.7);
+    guardAsk('(똑똑) 창문 좀 내려 주세요! 출입 확인도 없이 차를 몰고 계시네요. 만나실 담당자 성함을 알려주세요.');}
+  else{player.rotation.y=Math.atan2(G.w.position.x-player.position.x,G.w.position.z-player.position.z);guardAsk('헉헉… 잡았다! 출입 확인 안 하고 들어오셨죠? 만나실 담당자 성함을 알려주세요.');}}
 function guardAsk(msg){guideSay(GUARD_WHO,msg,'확인',guardSubmit,'돌아가기',guardCancel);guideSticky=true;const i=$('#gIn');i.value='';i.hidden=false;setTimeout(()=>i.focus(),60);}
-function guardSubmit(){const raw=$('#gIn').value.trim();$('#gIn').hidden=true;
+function guardSubmit(){const G=GUARD,raw=$('#gIn').value.trim();$('#gIn').hidden=true;
   if(!raw){guardAsk('담당자 성함을 입력해 주셔야 들어가실 수 있어요.');return;}
   const r=staffLookup(raw);
   if(!r){guardAsk(`'${raw}' 님은 행정동 직원 명단에 없네요. 만나실 분 성함을 다시 한번 확인해 주세요.`);return;}
-  guideSay(GUARD_WHO,`${r.ceo?'대표님':r.n+' '+r.t} 찾아오셨군요! 확인됐습니다. 차단기 올려드릴게요. 안전모 꼭 쓰시고 즐거운 견학 되세요!`,'들어가기',guardPass);guideSticky=true;}
-function guardBack(){const G=GUARD;G.path=GUARD_OUT.slice(0,-1).reverse();G.pi=0;G.sp=8;G.done=()=>{G.w.visible=false;};}
-function guardPass(){const G=GUARD;G.pass=true;G.on=false;setBarrier(false);toast('🚧 차단기가 올라갔어요. 들어가세요!',2);guardBack();
+  const who=r.ceo?'대표님':r.n+' '+r.t;
+  const msg=G.mode==='chase'?`${who} 찾아오셨군요! 확인됐습니다. 다음부턴 꼭 정문으로 오세요. 안에서는 안전모 필수예요, 이거 쓰세요!`
+    :`${who} 찾아오셨군요! 확인됐습니다. 차단기 올려드릴게요. 안에서는 안전모 필수예요, 이거 쓰세요!`;
+  guideSay(GUARD_WHO,msg,'안전모 받기',guardPass);guideSticky=true;}
+function guardBack(){const G=GUARD,w=G.w.position;G.pi=0;G.sp=8;G.done=()=>{G.w.visible=false;};
+  G.path=Math.hypot(w.x+119.4,w.z-47.4)<3?GUARD_OUT.slice(0,-1).reverse():[[-100.4,45.6],[-100.4,43.4]];}
+function guardDone(){const G=GUARD;G.on=false;setHelmet(true);
+  toast(G.mode==='gate'?'⛑️ 안전모 착용! 차단기가 올라갔어요. 내부 투어 시작!':'⛑️ 안전모 착용! 이제 건물에 들어갈 수 있어요',2.6);guardBack();
   if(G.resume){state.auto=G.resume;G.resume=null;beacon.visible=true;}}
-function guardCancel(){const G=GUARD;$('#gIn').hidden=true;G.on=false;G.cool=true;G.resume=null;player.position.z=Math.max(player.position.z,57.5);player.rotation.y=0;guardBack();toast('담당자 성함을 확인하고 다시 와 주세요',2.2);}
-function updateGuard(dt){const G=GUARD,p=player.position;
+function guardPass(){const G=GUARD;G.pass=true;setBarrier(false);
+  if(state.drive){G.on=false;setHelmet(true);toast('⛑️ 안전모를 받았어요. 내릴 때 쓰세요!',2.4);guardBack();return;}
+  G.hand={t:0};HELM.visible=true;}
+function guardCancel(){const G=GUARD;$('#gIn').hidden=true;G.on=false;G.cool=true;G.resume=null;
+  if(G.mode==='chase'){if(state.drive){const c=state.drive.c;state.drive=null;c.v=0;carCol(c);player.visible=true;$('#driveBar').hidden=true;Snd.coaster(null);restoreCam();}
+    player.position.set(-122,0,58);player.rotation.y=0;camSGoal.t.set(-122,2,58);camSCur.t.copy(camSGoal.t);toast('경비원: 그럼 정문 밖으로 모셔다 드릴게요',2.4);}
+  else{player.position.z=Math.max(player.position.z,57.5);player.rotation.y=0;toast('담당자 성함을 확인하고 다시 와 주세요',2.2);}
+  guardBack();}
+function updateGuard(dt){const G=GUARD,p=player.position,w=G.w;
   G.armA+=((G.pass?1:0)-G.armA)*Math.min(1,dt*2.2);G.arm.rotation.z=-G.armA*1.45;
-  if(!G.pass&&p.z<46&&(state.mode==='site'||state.sim)){G.pass=true;setBarrier(false);}
   if(G.cool&&(p.z>56.5||Math.abs(p.x+122)>8))G.cool=false;
-  if(!G.pass&&!G.on&&!G.cool&&state.mode==='site'&&!busy()&&p.x>-128&&p.x<-116&&p.z>48&&p.z<54)guardStart();
-  const w=G.w;
+  const live=state.mode==='site'&&!state.sim&&!state.ride,inside=inPoly(p.x,p.z,SITE);
+  if(!G.pass&&!G.on&&!G.chase&&!G.cool&&state.mode==='site'&&!busy()&&!inside&&p.x>-128&&p.x<-116&&p.z>48&&p.z<54)guardStart();
+  if(!G.pass&&!G.on&&!G.chase&&live&&inside)chaseStart();
+  if(G.hand){const h=G.hand;h.t+=dt/1.1;const k=Math.min(1,h.t),a=w.position;
+    HELM.position.set(lerp(a.x,p.x,k),lerp(3.6,4.05*1.25+jmp.y*1.4,k)+Math.sin(k*PI)*2.4,lerp(a.z,p.z,k));HELM.rotation.set(0,player.rotation.y+(1-k)*PI*2,0);
+    animWorker(w,dt,0);w.rotation.y=Math.atan2(p.x-a.x,p.z-a.z);player.rotation.y=Math.atan2(a.x-p.x,a.z-p.z);
+    if(k>=1){HELM.visible=false;G.hand=null;guardDone();}return;}
+  if(G.chase){
+    if(!live){animWorker(w,dt,0);return;}
+    const tx=state.drive?state.drive.c.g.position.x:p.x,tz=state.drive?state.drive.c.g.position.z:p.z;
+    const dx=tx-w.position.x,dz=tz-w.position.z,d=Math.hypot(dx,dz);
+    if(d<(state.drive?4.6:2.8)){chaseCaught();return;}
+    const st=Math.min(d,G.sp*dt);w.position.x+=dx/d*st;w.position.z+=dz/d*st;w.rotation.y=Math.atan2(dx,dz);animWorker(w,dt,G.sp);
+    if(!inside){G.out+=dt;if(G.out>2.5){G.chase=false;toast('경비원이 쫓아오다 경비실로 돌아갔어요',2);guardBack();}}else G.out=0;
+    return;}
   if(G.path){const t=G.path[G.pi],dx=t[0]-w.position.x,dz=t[1]-w.position.z,d=Math.hypot(dx,dz),st=G.sp*dt;
     if(d<=st){w.position.x=t[0];w.position.z=t[1];G.pi++;if(G.pi>=G.path.length){G.path=null;const cb=G.done;G.done=null;if(cb)cb();}}
     else{w.position.x+=dx/d*st;w.position.z+=dz/d*st;w.rotation.y=Math.atan2(dx,dz);}
     animWorker(w,dt,G.path?G.sp:0);}
-  else if(w.visible){animWorker(w,dt,0);if(G.on)w.rotation.y=Math.atan2(p.x-w.position.x,p.z-w.position.z);}}
+  else if(w.visible){animWorker(w,dt,0);if(G.on)w.rotation.y=Math.atan2((state.drive?state.drive.c.g.position.x:p.x)-w.position.x,(state.drive?state.drive.c.g.position.z:p.z)-w.position.z);}}
 
 /* WLU · TP 판넬 (이중보온관 공사 남쪽 도로 꺾이는 곳) */
 {const g=new THREE.Group();g.position.set(-114.8,0,114.6);g.rotation.y=-PI/2;site.add(g);
@@ -927,7 +961,7 @@ function updateGuard(dt){const G=GUARD,p=player.position;
  box(g,1.6,.7,.04,0x14324d,lx-.6,4.5,.77);box(g,.5,.5,.04,0xffc233,lx+.8,4.4,.77);box(g,.12,.5,.1,0x2b3a47,lx+.15,3,.8);
  cyl(g,.06,.06,1.4,0x2b3a47,lx+1.1,6.3,-.3,{},6);
  signBox(g,'WLU','누수감지',lx,3.6,.79,1.5,.6,'#14324d','#ffffff');
- for(const tx of[1.6,3.4]){box(g,1.3,.5,1,0x7a4b2a,tx,.45,0,{rough:.7});box(g,1.36,.08,1.06,0x5a3418,tx,.74,0,{rough:.7});box(g,.5,.12,.04,0xffffff,tx,.5,.51);}
+ for(const tx of[1.6,3.2]){box(g,.8,1.1,.5,0x7a4b2a,tx,.75,0,{rough:.7});box(g,.9,.1,.6,0x5a3418,tx,1.33,0,{rough:.7});box(g,.4,.16,.04,0xffffff,tx,1.05,.26);box(g,.04,.8,.04,0x5a3418,tx-.3,.75,.26);}
  colBox(-114.8,114.6,2.2,9.4);}
 const WLU_ST={id:'wlu',name:'WLU · TP 판넬',sub:'누수감지 · 전기방식 측정',door:[-118.2,114.6],lp:[-114.8,8,114.6]};
 LATE_LBL.push(['<span class="pin-no">📟</span><span>WLU · TP 판넬</span>',[-114.8,8.2,114.6],'pin fac',()=>{if(state.mode!=='site'||busy())return;player.position.set(WLU_ST.door[0],0,WLU_ST.door[1]);enterStation(WLU_ST);},'--c:#3ddc84']);
@@ -1292,6 +1326,7 @@ beacon.visible=false;
 
 /* ================= player ================= */
 const player=makeWorker();player.scale.setScalar(1.25);site.add(player);
+{const h=mesh(new THREE.SphereGeometry(.82,20,12,0,PI*2,0,PI/2.2),M(0x2b2118),player,0,4.0,-.06);h.visible=false;player.userData.hair=h;}
 player.traverse(o=>{if(o.isMesh)o.castShadow=true;});
 const START=[-122,74];
 player.position.set(START[0],0,START[1]);player.rotation.y=PI;
@@ -1471,6 +1506,7 @@ function placeAtDoor(st){const dx=st.door[0]-st.lp[0],dz=st.door[1]-st.lp[2],L=M
 function walkTo(st,enter){
   if(state.mode!=='site'||busy())return;
   if(enter&&!GUARD.pass&&inPoly(st.door[0],st.door[1],SITE)&&!inPoly(player.position.x,player.position.z,SITE)&&player.position.z>47){if(state.flow)toggleFlow(false);if(state.overview)toggleOverview(false);const path=planPath(player.position.x,player.position.z,st.node);path.push(st.door);state.auto={path,i:0,st,enter:true};beacon.visible=true;beacon.position.set(st.door[0],8,st.door[1]);toast('정문을 지나 '+st.name+'(으)로 걸어가요',2.4);return;}
+  if(enter&&!GUARD.pass&&inPoly(st.door[0],st.door[1],SITE)){toast('🚧 정문 경비실에서 담당자 확인을 받아야 건물에 들어갈 수 있어요',2.6);return;}
   if(enter){if(state.flow)toggleFlow(false);if(state.overview)toggleOverview(false);state.auto=null;beacon.visible=false;placeAtDoor(st);enterStation(st);return;}
   if(state.flow)toggleFlow(false);if(state.overview)toggleOverview(false);
   const path=planPath(player.position.x,player.position.z,st.node);path.push(st.door);
@@ -2295,9 +2331,9 @@ INT.wlu={title:'WLU · TP 판넬',eyebrow:'열수송관 감시 · 누수감지 /
     {t:'WLU 판넬',d:'WLU는 누수감지 현장 단말기를 넣어 둔 사람 키만 한 판넬이에요. 이중보온관 속에 함께 묻힌 감지선을 여기에 연결해서 배관이 새는지 24시간 지켜봐요.',p:[-8,3.6,0],dist:17},
     {t:'WLU 내부 · 감지 단말기',d:'단말기가 감지선 2가닥의 저항(절연 상태)을 계속 재요. 보온재에 물이 스며들면 저항이 뚝 떨어지는데, 이 변화로 누수를 알아채요. 펄스를 보내 되돌아오는 신호로 누수 지점까지 찾아내고, 결과는 통신 모뎀으로 관제 서버에 보내요.',p:[-8,3.8,.4],dist:9,yaw:.05,pitch:.18},
     {t:'감지선 · 이중보온관 단면',d:'이중보온관은 강관, 보온재(PUR), 외관(HDPE) 세 겹이에요. 보온재 속에 구리 감지선 2가닥이 관을 따라 끝까지 이어지고, 이 선이 WLU 단자대에 물려요.',p:[-18,1.6,3],dist:12,yaw:.35,pitch:.35},
-    {t:'TP 판넬',d:'TP(Test Point)는 땅속 강관이 녹슬지 않게 하는 전기방식이 잘 되고 있는지 확인하는 측정함이에요. 발목 높이의 작은 갈색 판넬로, 뚜껑을 열면 단자함이 나와요.',p:[4,.6,1],dist:11,pitch:.55},
-    {t:'TP 단자함',d:'배관선(P), 기준전극선(R), 양극선(A)이 두 가닥씩, 빨강·검정 선 6가닥이 단자에 꽂혀 있어요. 오른쪽 단자함이 평소 모습이에요.',p:[6,.5,1],dist:7,yaw:.1,pitch:.85},
-    {t:'전위 측정 · 멀티미터',d:'측정할 두 선을 단자에서 빼서 멀티미터에 물려요. 빨강(+)은 배관선, 검정(COM)은 기준전극선이에요. 표시값이 −0.85 V보다 낮으면(예: −1.05 V) 배관이 부식으로부터 잘 보호되고 있다는 뜻이에요.',p:[2.4,.5,2.4],dist:7,yaw:-.15,pitch:.75},
+    {t:'TP 판넬',d:'TP(Test Point)는 땅속 강관이 녹슬지 않게 하는 전기방식이 잘 되고 있는지 확인하는 측정함이에요. 땅 위로 세워진 작은 갈색 판넬로, 앞문을 열면 단자함이 나와요.',p:[4.2,1.2,.6],dist:11,pitch:.3},
+    {t:'TP 단자함',d:'배관선(P), 기준전극선(R), 양극선(A)이 두 가닥씩, 빨강·검정 선 6가닥이 단자에 꽂혀 있어요. 오른쪽 단자함이 평소 모습이에요.',p:[6.5,1.4,.4],dist:6.5,yaw:.05,pitch:.18},
+    {t:'전위 측정 · 멀티미터',d:'측정할 두 선을 단자에서 빼서 멀티미터에 물려요. 빨강(+)은 배관선, 검정(COM)은 기준전극선이에요. 표시값이 −0.85 V보다 낮으면(예: −1.05 V) 배관이 부식으로부터 잘 보호되고 있다는 뜻이에요.',p:[2.3,.9,2],dist:7.5,yaw:-.2,pitch:.45},
   ],
   build(c){const S=c.S;yard(c,48,26,-5,1);
     /* WLU 판넬 (문 열림) */
@@ -2330,30 +2366,32 @@ INT.wlu={title:'WLU · TP 판넬',eyebrow:'열수송관 감시 · 누수감지 /
     for(const dz of[-.32,.32])pipe(S,[[-13.1,PY+.72,PZ+dz],[-11.5,PY+.72,PZ+dz],[-10.2,.3,PZ*.5+dz*.5],[-8.2,-.1,0]],.045,0xd98c3a);
     for(const x of[-21,-15])box(S,1.4,PY-.8,.9,0x7d8a95,x,(PY-.8)/2,PZ);
     /* TP 판넬 2기 (뚜껑 열림) */
-    const tpBox=(x,z,measure)=>{const W=2,D=1.3,H=.8,br=0x7a4b2a;
-      box(S,W,.1,D,br,x,.05,z);box(S,W,H,.1,br,x,H/2,z-D/2);box(S,W,H,.1,br,x,H/2,z+D/2);for(const sx of[-1,1])box(S,.1,H,D,br,x+sx*W/2,H/2,z);
-      const lid=new THREE.Group();lid.position.set(x,H,z-D/2);lid.rotation.x=-1.9;S.add(lid);box(lid,W+.06,.08,D+.06,0x5a3418,0,0,D/2);
-      signBox(lid,'TP','TEST POINT',0,-.06,D/2,.9,.4,'#ffffff','#5a3418');lid.children[lid.children.length-1].rotation.x=PI/2;
-      box(S,W-.3,.06,D-.4,0xf4f1e8,x,H-.18,z);
-      const lab=['P1','P2','R1','R2','A1','A2'];
-      for(let k=0;k<6;k++){const tx=x-.75+k*.3,col=k%2?0x222222:0xd62828;cyl(S,.07,.07,.16,0xd9b04a,tx,H-.08,z-.15,{metal:.7},8);
-        const out=measure&&(k===0||k===2);
-        if(!out)pipe(S,[[tx,H-.04,z-.15],[tx,H-.3,z+.1],[tx,.1,z+.15]],.04,col);
-        else{const ex=k===0?x-.3:x+.1;pipe(S,[[tx,.1,z+.15],[tx,H-.3,z+.1],[tx,H+.25,z+.25],[ex,H+.35,z+.85]],.04,col);
-          cyl(S,.06,.05,.25,0xb0b6bb,ex,H+.35,z+.95,{metal:.6},8).rotation.x=PI/2;}}
-      const lt=canvasTex(256,40,(g,w,h)=>{g.fillStyle='#f4f1e8';g.fillRect(0,0,w,h);g.fillStyle='#14324d';g.font='700 26px "IBM Plex Mono",monospace';lab.forEach((t,i)=>g.fillText(t,6+i*41.5,30));});
-      const lp=mesh(new THREE.PlaneGeometry(1.8,.28),new THREE.MeshBasicMaterial({map:lt}),S,x,H-.145,z-.4,false);lp.rotation.x=-PI/2;};
-    tpBox(2,1,true);tpBox(6.5,1,false);
+    const tpBox=(x,z,measure)=>{const W=1.6,D=.8,H=2.1,br=0x7a4b2a,bz=z-D/2;
+      box(S,W,.1,D,br,x,.25,z);box(S,W,H,.08,br,x,.2+H/2,bz);for(const sx of[-1,1])box(S,.08,H,D,br,x+sx*W/2,.2+H/2,z);box(S,W+.16,.12,D+.16,0x5a3418,x,.26+H,z);
+      box(S,W*.7,.3,D*.7,0x8a8a8a,x,.12,z,{rough:.9});
+      const dr=new THREE.Group();dr.position.set(x-W/2,.2+H/2,z+D/2);dr.rotation.y=-1.95;S.add(dr);box(dr,W,H,.06,br,W/2,0,0);box(dr,.08,.35,.1,0x2b2b2b,W-.15,0,.06);
+      signBox(dr,'TP','TEST POINT',W/2,.45,.04,.9,.45,'#ffffff','#5a3418');
+      box(S,W-.3,1.3,.05,0xf4f1e8,x,1.35,bz+.07);
+      const lab=['P1','P2','R1','R2','A1','A2'];const TY=1.55;
+      const lt=canvasTex(256,40,(g,w,h)=>{g.fillStyle='#f4f1e8';g.fillRect(0,0,w,h);g.fillStyle='#14324d';g.font='700 26px "IBM Plex Mono",monospace';lab.forEach((t,i)=>g.fillText(t,4+i*42,30));});
+      mesh(new THREE.PlaneGeometry(1.25,.2),new THREE.MeshBasicMaterial({map:lt}),S,x,TY+.28,bz+.1,false);
+      box(S,1.3,.16,.12,0x2b3a47,x,TY,bz+.14);
+      for(let k=0;k<6;k++){const tx=x-.52+k*.208,col=k%2?0x222222:0xd62828;cyl(S,.065,.065,.2,0xd9b04a,tx,TY,bz+.28,{metal:.7},8).rotation.x=PI/2;
+        const out=measure&&(k===0||k===3);
+        if(!out)pipe(S,[[tx,TY-.05,bz+.36],[tx,TY-.4,bz+.36],[tx,.75,bz+.3],[x+(tx-x)*.4,.3,z]],.035,col);
+        else{const ex=k===0?x-.35:x+.35;pipe(S,[[x+(tx-x)*.4,.3,z],[tx,.75,bz+.3],[tx,1.1,bz+.45],[ex,1.0,z+D/2+.45]],.035,col);
+          cyl(S,.06,.05,.25,0xb0b6bb,ex,1.0,z+D/2+.6,{metal:.6},8).rotation.x=PI/2;}}};
+    tpBox(2,.6,true);tpBox(6.5,.6,false);
     /* 멀티미터 + 측정선 */
     const MX=2.4,MZ=3.2;box(S,1,.28,1.5,0xffc233,MX,.14,MZ,{rough:.5});box(S,.85,.04,.55,0x0d1a12,MX,.3,MZ-.35);cyl(S,.22,.22,.06,0x2b3a47,MX,.31,MZ+.3,{},16);
     const mcv=document.createElement('canvas');mcv.width=256;mcv.height=128;const mtex=new THREE.CanvasTexture(mcv);
     const mp=mesh(new THREE.PlaneGeometry(.8,.4),new THREE.MeshBasicMaterial({map:mtex}),S,MX,.33,MZ-.35,false);mp.rotation.x=-PI/2;
     const drawM=v=>{const g=mcv.getContext('2d');g.fillStyle='#b9c8a8';g.fillRect(0,0,256,128);g.fillStyle='#111';g.font='700 64px "IBM Plex Mono",monospace';g.textAlign='right';g.fillText(v.toFixed(3),206,84);g.font='700 30px "IBM Plex Mono",monospace';g.fillText('V',244,84);g.font='600 18px sans-serif';g.textAlign='left';g.fillText('DC',10,22);mtex.needsUpdate=true;};drawM(-1.052);
     let acc=0;c.updates.push(dt=>{acc+=dt;if(acc>.6){acc=0;drawM(-1.04-Math.random()*.025);}});
-    for(const [jx,cl,ex] of[[-.25,0xd62828,1.7],[.25,0x222222,2.1]]){cyl(S,.07,.07,.12,cl,MX+jx,.32,MZ+.6,{},8);pipe(S,[[MX+jx,.38,MZ+.6],[MX+jx*.6,.7,MZ+.2],[ex,1.15,1.95]],.035,cl);}
+    for(const [jx,cl,ex] of[[-.25,0xd62828,1.65],[.25,0x222222,2.35]]){cyl(S,.07,.07,.12,cl,MX+jx,.32,MZ+.6,{},8);pipe(S,[[MX+jx,.38,MZ+.6],[MX+jx*.6,.8,MZ+.1],[ex,1.0,1.65]],.035,cl);}
     const w=makeWorker();w.position.set(-1.2,0,4);w.rotation.y=2.1;S.add(w);
     tag(c,'WLU 판넬',[-8,7.4,0],'#3ddc84');tag(c,'감지선 (구리선 2가닥)',[-17,3.2,3],'#d98c3a');tag(c,'외관 HDPE',[-20.5,3,3],'#93a9bb');tag(c,'보온재 PUR',[-15,3,3],'#f2d16b');tag(c,'강관',[-22.6,2.3,3],'#c0c6cb');
-    tag(c,'TP 판넬 (측정 중)',[2,2.2,1],'#ff7a59');tag(c,'TP 판넬 (평소)',[6.5,2.2,1],'#c9a27a');tag(c,'멀티미터',[2.4,1.3,3.2],'#ffc233');
+    tag(c,'TP 판넬 (측정 중)',[2,3,.6],'#ff7a59');tag(c,'TP 판넬 (평소)',[6.5,3,.6],'#c9a27a');tag(c,'멀티미터',[2.4,1.3,3.2],'#ffc233');
   }};
 
 INT.trench_build={title:'이중보온관 부설 공정',short:'이중보온관 공사',noPins:true,eyebrow:'열수송관 매설 · 공사 과정',outdoor:true,parent:'trench',
@@ -2623,6 +2661,7 @@ function enterStation(st){
   if(st.gate){toggleGate();return;}
   if(st.screen){openPromo('promo');return;}
   if(st.car){boardCar(st.car);return;}
+  if(!GUARD.pass&&st.door&&inPoly(st.door[0],st.door[1],SITE)){toast('🚧 정문 경비실에서 담당자 확인을 받아야 건물에 들어갈 수 있어요',2.6);return;}
   state.fac=null;
   if(state.mode!=='site')return;
   if(state.flow)toggleFlow(false);
@@ -2637,6 +2676,9 @@ const WALK={ccr:[-31,31,-21,21],office:[-86,86,-6,24],room_she:[-28,28,-18,18],r
   gov:[-60,60,-20,20],power:[-64,64,-31,31],hrsg:[-60,60,-28,28],tower:[-28,150,-21,21],dh:[-54,54,-29,29],storage:[-58,58,-57,29,0,[0,0,15.5]],
   trench:[-36,36,-24,20,.3],wlu:[-26,16,-10,12],trench_build:[-20,20,-20,20,.3],tiein_cut:[-20,20,-20,20,.3],tiein_hot:[-20,20,-20,20,.3],demand:[-31,31,-19,19,-14],cooling:[-54,54,-26,26]};
 const ipl=makeWorker();ipl.traverse(o=>{if(o.isMesh)o.castShadow=true;});
+{const h=mesh(new THREE.SphereGeometry(.82,20,12,0,PI*2,0,PI/2.2),M(0x2b2118),ipl,0,4.0,-.06);h.visible=false;ipl.userData.hair=h;}
+function setHelmet(on){for(const w of[player,ipl]){w.userData.helmet.visible=on;w.userData.hair.visible=!on;}}
+setHelmet(false);
 function placeInterior(I){jmp.y=0;jmp.v=0;const w=WALK[I.id]||[-30,30,-20,20];I.walk=w;I.S.add(ipl);ipl.position.set((w[0]+w[1])/2,w[4]||0,w[3]-4);ipl.rotation.y=PI;I.moved=false;}
 function openInterior(id,st){
   if(state.mode==='interior')clearLabels(intLabels);else hideSiteUI();
@@ -2930,7 +2972,7 @@ function exitDrive(){const D=state.drive;if(!D)return;const c=D.c,p=c.g.position
   player.visible=true;player.position.set(out[0],0,out[1]);player.rotation.y=y;$('#driveBar').hidden=true;Snd.coaster(null);
   restoreCam();camSGoal.t.set(out[0],2,out[1]);}
 function updateDrive(dt,T){const D=state.drive,c=D.c,g=c.g;
-  let th=0,stv=0;if(state.mode==='site'){th=(keys.KeyW||keys.ArrowUp?1:0)-(keys.KeyS||keys.ArrowDown?1:0)-joyV.y;stv=(keys.KeyA||keys.ArrowLeft?1:0)-(keys.KeyD||keys.ArrowRight?1:0)-joyV.x;}
+  let th=0,stv=0;if(GUARD.on)c.v=0;if(state.mode==='site'&&!GUARD.on){th=(keys.KeyW||keys.ArrowUp?1:0)-(keys.KeyS||keys.ArrowDown?1:0)-joyV.y;stv=(keys.KeyA||keys.ArrowLeft?1:0)-(keys.KeyD||keys.ArrowRight?1:0)-joyV.x;}
   th=clamp(th,-1,1);stv=clamp(stv,-1,1);
   if(th*c.v<0)c.v+=th*26*dt;else c.v+=th*(c.v>=0?7:5)*dt;
   if(!th)c.v*=Math.max(0,1-dt*1.2);if(Math.abs(c.v)<.05&&!th)c.v=0;c.v=clamp(c.v,-4,12);
