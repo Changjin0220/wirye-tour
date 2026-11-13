@@ -223,6 +223,14 @@ body.sim-on #guide{bottom:calc(150px + env(safe-area-inset-bottom,0px))}
 #guide .g-btns button.alt{background:rgba(255,255,255,.12);color:var(--ink)}
 #alertBanner{position:fixed;left:50%;top:18%;transform:translateX(-50%);z-index:36;padding:14px 28px;border-radius:14px;background:rgba(190,20,30,.92);color:#fff;font-size:clamp(26px,4vw,44px);font-weight:900;letter-spacing:.02em;box-shadow:0 0 0 4px rgba(255,255,255,.85),0 16px 40px rgba(0,0,0,.45);animation:alB .6s ease-in-out infinite alternate;pointer-events:none}
 #alertBanner[hidden]{display:none}
+#intruder{position:fixed;left:50%;top:21%;transform:translateX(-50%);z-index:36;padding:14px 30px 12px;border-radius:14px;background:rgba(190,20,30,.94);color:#fff;text-align:center;box-shadow:0 0 0 4px rgba(255,255,255,.85),0 16px 40px rgba(0,0,0,.45);animation:intrBlink .9s steps(2,jump-none) infinite;pointer-events:none;transition:top .4s,padding .4s}
+#intruder b{display:block;font-size:clamp(28px,4.4vw,48px);font-weight:900;letter-spacing:.04em;line-height:1.15}
+#intruder span{display:block;margin-top:4px;font-size:clamp(14px,1.6vw,19px);font-weight:600;opacity:.95}
+#intruder.mini{top:14px;padding:7px 18px;box-shadow:0 0 0 2px rgba(255,255,255,.8),0 6px 18px rgba(0,0,0,.35)}
+#intruder.mini b{font-size:20px}
+#intruder.mini span{display:none}
+#intruder[hidden]{display:none}
+@keyframes intrBlink{0%{background:rgba(190,20,30,.94)}100%{background:rgba(120,8,14,.94)}}
 @keyframes alB{from{transform:translateX(-50%) scale(1)}to{transform:translateX(-50%) scale(1.06)}}
 @media (max-width:560px){#guide .g-face{width:76px;height:76px}#guide .g-msg{font-size:16px}}
 .st-card>p{margin:0 0 20px;font-size:16px;line-height:1.6;color:#d5e0e8;max-width:42ch}
@@ -373,6 +381,7 @@ body.sim-on #guide{bottom:calc(150px + env(safe-area-inset-bottom,0px))}
 
   <div id="guide" hidden role="dialog" aria-live="polite"><img class="g-face" id="gFace" alt=""><div class="g-bubble"><div class="g-name" id="gName"></div><p class="g-msg" id="gMsg"></p><input class="g-in" id="gIn" hidden type="text" autocomplete="off" spellcheck="false" maxlength="12" placeholder="담당자 이름 (예: 홍길동)"><div class="g-btns"><button type="button" class="alt" id="gBtn2" hidden></button><button type="button" id="gBtn">확인</button></div></div></div>
   <div id="alertBanner" hidden role="alert">⚠ 비상대피 중 넘어짐!</div>
+  <div id="intruder" hidden role="alert"><b>🚨 침입자 발생!</b><span>경비원이 쫓아와요 · 도망치거나 숨으세요 (E)</span></div>
   <div id="descCard" hidden role="tooltip"><div id="descBody"></div></div>
   <div id="simBar" class="hud" hidden role="status" aria-live="polite">
     <div class="pa-card sim"><div><p class="eyebrow" id="simEye">비상상황 시뮬레이션</p><b id="simMsg"></b></div><div class="pa-btns" id="simBtns"></div></div>
@@ -963,6 +972,8 @@ function updateGuard(dt){const G=GUARD,p=player.position,w=G.w;
   if(G.cool&&(p.z>56.5||Math.abs(p.x+122)>8))G.cool=false;
   const live=state.mode==='site'&&!state.sim&&!state.ride,inside=inPoly(p.x,p.z,SITE);
   if(!G.pass&&!G.on&&!G.chase&&!G.cool&&state.mode==='site'&&!busy()&&!inside&&p.x>-128&&p.x<-116&&p.z>48&&p.z<54)guardStart();
+  {const al=!!(G.chase&&!G.pass);if(al!==!!G.alarm){G.alarm=al;Snd.chase(al);G.hm=null;const b=$('#intruder');clearTimeout(b._t);if(al){b.classList.remove('mini');b.hidden=false;b._t=setTimeout(()=>b.classList.add('mini'),3500);}else b.hidden=true;}
+   if(al){const hm=!!state.hide;if(hm!==G.hm){G.hm=hm;Snd.chaseVol(hm?.2:.6);}}}
   if(state.hide){const H=state.hide;H.t+=dt;if(!H.seen&&G.chase&&H.t>3){G.chase=false;G.fall=0;w.rotation.x=0;w.position.y=0;toast('😮‍💨 경비아저씨가 못 찾고 경비실로 돌아가요',2.4);guardBack();}}
   if(!G.pass&&!G.on&&!G.chase&&live&&inside&&!state.hide)chaseStart();
   if(G.hand){const h=G.hand;h.t+=dt/1.1;const k=Math.min(1,h.t),a=w.position;
@@ -2898,6 +2909,21 @@ const Snd={ctx:null,master:null,on:true,cur:null,tracks:{},duck:1,mus:null,
       const rev=c.createDelay();rev.delayTime.value=.27;const fb=c.createGain();fb.gain.value=.28;const wet=c.createGain();wet.gain.value=.22;rev.connect(fb);fb.connect(rev);rev.connect(wet);wet.connect(g);m.fx=rev;}
     const m=this.mus,now=c.currentTime;m.g.gain.cancelScheduledValues(now);m.g.gain.setTargetAtTime(want?.42*this.duck:0,now,want?1.5:.5);
     if(!want&&m.timer){clearTimeout(m.stop);m.stop=setTimeout(()=>{if(this.cur!=='site'||this.duck===0){clearInterval(m.timer);m.timer=0;}},2500);}},
+  chase(on){if(!this.ctx)return;const c=this.ctx,now=c.currentTime;
+    if(on){if(!this.ch){const g=c.createGain();g.gain.value=0;g.connect(this.master);const lp=c.createBiquadFilter();lp.type='lowpass';lp.frequency.value=950;lp.Q.value=4;lp.connect(g);this.ch={g,lp,next:0,step:0,timer:0};}
+      const C=this.ch;clearTimeout(C.stop);C.g.gain.cancelScheduledValues(now);C.g.gain.setTargetAtTime(.6,now,.2);
+      if(!C.timer){C.next=now+.06;C.step=0;C.timer=setInterval(()=>this.chaseSeq(),40);}this.music(false);}
+    else if(this.ch){const C=this.ch;C.g.gain.cancelScheduledValues(now);C.g.gain.setTargetAtTime(0,now,.45);clearTimeout(C.stop);C.stop=setTimeout(()=>{clearInterval(C.timer);C.timer=0;},2200);this.music(this.cur==='site'&&this.duck>0);}},
+  chaseVol(v){if(this.ch&&this.ch.timer){const now=this.ctx.currentTime;this.ch.g.gain.cancelScheduledValues(now);this.ch.g.gain.setTargetAtTime(v,now,.3);}},
+  hit(t,dest,f0,amp){const c=this.ctx,o=c.createOscillator(),g=c.createGain();o.type='sine';o.frequency.setValueAtTime(f0||120,t);o.frequency.exponentialRampToValueAtTime(40,t+.2);g.gain.setValueAtTime(.0001,t);g.gain.linearRampToValueAtTime(amp||.3,t+.005);g.gain.exponentialRampToValueAtTime(.0001,t+.28);o.connect(g);g.connect(dest);o.start(t);o.stop(t+.32);},
+  chaseSeq(){const c=this.ctx,C=this.ch,s16=60/152/4,hz=n=>440*Math.pow(2,(n-69)/12);if(!C)return;
+    while(C.next<c.currentTime+.2){const t=C.next,i=C.step%64,bar=(i/16)|0,pos=i%16,root=[40,40,41,39][bar];
+      this.note(t,hz(root+(pos%8===6?12:pos%8===7?7:0)),s16*.85,'sawtooth',pos%4===0?.16:pos%2?.07:.11,C.lp,.004);
+      if(pos%4===0)this.hit(t,C.g,pos===0?140:110,pos===0?.38:.24);
+      if(pos===8)this.hit(t,C.g,180,.14);
+      if(pos===0){const h=[0,1,0,3][bar];this.note(t,hz(76+h),s16*16,'sawtooth',.016,C.g,.35);this.note(t,hz(77+h),s16*16,'sawtooth',.012,C.g,.35);this.note(t,hz(64+h),s16*16,'triangle',.03,C.g,.4);}
+      if(bar===3&&pos>=12)this.note(t,hz(76+(pos-12)*2),s16*.8,'square',.03,C.g,.004);
+      C.next+=s16;C.step++;}},
   note(t,f,dur,type,gain,dest,att){const c=this.ctx,o=c.createOscillator(),g=c.createGain();o.type=type;o.frequency.value=f;g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(gain,t+(att||.01));g.gain.exponentialRampToValueAtTime(.0001,t+dur);o.connect(g);g.connect(dest);o.start(t);o.stop(t+dur+.05);return g;},
   seq(){const c=this.ctx,m=this.mus,spb=60/104/2; // 8th notes at 104 bpm
     const hz=n=>440*Math.pow(2,(n-69)/12);
