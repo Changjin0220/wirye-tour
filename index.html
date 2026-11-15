@@ -245,6 +245,16 @@ body.sim-on #guide{bottom:calc(150px + env(safe-area-inset-bottom,0px))}
 #toast{position:absolute;left:50%;top:calc(var(--gap) + 70px + env(safe-area-inset-top,0px));transform:translateX(-50%);z-index:40;padding:10px 16px;border-radius:10px;background:var(--panel-solid);border:1px solid var(--safety);font-size:14px;font-weight:500;max-width:calc(100% - 32px);text-align:center;transition:opacity .3s}
 #toast.hide{opacity:0;pointer-events:none}
 #courseToggle{display:none}
+#course.hint,#courseToggle.hint{animation:courseHint 1s ease-in-out infinite}
+@keyframes courseHint{0%,100%{box-shadow:0 0 0 2px var(--safety)}50%{box-shadow:0 0 0 6px rgba(255,194,51,.35),0 0 22px rgba(255,194,51,.7)}}
+#courseTip{position:fixed;z-index:30;max-width:300px;padding:12px 16px;border-radius:12px;background:var(--safety);color:#1d232a;font-size:17px;font-weight:700;line-height:1.4;box-shadow:0 10px 26px rgba(0,0,0,.35);cursor:pointer;animation:tipNudge 1s ease-in-out infinite}
+#courseTip::before{content:'';position:absolute;left:-9px;top:16px;border:9px solid transparent;border-left:0;border-right-color:var(--safety)}
+#courseTip small{display:block;margin-top:2px;font-size:13px;font-weight:500;opacity:.8}
+#courseTip[hidden]{display:none}
+#courseTip.below::before{left:18px;top:-9px;border:9px solid transparent;border-top:0;border-bottom-color:var(--safety)}
+#courseTip.below{animation:tipNudgeV 1s ease-in-out infinite}
+@keyframes tipNudgeV{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+@keyframes tipNudge{0%,100%{transform:translateX(0)}50%{transform:translateX(-6px)}}
 #simBar,#rideBar,#driveBar{left:50%;bottom:calc(var(--gap) + 8px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);width:min(600px,calc(100% - 32px));z-index:30}
 .pa-card.sim{border-color:#ff5a4f;box-shadow:0 0 0 3px rgba(255,90,79,.18),0 10px 30px rgba(0,0,0,.35)}
 .pa-card.sim .eyebrow{color:#ff8a80}
@@ -328,9 +338,9 @@ body.sim-on #guide{bottom:calc(150px + env(safe-area-inset-bottom,0px))}
     <div><b>위례열병합발전소 견학</b><small>나래에너지서비스 · 방문 <span id="progress">0/9</span></small></div>
   </div>
 
-  <button id="courseToggle" class="ctl site-ui hud" hidden type="button" aria-expanded="false">견학 코스</button>
-  <nav id="course" class="hud site-ui collapsed" hidden aria-label="견학 코스">
-    <button id="courseHead" type="button" aria-expanded="false"><i aria-hidden="true">▾</i><span>견학 코스</span><span id="courseCount">0 / 9</span></button>
+  <button id="courseToggle" class="ctl site-ui hud" hidden type="button" aria-expanded="false">추천코스</button>
+  <nav id="course" class="hud site-ui collapsed" hidden aria-label="추천코스">
+    <button id="courseHead" type="button" aria-expanded="false"><i aria-hidden="true">▾</i><span>추천코스</span><span id="courseCount">0 / 9</span></button>
     <div class="bar"><i id="courseBar"></i></div>
     <ol id="courseList"></ol>
     <button id="nextBtn" type="button">다음 견학지로 걸어가기</button>
@@ -380,6 +390,7 @@ body.sim-on #guide{bottom:calc(150px + env(safe-area-inset-bottom,0px))}
   </div>
 
   <div id="guide" hidden role="dialog" aria-live="polite"><img class="g-face" id="gFace" alt=""><div class="g-bubble"><div class="g-name" id="gName"></div><p class="g-msg" id="gMsg"></p><input class="g-in" id="gIn" hidden type="text" autocomplete="off" spellcheck="false" maxlength="12" placeholder="담당자 이름 (예: 홍길동)"><div class="g-btns"><button type="button" class="alt" id="gBtn2" hidden></button><button type="button" id="gBtn">확인</button></div></div></div>
+  <div id="courseTip" hidden role="status">여기 추천코스가 있어요!<small>눌러서 펼치면 순서대로 둘러볼 수 있어요</small></div>
   <div id="alertBanner" hidden role="alert">⚠ 비상대피 중 넘어짐!</div>
   <div id="intruder" hidden role="alert"><b>🚨 침입자 발생!</b><span>경비원이 쫓아와요 · 도망치거나 숨으세요 (E)</span></div>
   <div id="descCard" hidden role="tooltip"><div id="descBody"></div></div>
@@ -1586,9 +1597,16 @@ function renderCourse(){
 courseList.addEventListener('click',e=>{const b=e.target.closest('button[data-i]');if(b){walkTo(STATIONS[+b.dataset.i]);if(innerWidth<=760)toggleCourse(false);}});
 $('#nextBtn').addEventListener('click',()=>{const n=STATIONS.find(s=>!visited.has(s.id));if(n){walkTo(n);if(innerWidth<=760)toggleCourse(false);}});
 function toggleCourse(on){on=on!=null?on:!courseEl.classList.contains('open');courseEl.classList.toggle('open',on);$('#courseToggle').setAttribute('aria-expanded',on);}
-$('#courseToggle').addEventListener('click',()=>toggleCourse());
+$('#courseToggle').addEventListener('click',()=>{courseHintOff();toggleCourse();});
+let courseHinted=false;
+function courseHint(){if(courseHinted)return;courseHinted=true;const tg=$('#courseToggle'),cs=$('#course');const el=getComputedStyle(tg).display!=='none'?tg:cs;el.classList.add('hint');
+  const r=el.getBoundingClientRect(),tip=$('#courseTip');tip.classList.remove('below');tip.style.left=(r.right+14)+'px';tip.style.top=(r.top+Math.min(r.height,44)/2-24)+'px';tip.hidden=false;
+  if(r.right+14+tip.offsetWidth>innerWidth-8){tip.classList.add('below');tip.style.left=Math.max(8,r.left)+'px';tip.style.top=(r.bottom+14)+'px';}
+  clearTimeout(tip._t);tip._t=setTimeout(courseHintOff,8000);}
+function courseHintOff(){const tip=$('#courseTip');tip.hidden=true;clearTimeout(tip._t);$('#course').classList.remove('hint');$('#courseToggle').classList.remove('hint');}
+$('#courseTip').addEventListener('click',()=>{courseHintOff();if(getComputedStyle($('#courseToggle')).display!=='none')toggleCourse();else collapseCourse(false);});
 function collapseCourse(c){courseEl.classList.toggle('collapsed',c);$('#courseHead').setAttribute('aria-expanded',!c);}
-$('#courseHead').addEventListener('click',()=>collapseCourse(!courseEl.classList.contains('collapsed')));
+$('#courseHead').addEventListener('click',()=>courseHintOff()||collapseCourse(!courseEl.classList.contains('collapsed')));
 
 function toggleClean(on){on=on!=null?on:!document.body.classList.contains('clean');document.body.classList.toggle('clean',on);resize();if(on)toast('화면 정리 — H 키나 오른쪽 위 버튼으로 다시 보여요',2.2);}
 $('#cleanBtn').addEventListener('click',()=>toggleClean(true));$('#showUi').addEventListener('click',()=>toggleClean(false));
@@ -2814,7 +2832,7 @@ function exitInterior(){
 }
 function renderIntSheet(){
   const I=state.interior,d=I.def;
-  $('#shEye').textContent=I.st.idx!=null?`견학 ${I.st.idx+1} / ${STATIONS.length} · ${d.eyebrow}`:d.eyebrow;
+  $('#shEye').textContent=I.st.idx!=null?`추천코스 ${I.st.idx+1} / ${STATIONS.length} · ${d.eyebrow}`:d.eyebrow;
   $('#shTitle').textContent=d.title;
   $('#shSpecs').innerHTML=d.specs.map(([k,v])=>`<div class="spec"><small>${k}</small><b>${v}</b></div>`).join('');
   let ex='';
@@ -2958,7 +2976,7 @@ function openPromo(kind){if(typeof kind!=='string')kind='promo';if(state.mode!==
   else if(v.dataset.kind===kind&&v.error){showPh();}
   else{ph.hidden=true;v.hidden=false;if(v.dataset.kind!==kind){v.dataset.kind=kind;v.src=V.src;}try{v.currentTime=0;}catch(e){}v.play().catch(()=>{});}
   $('#promoClose').focus();}
-function closePromo(){clearTimeout(promoTimer);Snd.setDuck(1);try{$('#promoVideo').pause();}catch(e){}$('#promo').hidden=true;if(state.mode==='promo')state.mode='site';
+function closePromo(){clearTimeout(promoTimer);setTimeout(courseHint,400);Snd.setDuck(1);try{$('#promoVideo').pause();}catch(e){}$('#promo').hidden=true;if(state.mode==='promo')state.mode='site';
   if(state.ride&&$('#promoVideo').dataset.kind==='tour')exitRide();}
 $('#promoPlay').addEventListener('click',openPromo);$('#promoSkip').addEventListener('click',hidePromoAsk);$('#promoClose').addEventListener('click',closePromo);$('#promoVideo').addEventListener('ended',closePromo);$('#promoBtn').addEventListener('click',openPromo);
 
@@ -3258,7 +3276,7 @@ function startTour(){
   document.querySelectorAll('.site-ui').forEach(e=>e.hidden=false);$('#joy').hidden=!isTouch;
   resize();renderCourse();
   camSGoal.t.set(player.position.x,2,player.position.z);camSGoal.yaw=0;followCam();
-  guideSay('ceo','나래에너지서비스 방문을 환영합니다. 견학게임을 시작해 볼까요?','게임 시작',()=>toast('정문 앞이에요. 코스 순서대로 걸어가거나 지도를 눌러 보세요',3.4),'▶ 홍보영상 보기',()=>openPromo('promo'));$('#guide').classList.add('center');
+  guideSay('ceo','나래에너지서비스 방문을 환영합니다. 견학게임을 시작해 볼까요?','게임 시작',()=>courseHint(),'▶ 홍보영상 보기',()=>openPromo('promo'));$('#guide').classList.add('center');
 }
 $('#startBtn').addEventListener('click',startTour);
 window.__wirye={drive:i=>{const c=BIZ[i||0];player.position.set(c.g.position.x,0,c.g.position.z+3);boardCar(c);},carAt:(x,z,y)=>{const c=state.drive.c;c.g.position.set(x,0,z);c.g.rotation.y=y;},gate:()=>toggleGate(),sim(){const st=STATIONS[0];player.position.set(st.door[0],0,st.door[1]);enterStation(st);document.querySelector('#floorPick [data-f="emergency"]').click();},sim2:()=>simEvac2(),simK:k=>{SIM_K=k;},simEnd:()=>endSim(),ride:()=>{player.position.set(-123.5,0,59);boardCoaster();},rideS:sv=>{state.ride.s=sv;},tour:()=>openPromo('tour'),go(id){const ad={ccr:1,office:1,room_mgmt:1,room_cs:1,room_ops:1,room_ceo:1};const st=STATIONS.find(s=>s.id===(ad[id]?'admin':id==='cooling'?'demand':id));if(state.mode!=='interior'){player.position.set(st.door[0],0,st.door[1]);if(state.flow)toggleFlow(false);}openInterior(id==='admin'?'ccr':id,st);},
