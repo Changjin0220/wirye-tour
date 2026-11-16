@@ -282,6 +282,7 @@ body.sim-on #guide{bottom:calc(150px + env(safe-area-inset-bottom,0px))}
 .pa-btns{display:flex;gap:6px;flex:none}
 .pa-btns button{padding:10px 12px;border-radius:9px;border:1px solid var(--line);background:transparent;font-weight:700;font-size:13px;white-space:nowrap}
 .pa-btns .go{background:var(--safety);color:var(--safety-ink);border-color:var(--safety)}
+#shCard .fs-vid{margin-top:10px;padding:9px 14px;border:0;border-radius:9px;background:var(--safety);color:#1d232a;font:inherit;font-weight:700;cursor:pointer}
 #promo{position:absolute;inset:0;z-index:45;background:rgba(5,12,19,.94);display:grid;place-items:center;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
 .pv-frame{width:min(960px,100%);aspect-ratio:16/9;max-width:100%;border-radius:14px;overflow:hidden;background:#0a1622;position:relative;border:1px solid var(--line)}
 .pv-frame video{width:100%;height:100%;display:block;background:#000}
@@ -1187,7 +1188,17 @@ function updateGolf(dt){const ease=t=>t*t*(3-2*t);
     if(p.y<.3){p.y=.3;b.v.y=Math.abs(b.v.y)>2?-b.v.y*.35:0;b.v.x*=.7;b.v.z*=.7;}
     if(b.life>7){b.on=false;b.m.visible=false;}}}
 
-let stackT=0;function updateStack(dt){stackT+=dt;const on=!state.flow;for(const s of STACK_SMOKE){s.m.visible=on;if(!on)continue;const f=(stackT*.07+s.ph)%1;
+/* 흰 연기의 정체: 연돌 이름표 + 점선 + 연기 클릭 + 첫 접근 퀴즈 */
+const STEAM_BOX=new THREE.Box3(new THREE.Vector3(-62,50,-90),new THREE.Vector3(-24,90,-66));
+{const g=new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(-55,33.5,-70.5),new THREE.Vector3(-55,52.5,-70.5),new THREE.Vector3(-52,58,-74)]);
+ const l=new THREE.Line(g,new THREE.LineDashedMaterial({color:0xffffff,dashSize:1.2,gapSize:.8,transparent:true,opacity:.9}));l.computeLineDistances();site.add(l);}
+LATE_LBL.push(['<span class="pin-no">💨</span><span>흰 연기의 정체 ▶</span>',[-55,31,-70],'pin fac',()=>{if((state.mode==='site')&&!busy())openPromo('steam');},'--c:#9fd3ff']);
+let steamQuiz=false;
+function steamQuizCheck(){if(steamSeen||steamQuiz||state.mode!=='site'||busy()||state.auto||state.flow||GUARD.on||GUARD.chase||!$('#guide').hidden)return;
+  const p=player.position,dx=Math.max(-64-p.x,0,p.x+36),dz=Math.max(-98-p.z,0,p.z+41);if(Math.hypot(dx,dz)>16)return;steamQuiz=true;
+  const ans=ok=>{guideSay('jhj',(ok?'정답! ':'땡! 사실 ')+'하얀 연기는 대부분 수증기예요. 왜 그런지 영상으로 확인해 볼까요?','▶ 영상 보기',()=>openPromo('steam'),'다음에',null);guideSticky=true;};
+  guideSay('jhj','잠깐! 저 HRSG 연돌에서 나오는 하얀 연기, 뭘까요?','🏭 오염물질',()=>ans(false),'💧 수증기',()=>ans(true));guideSticky=true;}
+let stackT=0;function updateStack(dt){steamQuizCheck();stackT+=dt;const on=!state.flow;for(const s of STACK_SMOKE){s.m.visible=on;if(!on)continue;const f=(stackT*.07+s.ph)%1;
   s.m.position.set(-55+s.jx*.8+f*f*26,53+f*30,-76+s.jz*.8-f*6);s.m.scale.setScalar(1.4+f*5.5);s.m.material.opacity=.5*(1-f)*Math.min(1,f*8);}}
 
 /* 롤러코스터 (소음 전광판 앞) */
@@ -1376,7 +1387,7 @@ const flowTags=[];
 const FLOW_STEPS=[
   {t:'연료 공급',s:['gas'],f:[-38,0,66],d:'서쪽 한국가스공사(KOGAS) 배관으로 들어온 천연가스가 ① 방산탑 → ② 정압기 → ③ NG압축기동을 거치고, HRSG 옆 연료가스가열기동에서 데워진 뒤 발전동 가스터빈으로 갑니다. 방산탑은 비상시나 정비할 때 배관 속 가스를 안전하게 대기로 내보내고, 정압기는 압력을 맞추고 계량하며, NG압축기는 가스터빈이 필요로 하는 압력까지 가스를 높여요.'},
   {t:'1차 발전 · 가스터빈',s:['gas','power'],f:[-58,0,0],d:'천연가스를 태운 고온·고압 가스가 가스터빈을 돌리고, 한 축으로 연결된 발전기가 전기를 만듭니다. 전기는 주변압기를 거쳐 전력계통으로 나갑니다.'},
-  {t:'배열 회수 · 2차 발전',s:['exhaust','steam','power','scr'],f:[-52,0,-56],d:'HRSG가 약 630℃ 배기가스의 열로 증기를 만들고, 이 증기가 증기터빈을 돌려 연료를 더 쓰지 않고 한 번 더 발전합니다. HRSG 안 SCR 촉매에서 SCR/YPES 설비가 보낸 환원제(연두색)로 질소산화물을 줄인 뒤, 열을 내준 배기가스는 연돌로 나가요(흰 연기).'},
+  {t:'배열 회수 · 2차 발전',video:'steam',s:['exhaust','steam','power','scr'],f:[-52,0,-56],d:'HRSG가 약 630℃ 배기가스의 열로 증기를 만들고, 이 증기가 증기터빈을 돌려 연료를 더 쓰지 않고 한 번 더 발전합니다. HRSG 안 SCR 촉매에서 SCR/YPES 설비가 보낸 환원제(연두색)로 질소산화물을 줄인 뒤, 열을 내준 배기가스는 연돌로 나가요(흰 연기).'},
   {t:'열 방출 · 냉각탑',s:['cool'],f:[-2,0,-20],d:'증기터빈을 돌린 증기는 복수기에서 물로 돌아갑니다. 이때 나온 열은 냉각수가 받아 8개 셀 냉각탑에서 공기로 식혀요. 냉각탑 남쪽 냉각수 펌프동의 대형 펌프가 냉각탑과 복수기 사이로 냉각수를 돌립니다.'},
   {t:'열 회수 · DH 설비동',s:['heat'],f:[20,0,-20],d:'증기터빈에서 추출한 증기의 열을 DH 설비동 열교환기로 보내 지역난방용 온수를 만듭니다.'},
   {t:'열 저장 · 축열조',s:['store','demi'],f:[86,0,-68],d:'열이 남을 때는 큰 탱크 2기(축열조)에 뜨거운 물로 저장했다가(보라 흐름), 아침·저녁 난방 피크에 꺼내 씁니다. 탱크 안 빨강은 고온수, 파랑은 저온수예요. 옆의 작은 탱크 2기는 보충수로 쓰는 순수(데미워터) 탱크예요. 수처리설비동에서 만든 순수(하늘색)는 순수탱크에 담아 두었다가 보충수로 써요.'},
@@ -1450,7 +1461,7 @@ const keys={};
 addEventListener('keydown',e=>{
   if(/INPUT|TEXTAREA/.test((e.target||{}).tagName||''))return;
   if(state.mode==='boot')return;
-  if(state.mode==='promo'){if(e.code==='Escape'||e.code==='Space'||e.code==='Enter'){e.preventDefault();closePromo();}return;}
+  if(state.mode==='promo'||state.promoIn){if(e.code==='Escape'||e.code==='Space'||e.code==='Enter'){e.preventDefault();closePromo();}return;}
   if(state.drive&&state.mode==='site'){if(e.code==='KeyE'||e.code==='Enter'||e.code==='Escape'){e.preventDefault();exitDrive();return;}if(e.code==='KeyH'){toggleClean();return;}if(/^(Key[WASD]|Arrow)/.test(e.code)){keys[e.code]=true;e.preventDefault();}return;}
   if(busy()&&state.mode==='site'){if(e.code==='Escape'){e.preventDefault();state.sim?endSim():exitRide();}else if(e.code==='KeyH')toggleClean();return;}
   if(e.code==='Space'&&(state.mode==='site'||state.mode==='interior')&&!/INPUT|TEXTAREA/.test((e.target||{}).tagName||'')){e.preventDefault();if(document.activeElement&&document.activeElement.blur)document.activeElement.blur();if(jmp.y===0&&jmp.v===0)jmp.v=11;return;}
@@ -1577,6 +1588,7 @@ canvas.addEventListener('pointerup',e=>{if(!downXY||ptrs.size!==1||Math.hypot(e.
   let best=null,bd=1e9,kind=null;for(const [id,b] of PICKB){if(_rc.ray.intersectBox(b,_hp)){const d=_hp.distanceTo(_rc.ray.origin);if(d<bd){bd=d;best=id;kind='st';}}}
   for(const [id,b] of Object.entries(FACB)){if(_rc.ray.intersectBox(b,_hp)){const d=_hp.distanceTo(_rc.ray.origin);if(d<bd){bd=d;best=id;kind='fac';}}}
   if(!best&&_rc.ray.intersectBox(PSCR.box,_hp)){openPromo('promo');return;}
+  if(!best&&!state.flow&&_rc.ray.intersectBox(STEAM_BOX,_hp)){openPromo('steam');return;}
   if(!best&&_rc.ray.intersectBox(CO.box,_hp)){player.position.set(COASTER_ST.door[0],0,COASTER_ST.door[1]);boardCoaster();return;}
   if(best){if(kind==='st'){state.fac=null;walkTo(STATIONS.find(s=>s.id===best),true);}else openFac(best);}});
 canvas.addEventListener('pointermove',e=>{if(state.mode!=='site'||ptrs.size)return;const r=canvas.getBoundingClientRect();_ndc.set((e.clientX-r.left)/r.width*2-1,-(e.clientY-r.top)/r.height*2+1);_rc.setFromCamera(_ndc,camS);
@@ -1653,7 +1665,7 @@ function renderFlowSheet(){
   $('#shSpecs').innerHTML='';
   $('#shExtra').innerHTML=`<div class="modes" role="group" aria-label="보기 방식"><button type="button" data-play aria-pressed="${!!state.play}">▶ 순서대로 보기</button><button type="button" data-all aria-pressed="${!state.play&&state.focusStep<0}">전체 한번에</button></div>`+'<div class="legend">'+Object.values(STREAMS).map(s=>`<span style="--c:${hex(s.color)}"><i></i>${s.name}</span>`).join('')+'</div><p class="note">건물을 투명하게 해서 안의 설비가 보이게 했어요. 단계를 누르면 해당 흐름만 강조돼요.</p>';
   const i=state.focusStep;
-  $('#shCard').innerHTML=i<0?`<h4>천연가스 한 줄기 → 전기 + 열</h4><p>정압기에서 들어온 천연가스가 발전동에서 전기로 바뀌고, HRSG가 배기열로 한 번 더 발전합니다. 남은 열은 냉각탑으로 내보내거나 DH 설비동으로 회수해 지역난방으로 보냅니다.</p>`:`<h4><span>${String(i+1).padStart(2,'0')}</span>${FLOW_STEPS[i].t}</h4><p>${FLOW_STEPS[i].d}</p>`;
+  $('#shCard').innerHTML=i<0?`<h4>천연가스 한 줄기 → 전기 + 열</h4><p>정압기에서 들어온 천연가스가 발전동에서 전기로 바뀌고, HRSG가 배기열로 한 번 더 발전합니다. 남은 열은 냉각탑으로 내보내거나 DH 설비동으로 회수해 지역난방으로 보냅니다.</p>`:`<h4><span>${String(i+1).padStart(2,'0')}</span>${FLOW_STEPS[i].t}</h4><p>${FLOW_STEPS[i].d}</p>${FLOW_STEPS[i].video?'<button type="button" class="fs-vid" data-v="'+FLOW_STEPS[i].video+'">▶ 흰 연기의 정체 영상</button>':''}`;
   $('#shList').innerHTML=FLOW_STEPS.map((s,k)=>`<li class="${k===i?'on fl':k<i?'past':''}" style="--c:${hex(STREAMS[s.s[0]].color)}"><button type="button" data-k="${k}"><span class="n">${k+1}</span><span>${s.t}<span class="sw">${s.s.map(id=>`<i style="--c:${hex(STREAMS[id].color)}"></i>`).join('')}</span></span></button></li>`).join('');
   $('#shPrev').disabled=i<=0;$('#shNext').textContent=i>=FLOW_STEPS.length-1?'전체 보기':'다음 →';
   $('#shClose').hidden=false;
@@ -1673,7 +1685,7 @@ function updatePlay(dt){const p=state.play;if(!p||p.paused)return;p.t+=dt;
 function focusStep(k){
   state.flowFollow=false;
   stopPlay();
-  if(k>=0&&FLOW_STEPS[k])setTimeout(()=>{guideSay('jhj',`${k+1}단계 · ${FLOW_STEPS[k].t}: ${FLOW_STEPS[k].d}`,'닫기');guideSticky=true;},0);
+  if(k>=0&&FLOW_STEPS[k])setTimeout(()=>{const F=FLOW_STEPS[k];if(F.video)guideSay('jhj',`${k+1}단계 · ${F.t}: ${F.d}`,'닫기',null,'▶ 연기의 정체',()=>openPromo(F.video));else guideSay('jhj',`${k+1}단계 · ${F.t}: ${F.d}`,'닫기');guideSticky=true;},0);
   state.focusStep=k;
   if(k<0){highlightStreams(null);setOverviewCam();}
   else{const s=FLOW_STEPS[k];highlightStreams(s.s);camSGoal.t.set(s.f[0],0,s.f[2]);camSGoal.dist=innerWidth<760?230:165;camSGoal.pitch=.86;}
@@ -2024,6 +2036,7 @@ INT.hrsg={title:'HRSG',eyebrow:'배열회수보일러 · 단면',outdoor:true,re
     {t:'드럼 (HP · IP · LP)',d:'증발기에서 올라온 물과 증기를 분리합니다. 압력 단계별로 고압·중압·저압 드럼이 있고, 위에는 안전밸브와 소음기가 달려 있어요.',p:[-1,29,0],dist:46},
     {t:'절탄기',d:'들어오는 급수(응축수)를 미리 데워 효율을 높입니다. 배기열을 마지막까지 회수하는 구간이에요.',p:[4,14,0]},
     {t:'연돌',d:'열을 대부분 내준 배기가스를 대기로 내보냅니다. 입자 색이 주황에서 회색으로 바뀌는 걸 보세요.',p:[9,48,0],dist:62},
+    {t:'흰 연기의 정체',d:'연돌에서 나오는 하얀 연기는 대부분 수증기예요. 천연가스가 탈 때 생긴 수분이 차가운 바깥 공기를 만나 작은 물방울로 맺히면서 하얗게 보이는 거예요. 영상으로 확인해 보세요!',p:[9,56,0],dist:70,video:'steam'},
     {t:'증기 출구',d:'여기서 만든 증기(약 656 t/h)가 발전동 증기터빈으로 갑니다. 추가 연료 없이 전기를 더 만드는 비결이에요.',p:[-30,33,9]},
     {t:'안전밸브 · 소음기',d:'드럼과 증기 배관의 압력이 정해진 값을 넘으면 안전밸브가 자동으로 열려 증기를 밖으로 내보내 보일러를 보호해요. 이때 고압 증기가 빠져나가며 엄청난 소리가 나는데, 지붕 위 소음기(사일런서)가 그 소음을 줄여 줘요. 기동·정지 때 증기를 빼는 벤트에도 소음기가 달려 있어요.',p:[-8,38,2.6],dist:30},
   ],
@@ -2866,7 +2879,7 @@ function setSpot(i,silent,noCam,fromProc){
   $('#shList').innerHTML=I.def.spots.map((x,k)=>`<li class="${k===i?'on':''}"><button type="button" data-s="${k}"><span class="n">${k+1}</span><span>${x.t}</span></button></li>`).join('');
   $('#shPrev').disabled=i===0;$('#shNext').textContent=i===n-1?(I.def.parent?`${INT[I.def.parent].short||INT[I.def.parent].title}로 →`:'부지로 나가기 →'):'다음 →';
   intLabels.forEach(l=>{if(l.i!=null)l.el.classList.toggle('on',l.i===i);});
-  if(!silent||fromProc){const who=narrFor(I.id);if(who){const pr=I.c.proc;guideSay(who,`${i+1}. ${s.t}: ${plain(s.d)}`,'닫기',null,pr?(pr.play?'⏸ 일시정지':'▶ 계속'):null,null,pr?()=>{pr.play=!pr.play;return !pr.play;}:null);guideSticky=true;}}
+  if(!silent||fromProc){const who=narrFor(I.id);if(who){const pr=I.c.proc;if(s.video&&!pr)guideSay(who,`${i+1}. ${s.t}: ${plain(s.d)}`,'닫기',null,'▶ 영상 보기',()=>openPromo(s.video));else guideSay(who,`${i+1}. ${s.t}: ${plain(s.d)}`,'닫기',null,pr?(pr.play?'⏸ 일시정지':'▶ 계속'):null,null,pr?()=>{pr.play=!pr.play;return !pr.play;}:null);guideSticky=true;}}
 }
 $('#shList').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;if(b.dataset.s!=null)setSpot(+b.dataset.s);else if(b.dataset.k!=null)focusStep(+b.dataset.k);});
 $('#shPrev').addEventListener('click',()=>{if(state.fac)return;if(state.mode==='interior')setSpot(state.spot-1);else focusStep(Math.max(0,state.focusStep-1));});
@@ -2966,19 +2979,23 @@ let promoAsked=false,promoT=0,promoTimer=0;
 function showPromoAsk(){promoAsked=true;$('#promoAsk').hidden=false;promoT=15;}
 function hidePromoAsk(){$('#promoAsk').hidden=true;promoT=0;}
 const VIDS={promo:{src:PROMO_SRC,eye:'Narae Energy Service',title:'나래에너지서비스<br>홍보영상',ph:'영상 파일을 받으면 이 자리에서 재생돼요. 지금은 8초 뒤 견학으로 돌아갑니다.',label:'나래에너지서비스 홍보영상',close:'건너뛰기 ⏭'},
+  steam:{src:'steam.mp4',eye:'HRSG · 연돌',title:'명탐정 쥴리<br>흰 연기의 정체',ph:'흰 연기 영상이 들어갈 자리예요.',label:'흰 연기의 정체 영상',close:'닫기 ✕'},
   tour:{src:'tour.mp4',eye:'위례 · 지역난방 공급권역',title:'공급권역 투어',ph:'공급권역 투어 영상이 들어갈 자리예요. 영상 파일을 받으면 여기서 바로 재생됩니다.',label:'공급권역 투어 영상',close:'닫기 ✕'}};
-function openPromo(kind){if(typeof kind!=='string')kind='promo';if(state.mode!=='site')return;hidePromoAsk();state.mode='promo';Snd.setDuck(0);const V=VIDS[kind];
+let steamSeen=false;
+function openPromo(kind){if(typeof kind!=='string')kind='promo';if(state.mode!=='site'&&state.mode!=='interior')return;hidePromoAsk();if(kind==='steam')steamSeen=true;
+  if(!$('#guide').hidden){$('#guide').hidden=true;guideCb=null;guideCb2=null;}if(state.play)state.play.paused=true;
+  if(state.mode==='interior')state.promoIn=true;else state.mode='promo';Snd.setDuck(0);const V=VIDS[kind];
   const pv=$('#promo');pv.hidden=false;pv.setAttribute('aria-label',V.label);$('#promoClose').textContent=V.close;
   const v=$('#promoVideo'),ph=$('#promoPh');ph.querySelector('.eyebrow').textContent=V.eye;ph.querySelector('h2').innerHTML=V.title;ph.querySelector('p:not(.eyebrow)').textContent=V.ph;
-  const showPh=()=>{if(state.mode!=='promo')return;v.hidden=true;ph.hidden=false;const bar=ph.querySelector('.pv-bar');bar.style.animation='none';void bar.offsetWidth;bar.style.animation='';clearTimeout(promoTimer);promoTimer=setTimeout(closePromo,8000);};
+  const showPh=()=>{if(state.mode!=='promo'&&!state.promoIn)return;v.hidden=true;ph.hidden=false;const bar=ph.querySelector('.pv-bar');bar.style.animation='none';void bar.offsetWidth;bar.style.animation='';clearTimeout(promoTimer);promoTimer=setTimeout(closePromo,8000);};
   v.onerror=showPh;
   if(!V.src){showPh();}
   else if(v.dataset.kind===kind&&v.error){showPh();}
   else{ph.hidden=true;v.hidden=false;if(v.dataset.kind!==kind){v.dataset.kind=kind;v.src=V.src;}try{v.currentTime=0;}catch(e){}v.play().catch(()=>{});}
   $('#promoClose').focus();}
-function closePromo(){clearTimeout(promoTimer);setTimeout(courseHint,400);Snd.setDuck(1);try{$('#promoVideo').pause();}catch(e){}$('#promo').hidden=true;if(state.mode==='promo')state.mode='site';
+function closePromo(){clearTimeout(promoTimer);setTimeout(courseHint,400);Snd.setDuck(1);try{$('#promoVideo').pause();}catch(e){}$('#promo').hidden=true;if(state.promoIn)state.promoIn=false;else if(state.mode==='promo')state.mode='site';
   if(state.ride&&$('#promoVideo').dataset.kind==='tour')exitRide();}
-$('#promoPlay').addEventListener('click',openPromo);$('#promoSkip').addEventListener('click',hidePromoAsk);$('#promoClose').addEventListener('click',closePromo);$('#promoVideo').addEventListener('ended',closePromo);$('#promoBtn').addEventListener('click',openPromo);
+$('#promoPlay').addEventListener('click',openPromo);document.addEventListener('click',e=>{const b=e.target.closest&&e.target.closest('.fs-vid');if(b)openPromo(b.dataset.v);});$('#promoSkip').addEventListener('click',hidePromoAsk);$('#promoClose').addEventListener('click',closePromo);$('#promoVideo').addEventListener('ended',closePromo);$('#promoBtn').addEventListener('click',openPromo);
 
 /* ================= 비상상황 시뮬레이션 ================= */
 const STAIR=[[-94,12.18,-44.6],[-94,10.15,-36.3],[-96,10.15,-36.3],[-96,8.18,-44.6],[-94,8.18,-44.6],[-94,6.15,-36.3],[-96,6.15,-36.3],[-96,4.18,-44.6],[-94,4.18,-44.6],[-94,2.15,-36.3],[-96,2.15,-36.3],[-96,0,-44.4]];
